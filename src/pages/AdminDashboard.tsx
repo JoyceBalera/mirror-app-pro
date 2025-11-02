@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { LogOut, Users, CheckCircle, Clock, Home } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import UserCard from "@/components/UserCard";
+import CreateUserDialog from "@/components/CreateUserDialog";
 
 interface Profile {
   id: string;
@@ -192,9 +193,12 @@ const AdminDashboard = () => {
 
         {/* Users List */}
         <div className="space-y-4">
-          <h2 className="text-xl font-semibold mb-4">
-            Usuários ({filteredUsers.length})
-          </h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold">
+              Usuários ({filteredUsers.length})
+            </h2>
+            <CreateUserDialog onUserCreated={fetchUsers} />
+          </div>
           
           {filteredUsers.length === 0 ? (
             <Card className="p-8 text-center">
