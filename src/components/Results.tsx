@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { TraitScore } from "@/types/test";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { RotateCcw, Download, Sparkles, Loader2 } from "lucide-react";
+import { RotateCcw, Download, Sparkles, Loader2, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import jsPDF from "jspdf";
@@ -27,12 +27,10 @@ export const Results = ({ traitScores, onRestart, sessionId, userName }: Results
   const [aiAnalysis, setAiAnalysis] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [showWaitDialog, setShowWaitDialog] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
-
-  // Gera análise automaticamente quando o componente montar
-  useEffect(() => {
-    handleGenerateAnalysis();
-  }, []);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const hasGeneratedRef = useRef(false);
 
   const getScoreColor = (score: number) => {
     // Para facetas (4-20)
@@ -42,33 +40,83 @@ export const Results = ({ traitScores, onRestart, sessionId, userName }: Results
     return "bg-gray-500";
   };
 
-  const handleGenerateAnalysis = async () => {
+  const handleGenerateAnalysis = useCallback(async () => {
+    // Validação: verificar se traitScores está válido
+    if (!traitScores || traitScores.length === 0) {
+      console.error("TraitScores inválido:", traitScores);
+      setError("Dados de traços inválidos");
+      toast({
+        title: "Erro",
+        description: "Não há dados de traços para analisar.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Prevenir múltiplas chamadas
+    if (hasGeneratedRef.current) {
+      console.log("Análise já foi gerada, ignorando chamada duplicada");
+      return;
+    }
+
+    console.log("Iniciando geração de análise...", { traitScores });
+    hasGeneratedRef.current = true;
     setIsGenerating(true);
+    setError(null);
+
+    // Timeout de segurança de 60 segundos
+    timeoutRef.current = setTimeout(() => {
+      console.error("Timeout: Análise demorou mais de 60 segundos");
+      setIsGenerating(false);
+      setError("A geração da análise demorou muito tempo");
+      toast({
+        title: "Tempo esgotado",
+        description: "A análise está demorando muito. Tente novamente.",
+        variant: "destructive",
+      });
+    }, 60000);
+
     try {
       const { data, error } = await supabase.functions.invoke("analyze-personality", {
         body: { traitScores },
       });
 
+      // Limpar timeout se chegou aqui
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+
       if (error) {
+        console.error("Erro na função:", error);
         throw error;
       }
 
       if (data.error) {
+        console.error("Erro retornado pela função:", data.error);
         throw new Error(data.error);
       }
 
+      if (!data || !data.analysis) {
+        console.error("Resposta inválida da função:", data);
+        throw new Error("Resposta inválida da função de análise");
+      }
+
+      console.log("Análise gerada com sucesso");
       setAiAnalysis(data.analysis);
       
       // Save AI analysis to database
       if (sessionId) {
+        console.log("Salvando análise no banco...", sessionId);
         try {
           await supabase.from('ai_analyses').insert({
             session_id: sessionId,
             analysis_text: data.analysis,
             model_used: 'gemini-2.5-flash',
           });
+          console.log("Análise salva com sucesso no banco");
         } catch (error) {
-          console.error('Error saving AI analysis:', error);
+          console.error('Erro ao salvar análise no banco:', error);
         }
       }
       
@@ -87,15 +135,27 @@ export const Results = ({ traitScores, onRestart, sessionId, userName }: Results
         errorMessage = "Créditos de IA esgotados. Adicione créditos nas configurações.";
       }
       
+      setError(errorMessage);
       toast({
         title: "Erro ao gerar análise",
         description: errorMessage,
         variant: "destructive",
       });
     } finally {
+      // Garantir que sempre para o loading
       setIsGenerating(false);
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
     }
-  };
+  }, [traitScores, sessionId, toast]);
+
+  // Gera análise automaticamente quando o componente montar
+  useEffect(() => {
+    console.log("useEffect executado, traitScores:", traitScores);
+    handleGenerateAnalysis();
+  }, [handleGenerateAnalysis]);
 
   const handleDownload = () => {
     // Se ainda está gerando, mostra diálogo de espera
@@ -226,6 +286,31 @@ export const Results = ({ traitScores, onRestart, sessionId, userName }: Results
               <div>
                 <p className="text-sm font-medium">✨ Gerando análise personalizada...</p>
                 <p className="text-xs text-muted-foreground">Isso levará alguns segundos</p>
+              </div>
+            </div>
+          </Card>
+        )}
+
+        {/* Mensagem de erro com opção de retry */}
+        {error && !isGenerating && (
+          <Card className="mb-6 p-4 bg-destructive/5 border-destructive/20">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-destructive mt-0.5" />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-destructive">Erro ao gerar análise</p>
+                <p className="text-xs text-muted-foreground mt-1">{error}</p>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="mt-2"
+                  onClick={() => {
+                    hasGeneratedRef.current = false;
+                    handleGenerateAnalysis();
+                  }}
+                >
+                  <RotateCcw className="w-4 h-4 mr-2" />
+                  Tentar novamente
+                </Button>
               </div>
             </div>
           </Card>
