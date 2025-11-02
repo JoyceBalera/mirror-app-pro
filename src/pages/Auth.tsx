@@ -17,17 +17,40 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Check if user is already logged in
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    // Check if user is already logged in and redirect based on role
+    const checkSessionAndRedirect = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        navigate("/");
+        const { data: roleData } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', session.user.id)
+          .maybeSingle();
+        
+        if (roleData?.role === 'admin') {
+          navigate("/admin/dashboard");
+        } else {
+          navigate("/");
+        }
       }
-    });
+    };
+
+    checkSessionAndRedirect();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+      async (_event, session) => {
         if (session) {
-          navigate("/");
+          const { data: roleData } = await supabase
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', session.user.id)
+            .maybeSingle();
+          
+          if (roleData?.role === 'admin') {
+            navigate("/admin/dashboard");
+          } else {
+            navigate("/");
+          }
         }
       }
     );

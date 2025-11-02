@@ -3,7 +3,7 @@ import { Brain, Zap } from "lucide-react";
 
 interface WelcomeProps {
   onStart: () => void;
-  onQuickTest: () => void;
+  onQuickTest?: () => void;
 }
 
 export const Welcome = ({ onStart, onQuickTest }: WelcomeProps) => {
@@ -85,15 +85,17 @@ export const Welcome = ({ onStart, onQuickTest }: WelcomeProps) => {
               Começar Teste
             </Button>
             
-            <Button
-              onClick={onQuickTest}
-              variant="outline"
-              size="lg"
-              className="flex gap-2"
-            >
-              <Zap className="w-5 h-5" />
-              Teste Rápido (Demo)
-            </Button>
+            {onQuickTest && (
+              <Button
+                onClick={onQuickTest}
+                variant="outline"
+                size="lg"
+                className="flex gap-2"
+              >
+                <Zap className="w-5 h-5" />
+                Teste Rápido (Admin)
+              </Button>
+            )}
           </div>
         </div>
 

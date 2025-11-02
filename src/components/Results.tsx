@@ -12,9 +12,10 @@ import autoTable from "jspdf-autotable";
 interface ResultsProps {
   traitScores: TraitScore[];
   onRestart: () => void;
+  sessionId?: string | null;
 }
 
-export const Results = ({ traitScores, onRestart }: ResultsProps) => {
+export const Results = ({ traitScores, onRestart, sessionId }: ResultsProps) => {
   const [aiAnalysis, setAiAnalysis] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
@@ -43,6 +44,20 @@ export const Results = ({ traitScores, onRestart }: ResultsProps) => {
       }
 
       setAiAnalysis(data.analysis);
+      
+      // Save AI analysis to database
+      if (sessionId) {
+        try {
+          await supabase.from('ai_analyses').insert({
+            session_id: sessionId,
+            analysis_text: data.analysis,
+            model_used: 'gemini-2.5-flash',
+          });
+        } catch (error) {
+          console.error('Error saving AI analysis:', error);
+        }
+      }
+      
       toast({
         title: "Análise gerada!",
         description: "Sua análise personalizada está pronta.",
