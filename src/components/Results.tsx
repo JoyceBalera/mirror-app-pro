@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { TraitScore } from "@/types/test";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,13 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface ResultsProps {
   traitScores: TraitScore[];
@@ -19,7 +26,13 @@ interface ResultsProps {
 export const Results = ({ traitScores, onRestart, sessionId, userName }: ResultsProps) => {
   const [aiAnalysis, setAiAnalysis] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [showWaitDialog, setShowWaitDialog] = useState(false);
   const { toast } = useToast();
+
+  // Gera análise automaticamente quando o componente montar
+  useEffect(() => {
+    handleGenerateAnalysis();
+  }, []);
 
   const getScoreColor = (score: number) => {
     // Para facetas (4-20)
@@ -60,8 +73,8 @@ export const Results = ({ traitScores, onRestart, sessionId, userName }: Results
       }
       
       toast({
-        title: "Análise gerada!",
-        description: "Sua análise personalizada está pronta.",
+        title: "🎉 Análise pronta!",
+        description: "Seu PDF agora está completo com a análise personalizada.",
       });
     } catch (error: any) {
       console.error("Erro ao gerar análise:", error);
@@ -85,6 +98,11 @@ export const Results = ({ traitScores, onRestart, sessionId, userName }: Results
   };
 
   const handleDownload = () => {
+    // Se ainda está gerando, mostra diálogo de espera
+    if (isGenerating) {
+      setShowWaitDialog(true);
+      return;
+    }
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.width;
     let yPos = 20;
@@ -200,6 +218,18 @@ export const Results = ({ traitScores, onRestart, sessionId, userName }: Results
   return (
     <div className="min-h-screen gradient-hero py-12 px-4">
       <div className="max-w-5xl mx-auto">
+        {/* Indicador visual discreto durante geração */}
+        {isGenerating && !aiAnalysis && (
+          <Card className="mb-6 p-4 bg-primary/5 border-primary/20">
+            <div className="flex items-center gap-3">
+              <Loader2 className="w-5 h-5 animate-spin text-primary" />
+              <div>
+                <p className="text-sm font-medium">✨ Gerando análise personalizada...</p>
+                <p className="text-xs text-muted-foreground">Isso levará alguns segundos</p>
+              </div>
+            </div>
+          </Card>
+        )}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold mb-4">
             {userName ? `Resultados de ${userName}` : "Seus Resultados"}
@@ -348,6 +378,22 @@ export const Results = ({ traitScores, onRestart, sessionId, userName }: Results
             preferências naturais.
           </p>
         </Card>
+
+        {/* Diálogo de espera para download do PDF */}
+        <AlertDialog open={showWaitDialog} onOpenChange={setShowWaitDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle className="flex items-center gap-2">
+                <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                Preparando seu PDF completo
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                Estamos finalizando sua análise personalizada para incluir no PDF. 
+                Isso levará apenas alguns segundos. Aguarde um momento...
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   );
