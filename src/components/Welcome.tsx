@@ -69,10 +69,10 @@ export const Welcome = ({ onStart, onQuickTest }: WelcomeProps) => {
 
           <div className="bg-muted/50 p-4 rounded-lg mb-6">
             <p className="text-sm text-muted-foreground">
-              <strong>Instruções:</strong> O teste contém 50 afirmações. Para cada uma, 
-              avalie o quanto ela se aplica a você em uma escala de 1 (Discordo Totalmente) 
-              a 5 (Concordo Totalmente). Seja honesto e responda com base em como você 
-              realmente é, não como gostaria de ser.
+              <strong>Instruções:</strong> O teste contém 120 afirmações divididas em 5 traços de personalidade. 
+              Para cada afirmação, avalie o quanto ela se aplica a você em uma escala de 1 (Discordo Totalmente) 
+              a 5 (Concordo Totalmente). Seja honesto e responda com base em como você realmente é, 
+              não como gostaria de ser. Não há respostas certas ou erradas.
             </p>
           </div>
 
@@ -100,7 +100,7 @@ export const Welcome = ({ onStart, onQuickTest }: WelcomeProps) => {
         </div>
 
         <p className="text-center text-sm text-muted-foreground">
-          ⏱️ Tempo estimado: 10-15 minutos
+          ⏱️ Tempo estimado: 15-20 minutos
         </p>
       </div>
     </div>
