@@ -13,9 +13,10 @@ interface ResultsProps {
   traitScores: TraitScore[];
   onRestart: () => void;
   sessionId?: string | null;
+  userName?: string;
 }
 
-export const Results = ({ traitScores, onRestart, sessionId }: ResultsProps) => {
+export const Results = ({ traitScores, onRestart, sessionId, userName }: ResultsProps) => {
   const [aiAnalysis, setAiAnalysis] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
@@ -96,6 +97,10 @@ export const Results = ({ traitScores, onRestart, sessionId }: ResultsProps) => 
     yPos += 10;
     doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
+    if (userName) {
+      doc.text(`Participante: ${userName}`, pageWidth / 2, yPos, { align: "center" });
+      yPos += 5;
+    }
     doc.text(`Data: ${new Date().toLocaleDateString("pt-BR")}`, pageWidth / 2, yPos, { align: "center" });
     
     yPos += 15;
@@ -196,9 +201,11 @@ export const Results = ({ traitScores, onRestart, sessionId }: ResultsProps) => 
     <div className="min-h-screen gradient-hero py-12 px-4">
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-4">Seus Resultados</h1>
+          <h1 className="text-4xl font-bold mb-4">
+            {userName ? `Resultados de ${userName}` : "Seus Resultados"}
+          </h1>
           <p className="text-xl text-muted-foreground">
-            Aqui está o seu perfil de personalidade baseado no modelo Big Five
+            {userName ? `Perfil de personalidade de ${userName} baseado no modelo Big Five` : "Aqui está o seu perfil de personalidade baseado no modelo Big Five"}
           </p>
         </div>
 

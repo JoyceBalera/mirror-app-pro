@@ -9,10 +9,13 @@ import { LogOut, Users, CheckCircle, Clock, Home } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import UserCard from "@/components/UserCard";
 import CreateUserDialog from "@/components/CreateUserDialog";
+import EditUserDialog from "@/components/EditUserDialog";
 
 interface Profile {
   id: string;
   full_name: string | null;
+  email?: string;
+  role?: "user" | "admin";
   created_at: string;
   test_sessions?: Array<{
     id: string;
@@ -29,6 +32,7 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filter, setFilter] = useState("all");
+  const [editingUser, setEditingUser] = useState<{ id: string; full_name: string | null; email?: string; role: "user" | "admin" } | null>(null);
 
   useEffect(() => {
     fetchUsers();
@@ -39,6 +43,7 @@ const AdminDashboard = () => {
   }, [searchTerm, filter, users]);
 
   const fetchUsers = async () => {
+    setLoading(true);
     try {
       const { data: profiles, error } = await supabase
         .from('profiles')
@@ -54,9 +59,27 @@ const AdminDashboard = () => {
 
       if (error) throw error;
 
-      // Fetch emails from auth metadata via RPC or edge function if needed
-      // For now, we'll just use the profiles data
-      setUsers(profiles || []);
+      // Fetch user roles and emails
+      const usersWithRoles = await Promise.all(
+        (profiles || []).map(async (user) => {
+          const { data: roleData } = await supabase
+            .from("user_roles")
+            .select("role")
+            .eq("user_id", user.id)
+            .single();
+
+          const { data: authData } = await supabase.auth.admin.getUserById(user.id);
+
+          return {
+            ...user,
+            email: authData?.user?.email,
+            role: roleData?.role || "user",
+          };
+        })
+      );
+
+      setUsers(usersWithRoles);
+      setFilteredUsers(usersWithRoles);
     } catch (error: any) {
       toast({
         title: "Erro",
@@ -206,10 +229,29 @@ const AdminDashboard = () => {
             </Card>
           ) : (
             filteredUsers.map((user) => (
-              <UserCard key={user.id} user={user} />
+              <UserCard 
+                key={user.id} 
+                user={user} 
+                onEdit={() => setEditingUser({ 
+                  id: user.id, 
+                  full_name: user.full_name, 
+                  email: user.email,
+                  role: user.role || "user" 
+                })}
+              />
             ))
           )}
         </div>
+
+        {editingUser && (
+          <EditUserDialog
+            user={editingUser}
+            currentRole={editingUser.role}
+            open={!!editingUser}
+            onOpenChange={(open) => !open && setEditingUser(null)}
+            onUserEdited={fetchUsers}
+          />
+        )}
       </main>
     </div>
   );

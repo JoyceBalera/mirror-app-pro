@@ -31,24 +31,43 @@ const Index = () => {
   const [answers, setAnswers] = useState<Answer[]>([]);
   const [traitScores, setTraitScores] = useState<TraitScore[]>([]);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+  const [userName, setUserName] = useState<string>("");
 
   useEffect(() => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+      async (_event, session) => {
         setUser(session?.user ?? null);
         if (!session?.user) {
           navigate("/auth");
+        } else {
+          // Fetch user's full name
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("full_name")
+            .eq("id", session.user.id)
+            .single();
+          
+          setUserName(profile?.full_name || session.user.email || "");
         }
         setLoading(false);
       }
     );
 
     // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setUser(session?.user ?? null);
       if (!session?.user) {
         navigate("/auth");
+      } else {
+        // Fetch user's full name
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("full_name")
+          .eq("id", session.user.id)
+          .single();
+        
+        setUserName(profile?.full_name || session.user.email || "");
       }
       setLoading(false);
     });
@@ -297,6 +316,7 @@ const Index = () => {
       traitScores={traitScores} 
       onRestart={handleRestart} 
       sessionId={currentSessionId}
+      userName={userName}
     />;
   }
 

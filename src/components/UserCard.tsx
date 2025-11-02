@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, Clock } from "lucide-react";
+import { CheckCircle2, Clock, Pencil } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -18,9 +18,10 @@ interface UserCardProps {
       status: string;
     }>;
   };
+  onEdit: () => void;
 }
 
-const UserCard = ({ user }: UserCardProps) => {
+const UserCard = ({ user, onEdit }: UserCardProps) => {
   const navigate = useNavigate();
   const hasTested = user.test_sessions && user.test_sessions.length > 0 && 
     user.test_sessions.some(session => session.completed_at);
@@ -64,14 +65,26 @@ const UserCard = ({ user }: UserCardProps) => {
           </div>
         </div>
 
-        {hasTested && (
+        <div className="flex gap-2">
           <Button
-            onClick={() => navigate(`/admin/user/${user.id}`)}
+            onClick={onEdit}
             variant="outline"
+            size="sm"
+            className="gap-2"
           >
-            Ver Resultados
+            <Pencil className="w-4 h-4" />
+            Editar
           </Button>
-        )}
+          {hasTested && (
+            <Button
+              onClick={() => navigate(`/admin/user/${user.id}`)}
+              variant="outline"
+              size="sm"
+            >
+              Ver Resultados
+            </Button>
+          )}
+        </div>
       </div>
     </Card>
   );
