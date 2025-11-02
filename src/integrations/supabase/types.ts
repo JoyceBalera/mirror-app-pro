@@ -14,7 +14,164 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      ai_analyses: {
+        Row: {
+          analysis_text: string
+          generated_at: string
+          id: string
+          model_used: string | null
+          session_id: string
+        }
+        Insert: {
+          analysis_text: string
+          generated_at?: string
+          id?: string
+          model_used?: string | null
+          session_id: string
+        }
+        Update: {
+          analysis_text?: string
+          generated_at?: string
+          id?: string
+          model_used?: string | null
+          session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_analyses_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: true
+            referencedRelation: "test_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          full_name: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      test_answers: {
+        Row: {
+          answered_at: string
+          id: string
+          question_id: string
+          score: number
+          session_id: string
+        }
+        Insert: {
+          answered_at?: string
+          id?: string
+          question_id: string
+          score: number
+          session_id: string
+        }
+        Update: {
+          answered_at?: string
+          id?: string
+          question_id?: string
+          score?: number
+          session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "test_answers_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "test_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      test_results: {
+        Row: {
+          calculated_at: string
+          classifications: Json
+          facet_scores: Json
+          id: string
+          session_id: string
+          trait_scores: Json
+        }
+        Insert: {
+          calculated_at?: string
+          classifications: Json
+          facet_scores: Json
+          id?: string
+          session_id: string
+          trait_scores: Json
+        }
+        Update: {
+          calculated_at?: string
+          classifications?: Json
+          facet_scores?: Json
+          id?: string
+          session_id?: string
+          trait_scores?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "test_results_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: true
+            referencedRelation: "test_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      test_sessions: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          id: string
+          started_at: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          started_at?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          started_at?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "test_sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
