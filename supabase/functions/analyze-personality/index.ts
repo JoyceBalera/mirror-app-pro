@@ -26,8 +26,10 @@ serve(async (req) => {
       return `${trait.name}: ${trait.score.toFixed(2)} (${trait.classification})\nFacetas: ${facetsInfo}`;
     }).join('\n\n');
 
-    const systemPrompt = `Você é um psicólogo especialista no modelo dos Cinco Grandes Fatores de Personalidade (Big Five). 
+    const systemPrompt = `Você é um psicólogo especialista no modelo Big Five de Personalidade. 
 Sua tarefa é fornecer uma análise detalhada, profissional e empática do perfil de personalidade apresentado.
+
+IMPORTANTE: Use APENAS texto puro. NÃO use markdown, asteriscos (**), hashtags (#) ou qualquer formatação especial. Use MAIÚSCULAS para títulos de seções.
 
 O modelo Big Five mede cinco dimensões principais:
 - Neuroticismo (estabilidade emocional)
@@ -38,29 +40,36 @@ O modelo Big Five mede cinco dimensões principais:
 
 Cada traço tem 5 facetas que detalham aspectos específicos.`;
 
-    const userPrompt = `Analise este perfil de personalidade e forneça uma análise estruturada:
+    const userPrompt = `Analise este perfil Big Five e forneça uma análise estruturada:
 
 ${traitsData}
 
 Por favor, forneça:
 
-1. **RESUMO GERAL** (2-3 parágrafos)
-Descreva a personalidade geral da pessoa, destacando os padrões mais marcantes.
+1. RESUMO GERAL (2-3 parágrafos)
+Descreva a personalidade geral da pessoa, destacando os padrões mais marcantes do Big Five.
 
-2. **ANÁLISE POR TRAÇO**
-Para cada um dos 5 traços principais:
+2. ANÁLISE POR TRAÇO
+Para cada um dos 5 traços do Big Five:
 - Explique o que o score significa
 - Como isso se manifesta no dia a dia
 - Pontos fortes relacionados
 - Áreas de desenvolvimento
 
-3. **PADRÕES E COMBINAÇÕES**
-Identifique como os traços interagem entre si e formam um perfil único.
+3. PADRÕES E COMBINAÇÕES
+Identifique como os traços do Big Five interagem entre si e formam um perfil único.
 
-4. **RECOMENDAÇÕES PERSONALIZADAS**
+4. RECOMENDAÇÕES PERSONALIZADAS
 Sugira 3-4 ações práticas baseadas neste perfil específico.
 
-Use linguagem acessível, empática e profissional. Evite jargões desnecessários.`;
+5. PRÓXIMOS PASSOS
+Termine a análise com esta mensagem exata:
+
+"Agora você está pronta para o próximo passo, a devolutiva ao vivo com a Simone Mior.
+Confira na sua agenda a data e horário marcado, e esteja pronta para conhecer todo o potencial do Big Five e como aplicar na sua vida para conquistar seus objetivos."
+
+Use linguagem acessível, empática e profissional. Evite jargões desnecessários.
+IMPORTANTE: NÃO use asteriscos, hashtags ou markdown. Use apenas texto puro com MAIÚSCULAS para títulos.`;
 
     console.log("Chamando Lovable AI para análise...");
 
