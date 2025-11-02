@@ -91,7 +91,7 @@ export const Results = ({ traitScores, onRestart, sessionId }: ResultsProps) => 
     // Cabeçalho
     doc.setFontSize(20);
     doc.setFont("helvetica", "bold");
-    doc.text("Resultados do Teste dos Cinco Grandes", pageWidth / 2, yPos, { align: "center" });
+    doc.text("Resultados do Big Five", pageWidth / 2, yPos, { align: "center" });
     
     yPos += 10;
     doc.setFontSize(10);
@@ -171,12 +171,12 @@ export const Results = ({ traitScores, onRestart, sessionId }: ResultsProps) => 
     yPos = 20;
     doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
-    doc.text("Sobre o Modelo dos Cinco Grandes", 14, yPos);
+    doc.text("Sobre o Modelo Big Five", 14, yPos);
     yPos += 10;
 
     doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
-    const footerText = `O modelo dos Cinco Grandes é um dos modelos de personalidade mais amplamente aceitos na psicologia. Ele mede cinco dimensões fundamentais que capturam as principais diferenças na personalidade humana. Cada traço é medido em um espectro, e não há pontuações "boas" ou "más" - apenas diferentes perfis de personalidade. Este teste fornece insights sobre seus padrões comportamentais típicos e preferências naturais.`;
+    const footerText = `O modelo Big Five é um dos modelos de personalidade mais amplamente aceitos na psicologia. Ele mede cinco dimensões fundamentais que capturam as principais diferenças na personalidade humana. Cada traço é medido em um espectro, e não há pontuações "boas" ou "más" - apenas diferentes perfis de personalidade. Este teste fornece insights sobre seus padrões comportamentais típicos e preferências naturais.`;
     
     const footerLines = doc.splitTextToSize(footerText, pageWidth - 28);
     footerLines.forEach((line: string) => {
@@ -198,7 +198,7 @@ export const Results = ({ traitScores, onRestart, sessionId }: ResultsProps) => 
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold mb-4">Seus Resultados</h1>
           <p className="text-xl text-muted-foreground">
-            Aqui está o seu perfil de personalidade baseado no modelo dos Cinco Grandes
+            Aqui está o seu perfil de personalidade baseado no modelo Big Five
           </p>
         </div>
 
@@ -330,10 +330,10 @@ export const Results = ({ traitScores, onRestart, sessionId }: ResultsProps) => 
 
         <Card className="mt-8 p-6 bg-card/50">
           <h3 className="text-lg font-semibold mb-3">
-            Sobre o Modelo dos Cinco Grandes
+            Sobre o Modelo Big Five
           </h3>
           <p className="text-sm text-muted-foreground leading-relaxed">
-            O modelo dos Cinco Grandes é um dos modelos de personalidade mais amplamente 
+            O modelo Big Five é um dos modelos de personalidade mais amplamente 
             aceitos na psicologia. Ele mede cinco dimensões fundamentais que capturam as 
             principais diferenças na personalidade humana. Cada traço é medido em um espectro, 
             e não há pontuações "boas" ou "más" - apenas diferentes perfis de personalidade. 
