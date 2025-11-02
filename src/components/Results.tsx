@@ -60,7 +60,6 @@ export const Results = ({ traitScores, onRestart, sessionId, userName }: Results
     }
 
     console.log("Iniciando geração de análise...", { traitScores });
-    hasGeneratedRef.current = true;
     setIsGenerating(true);
     setError(null);
 
@@ -102,8 +101,14 @@ export const Results = ({ traitScores, onRestart, sessionId, userName }: Results
         throw new Error("Resposta inválida da função de análise");
       }
 
+      console.log("=== ANÁLISE RECEBIDA ===");
+      console.log("Tipo:", typeof data.analysis);
+      console.log("Tamanho:", data.analysis?.length);
+      console.log("Preview:", data.analysis?.substring(0, 100));
+
       console.log("Análise gerada com sucesso");
       setAiAnalysis(data.analysis);
+      hasGeneratedRef.current = true; // Marca como gerado APÓS sucesso
       
       // Save AI analysis to database
       if (sessionId) {
@@ -126,6 +131,7 @@ export const Results = ({ traitScores, onRestart, sessionId, userName }: Results
       });
     } catch (error: any) {
       console.error("Erro ao gerar análise:", error);
+      hasGeneratedRef.current = false; // Permite retry em caso de erro
       
       let errorMessage = "Não foi possível gerar a análise. Tente novamente.";
       
@@ -155,7 +161,8 @@ export const Results = ({ traitScores, onRestart, sessionId, userName }: Results
   useEffect(() => {
     console.log("useEffect executado, traitScores:", traitScores);
     handleGenerateAnalysis();
-  }, [handleGenerateAnalysis]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Array vazio = executa apenas 1 vez quando o componente montar
 
   const handleDownload = () => {
     // Se ainda está gerando, mostra diálogo de espera
