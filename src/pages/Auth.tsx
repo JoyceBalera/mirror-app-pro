@@ -18,45 +18,92 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Check if user is already logged in and redirect based on role
+    let mounted = true;
+    let timeoutId: NodeJS.Timeout;
+
     const checkSessionAndRedirect = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        const { data: roleData } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', session.user.id)
-          .maybeSingle();
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!mounted) return;
         
-        if (roleData?.role === 'admin') {
-          navigate("/admin/dashboard");
-        } else {
-          navigate("/");
+        if (session) {
+          // Defer database query to avoid blocking
+          setTimeout(async () => {
+            if (!mounted) return;
+            
+            try {
+              const { data: roleData } = await supabase
+                .from('user_roles')
+                .select('role')
+                .eq('user_id', session.user.id)
+                .maybeSingle();
+              
+              if (!mounted) return;
+              
+              if (roleData?.role === 'admin') {
+                navigate("/admin/dashboard");
+              } else {
+                navigate("/");
+              }
+            } catch (error) {
+              console.error("Error fetching role:", error);
+              navigate("/");
+            }
+          }, 0);
         }
+      } catch (error) {
+        console.error("Error checking session:", error);
       }
     };
 
+    // Safety timeout to prevent infinite loading
+    timeoutId = setTimeout(() => {
+      if (mounted) {
+        console.warn("Auth check timeout");
+        setLoading(false);
+      }
+    }, 10000);
+
     checkSessionAndRedirect();
 
+    // Simplified listener without synchronous database calls
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
+      (_event, session) => {
+        if (!mounted) return;
+        
         if (session) {
-          const { data: roleData } = await supabase
-            .from('user_roles')
-            .select('role')
-            .eq('user_id', session.user.id)
-            .maybeSingle();
-          
-          if (roleData?.role === 'admin') {
-            navigate("/admin/dashboard");
-          } else {
-            navigate("/");
-          }
+          // Defer role check to avoid deadlock
+          setTimeout(async () => {
+            if (!mounted) return;
+            
+            try {
+              const { data: roleData } = await supabase
+                .from('user_roles')
+                .select('role')
+                .eq('user_id', session.user.id)
+                .maybeSingle();
+              
+              if (!mounted) return;
+              
+              if (roleData?.role === 'admin') {
+                navigate("/admin/dashboard");
+              } else {
+                navigate("/");
+              }
+            } catch (error) {
+              console.error("Error fetching role in listener:", error);
+              navigate("/");
+            }
+          }, 0);
         }
       }
     );
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      clearTimeout(timeoutId);
+      subscription.unsubscribe();
+    };
   }, [navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
