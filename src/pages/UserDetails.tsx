@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, Download, Home, LogOut } from "lucide-react";
+import { ArrowLeft, Download, Home, LogOut, Sparkles, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -34,6 +34,7 @@ const UserDetails = () => {
   const [results, setResults] = useState<TestResult[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedAnalysis, setExpandedAnalysis] = useState<string | null>(null);
+  const [generatingAnalysis, setGeneratingAnalysis] = useState<string | null>(null);
 
   useEffect(() => {
     if (userId) {
@@ -104,13 +105,69 @@ const UserDetails = () => {
     return labels[trait] || trait;
   };
 
-  const getClassificationLabel = (classification: string) => {
+  const getClassificationLabel = (classification: string | number) => {
+    if (typeof classification === 'number') {
+      if (classification < 40) return "Baixo";
+      if (classification < 70) return "Médio";
+      return "Alto";
+    }
     const labels: { [key: string]: string } = {
       low: "Baixo",
       medium: "Médio",
       high: "Alto",
+      Baixa: "Baixo",
+      Média: "Médio",
+      Alta: "Alto",
     };
     return labels[classification] || classification;
+  };
+
+  const handleGenerateAnalysis = async (sessionId: string, traitScores: any, facetScores: any, classifications: any) => {
+    setGeneratingAnalysis(sessionId);
+    try {
+      // Formatar os dados dos traços
+      const formattedTraitScores = Object.entries(traitScores).map(([key, score]) => ({
+        name: getTraitLabel(key),
+        score: score as number,
+        classification: getClassificationLabel(classifications[key]),
+        facets: Object.entries(facetScores[key]).map(([facetKey, facetScore]) => ({
+          name: facetKey,
+          score: facetScore as number,
+          classification: getClassificationLabel(facetScore as number)
+        }))
+      }));
+
+      const { data, error } = await supabase.functions.invoke("analyze-personality", {
+        body: { traitScores: formattedTraitScores },
+      });
+
+      if (error) throw error;
+      if (data.error) throw new Error(data.error);
+
+      // Salvar análise no banco
+      await supabase.from('ai_analyses').insert({
+        session_id: sessionId,
+        analysis_text: data.analysis,
+        model_used: 'gemini-2.5-flash',
+      });
+
+      toast({
+        title: "Análise gerada!",
+        description: "A análise foi gerada e salva com sucesso.",
+      });
+
+      // Recarregar os dados
+      fetchUserData();
+    } catch (error: any) {
+      console.error("Erro ao gerar análise:", error);
+      toast({
+        title: "Erro ao gerar análise",
+        description: error.message || "Não foi possível gerar a análise.",
+        variant: "destructive",
+      });
+    } finally {
+      setGeneratingAnalysis(null);
+    }
   };
 
   const handleLogout = async () => {
@@ -208,30 +265,57 @@ const UserDetails = () => {
                 </div>
 
                 {/* AI Analysis */}
-                {result.ai_analyses && result.ai_analyses.length > 0 && (
-                  <div className="border-t pt-4">
-                    <Button
-                      variant="outline"
-                      onClick={() => setExpandedAnalysis(
-                        expandedAnalysis === result.id ? null : result.id
-                      )}
-                      className="w-full mb-4"
-                    >
-                      {expandedAnalysis === result.id ? 'Ocultar' : 'Ver'} Análise Completa da IA
-                    </Button>
+                <div className="border-t pt-4">
+                  {result.ai_analyses && result.ai_analyses.length > 0 ? (
+                    <>
+                      <Button
+                        variant="outline"
+                        onClick={() => setExpandedAnalysis(
+                          expandedAnalysis === result.id ? null : result.id
+                        )}
+                        className="w-full mb-4"
+                      >
+                        {expandedAnalysis === result.id ? 'Ocultar' : 'Ver'} Análise Completa da IA
+                      </Button>
 
-                    {expandedAnalysis === result.id && (
-                      <div className="bg-muted/50 p-4 rounded-lg">
-                        <p className="text-sm whitespace-pre-wrap">
-                          {result.ai_analyses[0].analysis_text}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-4">
-                          Modelo: {result.ai_analyses[0].model_used}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                )}
+                      {expandedAnalysis === result.id && (
+                        <div className="bg-muted/50 p-4 rounded-lg">
+                          <p className="text-sm whitespace-pre-wrap">
+                            {result.ai_analyses[0].analysis_text}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-4">
+                            Modelo: {result.ai_analyses[0].model_used}
+                          </p>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="bg-muted/30 p-4 rounded-lg">
+                      <p className="text-sm text-muted-foreground mb-3">
+                        Nenhuma análise de IA foi gerada para este teste ainda.
+                      </p>
+                      <Button
+                        onClick={() => handleGenerateAnalysis(result.session_id, result.trait_scores, result.facet_scores, result.classifications)}
+                        disabled={generatingAnalysis === result.session_id}
+                        variant="outline"
+                        size="sm"
+                        className="gap-2"
+                      >
+                        {generatingAnalysis === result.session_id ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            Gerando Análise...
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="w-4 h-4" />
+                            Gerar Análise com IA
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  )}
+                </div>
               </Card>
             ))}
           </div>
