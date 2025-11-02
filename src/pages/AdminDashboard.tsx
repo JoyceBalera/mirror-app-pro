@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { LogOut, Users, CheckCircle, Clock } from "lucide-react";
+import { LogOut, Users, CheckCircle, Clock, Home } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import UserCard from "@/components/UserCard";
 
@@ -115,10 +115,16 @@ const AdminDashboard = () => {
       <header className="border-b bg-card">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <h1 className="text-2xl font-bold">Dashboard Admin</h1>
-          <Button onClick={handleLogout} variant="outline" size="sm">
-            <LogOut className="w-4 h-4 mr-2" />
-            Sair
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={() => navigate('/')} variant="outline" size="sm">
+              <Home className="w-4 h-4 mr-2" />
+              Voltar ao Teste
+            </Button>
+            <Button onClick={handleLogout} variant="outline" size="sm">
+              <LogOut className="w-4 h-4 mr-2" />
+              Sair
+            </Button>
+          </div>
         </div>
       </header>
 

@@ -100,7 +100,7 @@ export const Welcome = ({ onStart, onQuickTest }: WelcomeProps) => {
         </div>
 
         <p className="text-center text-sm text-muted-foreground">
-          ⏱️ Tempo estimado: 15-20 minutos
+          ⏱️ Tempo estimado: 45 minutos
         </p>
       </div>
     </div>

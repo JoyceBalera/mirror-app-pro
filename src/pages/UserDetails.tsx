@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, Download } from "lucide-react";
+import { ArrowLeft, Download, Home, LogOut } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -113,6 +113,11 @@ const UserDetails = () => {
     return labels[classification] || classification;
   };
 
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/auth");
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -124,12 +129,24 @@ const UserDetails = () => {
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b bg-card">
-        <div className="container mx-auto px-4 py-4 flex items-center gap-4">
-          <Button onClick={() => navigate('/admin/dashboard')} variant="ghost" size="sm">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Voltar
-          </Button>
-          <h1 className="text-2xl font-bold">{user?.full_name || 'Usuário'}</h1>
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Button onClick={() => navigate('/admin/dashboard')} variant="ghost" size="sm">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Voltar
+            </Button>
+            <h1 className="text-2xl font-bold">{user?.full_name || 'Usuário'}</h1>
+          </div>
+          <div className="flex gap-2">
+            <Button onClick={() => navigate('/')} variant="outline" size="sm">
+              <Home className="w-4 h-4 mr-2" />
+              Voltar ao Teste
+            </Button>
+            <Button onClick={handleLogout} variant="outline" size="sm">
+              <LogOut className="w-4 h-4 mr-2" />
+              Sair
+            </Button>
+          </div>
         </div>
       </header>
 
