@@ -5,45 +5,50 @@ export const facetNames: Record<string, string> = {
   N1: "Ansiedade",
   N2: "Raiva/Hostilidade",
   N3: "Depressão",
-  N4: "Autoconsciência",
+  N4: "Constrangimento",
   N5: "Impulsividade",
-  E1: "Cordialidade",
+  N6: "Vulnerabilidade ao Estresse",
+  E1: "Acolhimento",
   E2: "Gregariedade",
   E3: "Assertividade",
   E4: "Atividade",
-  E5: "Busca de Emoções",
+  E5: "Busca por Sensações",
+  E6: "Emoções Positivas",
   O1: "Fantasia",
   O2: "Estética",
   O3: "Sentimentos",
-  O4: "Ações",
-  O5: "Ideias",
+  O4: "Ideias",
+  O5: "Ações Variadas",
+  O6: "Valores",
   A1: "Confiança",
   A2: "Franqueza",
   A3: "Altruísmo",
   A4: "Complacência",
   A5: "Modéstia",
-  C1: "Competência",
+  A6: "Sensibilidade",
+  C1: "Comprometimento",
   C2: "Ordem",
   C3: "Senso de Dever",
   C4: "Esforço por Realizações",
   C5: "Autodisciplina",
+  C6: "Ponderação",
 };
 
 export const calculateScore = (answers: Answer[]) => {
-  const traitScores: Record<string, number[]> = {
-    neuroticism: [],
-    extraversion: [],
-    openness: [],
-    agreeableness: [],
-    conscientiousness: [],
+  const traitScores: Record<string, number> = {
+    neuroticism: 0,
+    extraversion: 0,
+    openness: 0,
+    agreeableness: 0,
+    conscientiousness: 0,
   };
 
-  const facetScores: Record<string, Record<string, number[]>> = {
-    neuroticism: { N1: [], N2: [], N3: [], N4: [], N5: [] },
-    extraversion: { E1: [], E2: [], E3: [], E4: [], E5: [] },
-    openness: { O1: [], O2: [], O3: [], O4: [], O5: [] },
-    agreeableness: { A1: [], A2: [], A3: [], A4: [], A5: [] },
-    conscientiousness: { C1: [], C2: [], C3: [], C4: [], C5: [] },
+  const facetScores: Record<string, Record<string, number>> = {
+    neuroticism: { N1: 0, N2: 0, N3: 0, N4: 0, N5: 0, N6: 0 },
+    extraversion: { E1: 0, E2: 0, E3: 0, E4: 0, E5: 0, E6: 0 },
+    openness: { O1: 0, O2: 0, O3: 0, O4: 0, O5: 0, O6: 0 },
+    agreeableness: { A1: 0, A2: 0, A3: 0, A4: 0, A5: 0, A6: 0 },
+    conscientiousness: { C1: 0, C2: 0, C3: 0, C4: 0, C5: 0, C6: 0 },
   };
 
   answers.forEach((answer) => {
@@ -55,49 +60,26 @@ export const calculateScore = (answers: Answer[]) => {
       score = 6 - score; // Reverse score
     }
 
-    traitScores[question.trait].push(score);
-    facetScores[question.trait][question.facet].push(score);
-  });
-
-  const averageScores: Record<string, number> = {};
-  Object.entries(traitScores).forEach(([trait, scores]) => {
-    const sum = scores.reduce((a, b) => a + b, 0);
-    averageScores[trait] = scores.length > 0 ? sum / scores.length : 0;
-  });
-
-  const averageFacetScores: Record<string, Record<string, number>> = {
-    neuroticism: {},
-    extraversion: {},
-    openness: {},
-    agreeableness: {},
-    conscientiousness: {},
-  };
-
-  Object.entries(facetScores).forEach(([trait, facets]) => {
-    Object.entries(facets).forEach(([facet, scores]) => {
-      const sum = scores.reduce((a, b) => a + b, 0);
-      averageFacetScores[trait][facet] = scores.length > 0 ? sum / scores.length : 0;
-    });
+    traitScores[question.trait] += score;
+    facetScores[question.trait][question.facet] += score;
   });
 
   return {
-    scores: averageScores,
-    facetScores: averageFacetScores,
+    scores: traitScores,
+    facetScores: facetScores,
   };
 };
 
 export const getTraitClassification = (score: number): string => {
-  if (score < 2) return "Muito Baixo";
-  if (score < 2.5) return "Baixo";
-  if (score < 3.5) return "Médio";
-  if (score < 4) return "Alto";
-  return "Muito Alto";
+  if (score >= 24 && score <= 47) return "Baixa";
+  if (score >= 48 && score <= 83) return "Média";
+  if (score >= 84 && score <= 120) return "Alta";
+  return "Indefinido";
 };
 
 export const getFacetClassification = (score: number): string => {
-  if (score < 2) return "Muito Baixo";
-  if (score < 2.5) return "Baixo";
-  if (score < 3.5) return "Médio";
-  if (score < 4) return "Alto";
-  return "Muito Alto";
+  if (score >= 4 && score <= 9) return "Baixa";
+  if (score >= 10 && score <= 15) return "Média";
+  if (score >= 16 && score <= 20) return "Alta";
+  return "Indefinido";
 };

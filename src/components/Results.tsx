@@ -21,11 +21,11 @@ export const Results = ({ traitScores, onRestart, sessionId }: ResultsProps) => 
   const { toast } = useToast();
 
   const getScoreColor = (score: number) => {
-    if (score < 2) return "bg-red-500";
-    if (score < 2.5) return "bg-orange-500";
-    if (score < 3.5) return "bg-yellow-500";
-    if (score < 4) return "bg-lime-500";
-    return "bg-green-500";
+    // Para facetas (4-20)
+    if (score >= 4 && score <= 9) return "bg-red-500";
+    if (score >= 10 && score <= 15) return "bg-yellow-500";
+    if (score >= 16 && score <= 20) return "bg-green-500";
+    return "bg-gray-500";
   };
 
   const handleGenerateAnalysis = async () => {
@@ -114,7 +114,7 @@ export const Results = ({ traitScores, onRestart, sessionId }: ResultsProps) => 
 
       doc.setFontSize(12);
       doc.setFont("helvetica", "bold");
-      doc.text(`${trait.name}: ${trait.score.toFixed(2)}`, 14, yPos);
+      doc.text(`${trait.name}: ${trait.score}`, 14, yPos);
       
       doc.setFontSize(10);
       doc.setFont("helvetica", "normal");
@@ -125,7 +125,7 @@ export const Results = ({ traitScores, onRestart, sessionId }: ResultsProps) => 
       // Tabela de facetas
       const facetsData = trait.facets.map((facet) => [
         facet.name,
-        facet.score.toFixed(2),
+        facet.score.toString(),
         facet.classification,
       ]);
 
@@ -212,7 +212,7 @@ export const Results = ({ traitScores, onRestart, sessionId }: ResultsProps) => 
                   </h2>
                   <div className="text-right">
                     <div className="text-2xl font-bold">
-                      {trait.score.toFixed(2)}
+                      {trait.score}
                     </div>
                     <div className="text-sm text-muted-foreground">
                       {trait.classification}
@@ -220,12 +220,12 @@ export const Results = ({ traitScores, onRestart, sessionId }: ResultsProps) => 
                   </div>
                 </div>
                 <Progress
-                  value={(trait.score / 5) * 100}
+                  value={(trait.score / 120) * 100}
                   className="h-3"
                 />
               </div>
 
-              <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-3 mt-6">
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3 mt-6">
                 {trait.facets.map((facet, facetIndex) => (
                   <div
                     key={facetIndex}
@@ -241,7 +241,7 @@ export const Results = ({ traitScores, onRestart, sessionId }: ResultsProps) => 
                         )}`}
                       />
                       <span className="text-xs text-muted-foreground">
-                        {facet.score.toFixed(2)} - {facet.classification}
+                        {facet.score} - {facet.classification}
                       </span>
                     </div>
                   </div>

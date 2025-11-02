@@ -1,65 +1,190 @@
 import { Question, TraitInfo } from "@/types/test";
 
 export const questions: Question[] = [
-  // Neuroticismo (N)
-  { id: "N1_1", text: "Fico estressado facilmente", trait: "neuroticism", facet: "N1", keyed: "plus" },
-  { id: "N1_2", text: "Sou relaxado na maior parte do tempo", trait: "neuroticism", facet: "N1", keyed: "minus" },
-  { id: "N2_1", text: "Fico irritado facilmente", trait: "neuroticism", facet: "N2", keyed: "plus" },
-  { id: "N2_2", text: "Raramente fico chateado", trait: "neuroticism", facet: "N2", keyed: "minus" },
-  { id: "N3_1", text: "Muitas vezes me sinto triste", trait: "neuroticism", facet: "N3", keyed: "plus" },
-  { id: "N3_2", text: "Estou sempre alegre", trait: "neuroticism", facet: "N3", keyed: "minus" },
-  { id: "N4_1", text: "Sinto-me desconfortável comigo mesmo", trait: "neuroticism", facet: "N4", keyed: "plus" },
-  { id: "N4_2", text: "Estou confortável comigo mesmo", trait: "neuroticism", facet: "N4", keyed: "minus" },
-  { id: "N5_1", text: "Entro em pânico facilmente", trait: "neuroticism", facet: "N5", keyed: "plus" },
-  { id: "N5_2", text: "Não me preocupo muito", trait: "neuroticism", facet: "N5", keyed: "minus" },
+  // ABERTURA (O) - 24 questions
+  // Faceta O1: Fantasia (4 questões)
+  { id: "O1_1", text: "Eu frequentemente imagino novas possibilidades para minha vida.", trait: "openness", facet: "O1", keyed: "plus" },
+  { id: "O1_2", text: "Tenho uma imaginação ativa.", trait: "openness", facet: "O1", keyed: "plus" },
+  { id: "O1_3", text: "Raramente me perco em meus pensamentos.", trait: "openness", facet: "O1", keyed: "minus" },
+  { id: "O1_4", text: "Sonho acordada frequentemente.", trait: "openness", facet: "O1", keyed: "plus" },
+  
+  // Faceta O2: Estética (4 questões)
+  { id: "O2_1", text: "Eu gosto de apreciar arte.", trait: "openness", facet: "O2", keyed: "plus" },
+  { id: "O2_2", text: "Música é uma parte importante da minha vida.", trait: "openness", facet: "O2", keyed: "plus" },
+  { id: "O2_3", text: "Desfruto de atividades culturais.", trait: "openness", facet: "O2", keyed: "plus" },
+  { id: "O2_4", text: "Não tenho interesse em aprender sobre diferentes formas de arte.", trait: "openness", facet: "O2", keyed: "minus" },
+  
+  // Faceta O3: Sentimentos (4 questões)
+  { id: "O3_1", text: "Aprecio a beleza em minha vida cotidiana.", trait: "openness", facet: "O3", keyed: "plus" },
+  { id: "O3_2", text: "A natureza me inspira.", trait: "openness", facet: "O3", keyed: "plus" },
+  { id: "O3_3", text: "Presto atenção aos detalhes estéticos.", trait: "openness", facet: "O3", keyed: "plus" },
+  { id: "O3_4", text: "Não noto a beleza ao meu redor.", trait: "openness", facet: "O3", keyed: "minus" },
+  
+  // Faceta O4: Ideias (4 questões)
+  { id: "O4_1", text: "Muitas vezes penso em soluções criativas para problemas.", trait: "openness", facet: "O4", keyed: "plus" },
+  { id: "O4_2", text: "Tenho muitas ideias criativas.", trait: "openness", facet: "O4", keyed: "plus" },
+  { id: "O4_3", text: "Não gosto de fantasiar sobre diferentes vidas que poderia viver.", trait: "openness", facet: "O4", keyed: "minus" },
+  { id: "O4_4", text: "Gosto de ler livros desafiadores.", trait: "openness", facet: "O4", keyed: "plus" },
+  
+  // Faceta O5: Ações Variadas (4 questões)
+  { id: "O5_1", text: "Gosto de mudar minha rotina.", trait: "openness", facet: "O5", keyed: "plus" },
+  { id: "O5_2", text: "Tenho curiosidade sobre diferentes assuntos.", trait: "openness", facet: "O5", keyed: "plus" },
+  { id: "O5_3", text: "Não gosto de aprender novas coisas.", trait: "openness", facet: "O5", keyed: "minus" },
+  { id: "O5_4", text: "Gosto de pensar sobre conceitos abstratos.", trait: "openness", facet: "O5", keyed: "plus" },
+  
+  // Faceta O6: Valores (4 questões)
+  { id: "O6_1", text: "Costumo questionar velhas verdades da sociedade.", trait: "openness", facet: "O6", keyed: "plus" },
+  { id: "O6_2", text: "Sinto-me confortável mudando de ideia.", trait: "openness", facet: "O6", keyed: "plus" },
+  { id: "O6_3", text: "Acredito que é desafiando o status quo que evoluímos como pessoas e sociedade.", trait: "openness", facet: "O6", keyed: "plus" },
+  { id: "O6_4", text: "Sou resistente à novas ideias e abordagens.", trait: "openness", facet: "O6", keyed: "minus" },
 
-  // Extroversão (E)
-  { id: "E1_1", text: "Faço amigos facilmente", trait: "extraversion", facet: "E1", keyed: "plus" },
-  { id: "E1_2", text: "Mantenho-me em segundo plano", trait: "extraversion", facet: "E1", keyed: "minus" },
-  { id: "E2_1", text: "Gosto de conversar com muitas pessoas", trait: "extraversion", facet: "E2", keyed: "plus" },
-  { id: "E2_2", text: "Prefiro ficar sozinho", trait: "extraversion", facet: "E2", keyed: "minus" },
-  { id: "E3_1", text: "Domino a conversa", trait: "extraversion", facet: "E3", keyed: "plus" },
-  { id: "E3_2", text: "Não gosto de chamar atenção para mim", trait: "extraversion", facet: "E3", keyed: "minus" },
-  { id: "E4_1", text: "Estou sempre ocupado", trait: "extraversion", facet: "E4", keyed: "plus" },
-  { id: "E4_2", text: "Gosto de relaxar", trait: "extraversion", facet: "E4", keyed: "minus" },
-  { id: "E5_1", text: "Busco aventura", trait: "extraversion", facet: "E5", keyed: "plus" },
-  { id: "E5_2", text: "Evito multidões", trait: "extraversion", facet: "E5", keyed: "minus" },
+  // CONSCIENCIOSIDADE (C) - 24 questions
+  // Faceta C1: Comprometimento (4 questões)
+  { id: "C1_1", text: "Sinto-me capaz de lidar com a maioria dos problemas que surgem na vida.", trait: "conscientiousness", facet: "C1", keyed: "plus" },
+  { id: "C1_2", text: "Eu me considero uma pessoa eficiente.", trait: "conscientiousness", facet: "C1", keyed: "plus" },
+  { id: "C1_3", text: "Acredito que sou bastante competente.", trait: "conscientiousness", facet: "C1", keyed: "plus" },
+  { id: "C1_4", text: "Não confio nas minhas habilidades.", trait: "conscientiousness", facet: "C1", keyed: "minus" },
+  
+  // Faceta C2: Ordem (4 questões)
+  { id: "C2_1", text: "Eu gosto de manter tudo em ordem.", trait: "conscientiousness", facet: "C2", keyed: "plus" },
+  { id: "C2_2", text: "Gosto de planejar minhas atividades.", trait: "conscientiousness", facet: "C2", keyed: "plus" },
+  { id: "C2_3", text: "Organizo bem meu espaço de trabalho.", trait: "conscientiousness", facet: "C2", keyed: "plus" },
+  { id: "C2_4", text: "Mantenho minhas coisas desorganizadas.", trait: "conscientiousness", facet: "C2", keyed: "minus" },
+  
+  // Faceta C3: Senso de Dever (4 questões)
+  { id: "C3_1", text: "Eu sempre tento fazer o que é certo.", trait: "conscientiousness", facet: "C3", keyed: "plus" },
+  { id: "C3_2", text: "Tenho um forte senso de dever.", trait: "conscientiousness", facet: "C3", keyed: "plus" },
+  { id: "C3_3", text: "Levo minhas obrigações a sério.", trait: "conscientiousness", facet: "C3", keyed: "plus" },
+  { id: "C3_4", text: "Não me esforço para cumprir minhas responsabilidades.", trait: "conscientiousness", facet: "C3", keyed: "minus" },
+  
+  // Faceta C4: Esforço por Realizações (4 questões)
+  { id: "C4_1", text: "Sou motivada a alcançar meus objetivos.", trait: "conscientiousness", facet: "C4", keyed: "plus" },
+  { id: "C4_2", text: "Trabalho duro para alcançar o sucesso.", trait: "conscientiousness", facet: "C4", keyed: "plus" },
+  { id: "C4_3", text: "Tenho grandes ambições.", trait: "conscientiousness", facet: "C4", keyed: "plus" },
+  { id: "C4_4", text: "Não gosto de me desafiar.", trait: "conscientiousness", facet: "C4", keyed: "minus" },
+  
+  // Faceta C5: Autodisciplina (4 questões)
+  { id: "C5_1", text: "Sou capaz de me controlar quando necessário.", trait: "conscientiousness", facet: "C5", keyed: "plus" },
+  { id: "C5_2", text: "Eu mantenho o foco no que preciso fazer.", trait: "conscientiousness", facet: "C5", keyed: "plus" },
+  { id: "C5_3", text: "Posso resistir a tentações.", trait: "conscientiousness", facet: "C5", keyed: "plus" },
+  { id: "C5_4", text: "Não sigo com meus planos quando é difícil.", trait: "conscientiousness", facet: "C5", keyed: "minus" },
+  
+  // Faceta C6: Ponderação (4 questões)
+  { id: "C6_1", text: "Penso nas consequências antes de agir.", trait: "conscientiousness", facet: "C6", keyed: "plus" },
+  { id: "C6_2", text: "Sou cuidadosa ao tomar decisões.", trait: "conscientiousness", facet: "C6", keyed: "plus" },
+  { id: "C6_3", text: "Evito correr riscos desnecessários.", trait: "conscientiousness", facet: "C6", keyed: "plus" },
+  { id: "C6_4", text: "Agir sem pensar nas consequências é comum para mim.", trait: "conscientiousness", facet: "C6", keyed: "minus" },
 
-  // Abertura (O)
-  { id: "O1_1", text: "Acredito na importância da arte", trait: "openness", facet: "O1", keyed: "plus" },
-  { id: "O1_2", text: "Não gosto de arte", trait: "openness", facet: "O1", keyed: "minus" },
-  { id: "O2_1", text: "Tenho uma imaginação vívida", trait: "openness", facet: "O2", keyed: "plus" },
-  { id: "O2_2", text: "Não tenho uma boa imaginação", trait: "openness", facet: "O2", keyed: "minus" },
-  { id: "O3_1", text: "Adoro refletir sobre as coisas", trait: "openness", facet: "O3", keyed: "plus" },
-  { id: "O3_2", text: "Não gosto de discussões abstratas", trait: "openness", facet: "O3", keyed: "minus" },
-  { id: "O4_1", text: "Gosto de variedade", trait: "openness", facet: "O4", keyed: "plus" },
-  { id: "O4_2", text: "Prefiro rotina", trait: "openness", facet: "O4", keyed: "minus" },
-  { id: "O5_1", text: "Gosto de experimentar coisas novas", trait: "openness", facet: "O5", keyed: "plus" },
-  { id: "O5_2", text: "Não gosto de mudanças", trait: "openness", facet: "O5", keyed: "minus" },
+  // EXTROVERSÃO (E) - 24 questions
+  // Faceta E1: Acolhimento (4 questões)
+  { id: "E1_1", text: "Gosto de estar rodeada de pessoas.", trait: "extraversion", facet: "E1", keyed: "plus" },
+  { id: "E1_2", text: "Facilmente faço amigos.", trait: "extraversion", facet: "E1", keyed: "plus" },
+  { id: "E1_3", text: "Gosto de socializar.", trait: "extraversion", facet: "E1", keyed: "plus" },
+  { id: "E1_4", text: "Sinto-me desconfortável em grandes grupos.", trait: "extraversion", facet: "E1", keyed: "minus" },
+  
+  // Faceta E2: Gregariedade (4 questões)
+  { id: "E2_1", text: "Eu gosto de estar no centro das atenções.", trait: "extraversion", facet: "E2", keyed: "plus" },
+  { id: "E2_2", text: "Gosto de participar de atividades sociais.", trait: "extraversion", facet: "E2", keyed: "plus" },
+  { id: "E2_3", text: "Prefiro estar com outras pessoas do que sozinha.", trait: "extraversion", facet: "E2", keyed: "plus" },
+  { id: "E2_4", text: "Não gosto de conhecer novas pessoas.", trait: "extraversion", facet: "E2", keyed: "minus" },
+  
+  // Faceta E3: Assertividade (4 questões)
+  { id: "E3_1", text: "Eu tomo a iniciativa em situações sociais.", trait: "extraversion", facet: "E3", keyed: "plus" },
+  { id: "E3_2", text: "Não tenho medo de falar em público.", trait: "extraversion", facet: "E3", keyed: "plus" },
+  { id: "E3_3", text: "Sou assertiva em expressar minhas opiniões.", trait: "extraversion", facet: "E3", keyed: "plus" },
+  { id: "E3_4", text: "Evito liderar grupos.", trait: "extraversion", facet: "E3", keyed: "minus" },
+  
+  // Faceta E4: Atividade (4 questões)
+  { id: "E4_1", text: "Eu sou uma pessoa enérgica.", trait: "extraversion", facet: "E4", keyed: "plus" },
+  { id: "E4_2", text: "Gosto de estar ocupada.", trait: "extraversion", facet: "E4", keyed: "plus" },
+  { id: "E4_3", text: "Tenho um ritmo de vida acelerado.", trait: "extraversion", facet: "E4", keyed: "plus" },
+  { id: "E4_4", text: "Prefiro um ritmo de vida mais lento.", trait: "extraversion", facet: "E4", keyed: "minus" },
+  
+  // Faceta E5: Busca por Sensações (4 questões)
+  { id: "E5_1", text: "Gosto de experimentar coisas novas.", trait: "extraversion", facet: "E5", keyed: "plus" },
+  { id: "E5_2", text: "Procuro aventuras emocionantes.", trait: "extraversion", facet: "E5", keyed: "plus" },
+  { id: "E5_3", text: "Desfruto de atividades estimulantes.", trait: "extraversion", facet: "E5", keyed: "plus" },
+  { id: "E5_4", text: "Não gosto de desafios.", trait: "extraversion", facet: "E5", keyed: "minus" },
+  
+  // Faceta E6: Emoções Positivas (4 questões)
+  { id: "E6_1", text: "Sinto-me frequentemente feliz e entusiasmada.", trait: "extraversion", facet: "E6", keyed: "plus" },
+  { id: "E6_2", text: "Tenho uma perspectiva positiva da vida.", trait: "extraversion", facet: "E6", keyed: "plus" },
+  { id: "E6_3", text: "Gosto de compartilhar minha alegria com os outros.", trait: "extraversion", facet: "E6", keyed: "plus" },
+  { id: "E6_4", text: "Sou uma pessoa pessimista.", trait: "extraversion", facet: "E6", keyed: "minus" },
 
-  // Amabilidade (A)
-  { id: "A1_1", text: "Confio nos outros", trait: "agreeableness", facet: "A1", keyed: "plus" },
-  { id: "A1_2", text: "Suspeito de intenções ocultas", trait: "agreeableness", facet: "A1", keyed: "minus" },
-  { id: "A2_1", text: "Acredito que os outros têm boas intenções", trait: "agreeableness", facet: "A2", keyed: "plus" },
-  { id: "A2_2", text: "Sou cético sobre as intenções dos outros", trait: "agreeableness", facet: "A2", keyed: "minus" },
-  { id: "A3_1", text: "Respeito os outros", trait: "agreeableness", facet: "A3", keyed: "plus" },
-  { id: "A3_2", text: "Penso que sou melhor que os outros", trait: "agreeableness", facet: "A3", keyed: "minus" },
-  { id: "A4_1", text: "Aceito as pessoas como elas são", trait: "agreeableness", facet: "A4", keyed: "plus" },
-  { id: "A4_2", text: "Tento mudar as pessoas", trait: "agreeableness", facet: "A4", keyed: "minus" },
-  { id: "A5_1", text: "Faço as pessoas se sentirem confortáveis", trait: "agreeableness", facet: "A5", keyed: "plus" },
-  { id: "A5_2", text: "Posso ser frio e distante", trait: "agreeableness", facet: "A5", keyed: "minus" },
+  // AMABILIDADE (A) - 24 questions
+  // Faceta A1: Confiança (4 questões)
+  { id: "A1_1", text: "Eu acredito que a maioria das pessoas é confiável.", trait: "agreeableness", facet: "A1", keyed: "plus" },
+  { id: "A1_2", text: "Sinto que posso confiar nas pessoas.", trait: "agreeableness", facet: "A1", keyed: "plus" },
+  { id: "A1_3", text: "Acho que a maioria das pessoas é honesta.", trait: "agreeableness", facet: "A1", keyed: "plus" },
+  { id: "A1_4", text: "Desconfio das intenções dos outros.", trait: "agreeableness", facet: "A1", keyed: "minus" },
+  
+  // Faceta A2: Franqueza (4 questões)
+  { id: "A2_1", text: "Eu sou direta em minhas opiniões.", trait: "agreeableness", facet: "A2", keyed: "plus" },
+  { id: "A2_2", text: "Falo o que penso.", trait: "agreeableness", facet: "A2", keyed: "plus" },
+  { id: "A2_3", text: "Prefiro ser honesta do que diplomática.", trait: "agreeableness", facet: "A2", keyed: "plus" },
+  { id: "A2_4", text: "Eu escondo meus sentimentos.", trait: "agreeableness", facet: "A2", keyed: "minus" },
+  
+  // Faceta A3: Altruísmo (4 questões)
+  { id: "A3_1", text: "Gosto de ajudar os outros.", trait: "agreeableness", facet: "A3", keyed: "plus" },
+  { id: "A3_2", text: "Tenho prazer em ser útil.", trait: "agreeableness", facet: "A3", keyed: "plus" },
+  { id: "A3_3", text: "Sinto-me bem ao fazer algo por alguém.", trait: "agreeableness", facet: "A3", keyed: "plus" },
+  { id: "A3_4", text: "Não me importo em ajudar os outros.", trait: "agreeableness", facet: "A3", keyed: "minus" },
+  
+  // Faceta A4: Complacência (4 questões)
+  { id: "A4_1", text: "Eu tento evitar conflitos.", trait: "agreeableness", facet: "A4", keyed: "plus" },
+  { id: "A4_2", text: "Eu sou uma pessoa pacífica.", trait: "agreeableness", facet: "A4", keyed: "plus" },
+  { id: "A4_3", text: "Prefiro ceder a brigar.", trait: "agreeableness", facet: "A4", keyed: "plus" },
+  { id: "A4_4", text: "Gosto de criar conflitos.", trait: "agreeableness", facet: "A4", keyed: "minus" },
+  
+  // Faceta A5: Modéstia (4 questões)
+  { id: "A5_1", text: "Eu não gosto de me gabar.", trait: "agreeableness", facet: "A5", keyed: "plus" },
+  { id: "A5_2", text: "Prefiro manter um perfil baixo.", trait: "agreeableness", facet: "A5", keyed: "plus" },
+  { id: "A5_3", text: "Não sou arrogante.", trait: "agreeableness", facet: "A5", keyed: "plus" },
+  { id: "A5_4", text: "Eu me gabo frequentemente.", trait: "agreeableness", facet: "A5", keyed: "minus" },
+  
+  // Faceta A6: Sensibilidade (4 questões)
+  { id: "A6_1", text: "Eu me importo com os sentimentos dos outros.", trait: "agreeableness", facet: "A6", keyed: "plus" },
+  { id: "A6_2", text: "Sou sensível às necessidades dos outros.", trait: "agreeableness", facet: "A6", keyed: "plus" },
+  { id: "A6_3", text: "Tendo a ser empática.", trait: "agreeableness", facet: "A6", keyed: "plus" },
+  { id: "A6_4", text: "Não me preocupo com os sentimentos dos outros.", trait: "agreeableness", facet: "A6", keyed: "minus" },
 
-  // Conscienciosidade (C)
-  { id: "C1_1", text: "Sou sempre preparado", trait: "conscientiousness", facet: "C1", keyed: "plus" },
-  { id: "C1_2", text: "Deixo minhas coisas por aí", trait: "conscientiousness", facet: "C1", keyed: "minus" },
-  { id: "C2_1", text: "Presto atenção aos detalhes", trait: "conscientiousness", facet: "C2", keyed: "plus" },
-  { id: "C2_2", text: "Faço uma bagunça das coisas", trait: "conscientiousness", facet: "C2", keyed: "minus" },
-  { id: "C3_1", text: "Completo tarefas com sucesso", trait: "conscientiousness", facet: "C3", keyed: "plus" },
-  { id: "C3_2", text: "Frequentemente esqueço de devolver as coisas", trait: "conscientiousness", facet: "C3", keyed: "minus" },
-  { id: "C4_1", text: "Faço planos e os sigo", trait: "conscientiousness", facet: "C4", keyed: "plus" },
-  { id: "C4_2", text: "Não consigo me organizar", trait: "conscientiousness", facet: "C4", keyed: "minus" },
-  { id: "C5_1", text: "Trabalho duro", trait: "conscientiousness", facet: "C5", keyed: "plus" },
-  { id: "C5_2", text: "Encontro dificuldade em começar tarefas", trait: "conscientiousness", facet: "C5", keyed: "minus" },
+  // NEUROTICISMO (N) - 24 questions
+  // Faceta N1: Ansiedade (4 questões)
+  { id: "N1_1", text: "Eu me preocupo facilmente.", trait: "neuroticism", facet: "N1", keyed: "plus" },
+  { id: "N1_2", text: "Fico nervosa com frequência.", trait: "neuroticism", facet: "N1", keyed: "plus" },
+  { id: "N1_3", text: "Sou uma pessoa ansiosa.", trait: "neuroticism", facet: "N1", keyed: "plus" },
+  { id: "N1_4", text: "Tenho facilidade em relaxar.", trait: "neuroticism", facet: "N1", keyed: "minus" },
+  
+  // Faceta N2: Raiva/Hostilidade (4 questões)
+  { id: "N2_1", text: "Fico irritada facilmente.", trait: "neuroticism", facet: "N2", keyed: "plus" },
+  { id: "N2_2", text: "Tenho um pavio curto.", trait: "neuroticism", facet: "N2", keyed: "plus" },
+  { id: "N2_3", text: "Sinto raiva frequentemente.", trait: "neuroticism", facet: "N2", keyed: "plus" },
+  { id: "N2_4", text: "Raramente fico frustrada.", trait: "neuroticism", facet: "N2", keyed: "minus" },
+  
+  // Faceta N3: Depressão (4 questões)
+  { id: "N3_1", text: "Fico triste facilmente.", trait: "neuroticism", facet: "N3", keyed: "plus" },
+  { id: "N3_2", text: "Tenho tendência à melancolia.", trait: "neuroticism", facet: "N3", keyed: "plus" },
+  { id: "N3_3", text: "Sinto-me frequentemente deprimida.", trait: "neuroticism", facet: "N3", keyed: "plus" },
+  { id: "N3_4", text: "Raramente fico desanimada.", trait: "neuroticism", facet: "N3", keyed: "minus" },
+  
+  // Faceta N4: Constrangimento (4 questões)
+  { id: "N4_1", text: "Eu me preocupo com o que os outros pensam de mim.", trait: "neuroticism", facet: "N4", keyed: "plus" },
+  { id: "N4_2", text: "Sou sensível às críticas.", trait: "neuroticism", facet: "N4", keyed: "plus" },
+  { id: "N4_3", text: "Fico autoconsciente em situações sociais.", trait: "neuroticism", facet: "N4", keyed: "plus" },
+  { id: "N4_4", text: "Não me importo com a minha imagem.", trait: "neuroticism", facet: "N4", keyed: "minus" },
+  
+  // Faceta N5: Impulsividade (4 questões)
+  { id: "N5_1", text: "Eu ajo sem pensar.", trait: "neuroticism", facet: "N5", keyed: "plus" },
+  { id: "N5_2", text: "Tenho dificuldade em controlar meus impulsos.", trait: "neuroticism", facet: "N5", keyed: "plus" },
+  { id: "N5_3", text: "Fico impaciente facilmente.", trait: "neuroticism", facet: "N5", keyed: "plus" },
+  { id: "N5_4", text: "Costumo pensar antes de agir.", trait: "neuroticism", facet: "N5", keyed: "minus" },
+  
+  // Faceta N6: Vulnerabilidade ao Estresse (4 questões)
+  { id: "N6_1", text: "Eu me sinto facilmente oprimida pelo estresse.", trait: "neuroticism", facet: "N6", keyed: "plus" },
+  { id: "N6_2", text: "Tenho dificuldade em lidar com a pressão.", trait: "neuroticism", facet: "N6", keyed: "plus" },
+  { id: "N6_3", text: "Sinto-me vulnerável em situações difíceis a ponto de querer fugir ou pensar em desistir delas.", trait: "neuroticism", facet: "N6", keyed: "plus" },
+  { id: "N6_4", text: "Eu lido bem com situações difíceis já que elas fazem parte da vida e me abalam pouco.", trait: "neuroticism", facet: "N6", keyed: "minus" },
 ];
 
 export const traitInfo: Record<string, TraitInfo> = {
@@ -67,30 +192,30 @@ export const traitInfo: Record<string, TraitInfo> = {
     name: "Neuroticismo",
     description: "Tendência a experimentar emoções negativas como ansiedade, raiva e depressão",
     color: "text-red-600",
-    facets: ["Ansiedade", "Raiva/Hostilidade", "Depressão", "Autoconsciência", "Impulsividade"],
+    facets: ["Ansiedade", "Raiva/Hostilidade", "Depressão", "Constrangimento", "Impulsividade", "Vulnerabilidade ao Estresse"],
   },
   extraversion: {
     name: "Extroversão",
     description: "Nível de sociabilidade, assertividade e busca de estimulação externa",
     color: "text-purple-600",
-    facets: ["Cordialidade", "Gregariedade", "Assertividade", "Atividade", "Busca de Emoções"],
+    facets: ["Acolhimento", "Gregariedade", "Assertividade", "Atividade", "Busca por Sensações", "Emoções Positivas"],
   },
   openness: {
     name: "Abertura",
     description: "Apreciação por arte, emoção, aventura e ideias não convencionais",
     color: "text-blue-600",
-    facets: ["Fantasia", "Estética", "Sentimentos", "Ações", "Ideias"],
+    facets: ["Fantasia", "Estética", "Sentimentos", "Ideias", "Ações Variadas", "Valores"],
   },
   agreeableness: {
     name: "Amabilidade",
     description: "Tendência a ser compassivo e cooperativo com os outros",
     color: "text-amber-600",
-    facets: ["Confiança", "Franqueza", "Altruísmo", "Complacência", "Modéstia"],
+    facets: ["Confiança", "Franqueza", "Altruísmo", "Complacência", "Modéstia", "Sensibilidade"],
   },
   conscientiousness: {
     name: "Conscienciosidade",
     description: "Tendência a ser organizado, responsável e orientado para objetivos",
     color: "text-green-600",
-    facets: ["Competência", "Ordem", "Senso de Dever", "Esforço por Realizações", "Autodisciplina"],
+    facets: ["Comprometimento", "Ordem", "Senso de Dever", "Esforço por Realizações", "Autodisciplina", "Ponderação"],
   },
 };
