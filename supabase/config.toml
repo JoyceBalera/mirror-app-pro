@@ -1,1 +1,4 @@
 project_id = "vnahggcdfhctqozbtrxi"
+
+[functions.analyze-personality]
+verify_jwt = false
