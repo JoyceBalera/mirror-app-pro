@@ -155,14 +155,26 @@ export const Results = ({ traitScores, onRestart, sessionId, userName }: Results
         timeoutRef.current = null;
       }
     }
-  }, [traitScores, sessionId, toast]);
+  }, [traitScores, sessionId, toast, aiAnalysis, isGenerating]);
 
   // Gera análise automaticamente quando o componente montar
   useEffect(() => {
     console.log("useEffect executado, traitScores:", traitScores);
-    handleGenerateAnalysis();
+    console.log("hasGeneratedRef.current:", hasGeneratedRef.current);
+    
+    // Só executa se ainda não foi gerado
+    if (!hasGeneratedRef.current && !isGenerating) {
+      console.log("Iniciando geração automática...");
+      handleGenerateAnalysis();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Array vazio = executa apenas 1 vez quando o componente montar
+  }, []); // Mantém array vazio para executar apenas na montagem
+
+  // Log do estado atual no render
+  console.log("=== RENDER Results ===");
+  console.log("aiAnalysis:", aiAnalysis ? `${aiAnalysis.length} caracteres` : "null");
+  console.log("isGenerating:", isGenerating);
+  console.log("hasGeneratedRef.current:", hasGeneratedRef.current);
 
   const handleDownload = () => {
     // Se ainda está gerando, mostra diálogo de espera
