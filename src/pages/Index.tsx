@@ -80,12 +80,8 @@ const Index = () => {
     navigate("/auth");
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-muted-foreground">Carregando...</p>
-      </div>
-    );
+  if (loading || !user) {
+    return null;
   }
 
   const generateMockAnswers = (): Answer[] => {
