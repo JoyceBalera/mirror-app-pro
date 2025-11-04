@@ -15,6 +15,7 @@ const translateAuthError = (error: string): string => {
     "Invalid login credentials": "Email ou senha incorretos",
     "Email not confirmed": "Email não confirmado. Verifique sua caixa de entrada",
     "Password is too weak": "A senha é muito fraca. Use uma senha mais forte",
+    "Password is known to be weak": "Esta senha é muito comum e insegura. Use uma combinação única de letras, números e símbolos",
     "Signup disabled": "Cadastro desabilitado no momento",
     "Invalid email": "Email inválido",
   };
@@ -170,6 +171,14 @@ const Auth = () => {
                       {password.length >= 6 ? "✓" : "○"}
                     </span>
                     Mínimo de 6 caracteres
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="text-muted-foreground">○</span>
+                    Evite senhas comuns (ex: 123456, password)
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="text-muted-foreground">○</span>
+                    Use combinação de letras, números e símbolos
                   </li>
                 </ul>
               </div>
