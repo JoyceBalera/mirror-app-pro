@@ -8,6 +8,26 @@ import { Card } from "@/components/ui/card";
 import { Brain } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
+const translateAuthError = (error: string): string => {
+  const translations: { [key: string]: string } = {
+    "Password should be at least 6 characters": "A senha deve ter no mínimo 6 caracteres",
+    "User already registered": "Este email já está cadastrado",
+    "Invalid login credentials": "Email ou senha incorretos",
+    "Email not confirmed": "Email não confirmado. Verifique sua caixa de entrada",
+    "Password is too weak": "A senha é muito fraca. Use uma senha mais forte",
+    "Signup disabled": "Cadastro desabilitado no momento",
+    "Invalid email": "Email inválido",
+  };
+  
+  for (const [english, portuguese] of Object.entries(translations)) {
+    if (error.includes(english)) {
+      return portuguese;
+    }
+  }
+  
+  return error;
+};
+
 const Auth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -21,6 +41,16 @@ const Auth = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+
+    if (!isLogin && password.length < 6) {
+      toast({
+        title: "Senha inválida",
+        description: "A senha deve ter no mínimo 6 caracteres",
+        variant: "destructive",
+      });
+      setLoading(false);
+      return;
+    }
 
     try {
       if (isLogin) {
@@ -59,9 +89,11 @@ const Auth = () => {
         setIsLogin(true);
       }
     } catch (error: any) {
+      const translatedMessage = translateAuthError(error.message || "Algo deu errado");
+      
       toast({
         title: "Erro",
-        description: error.message || "Algo deu errado",
+        description: translatedMessage,
         variant: "destructive",
       });
     } finally {
@@ -127,6 +159,21 @@ const Auth = () => {
               required
               minLength={6}
             />
+            {!isLogin && (
+              <div className="bg-muted/50 p-3 rounded-md">
+                <p className="text-xs text-muted-foreground mb-2 font-medium">
+                  A senha deve conter:
+                </p>
+                <ul className="text-xs text-muted-foreground space-y-1">
+                  <li className="flex items-center gap-2">
+                    <span className={password.length >= 6 ? "text-green-500" : "text-muted-foreground"}>
+                      {password.length >= 6 ? "✓" : "○"}
+                    </span>
+                    Mínimo de 6 caracteres
+                  </li>
+                </ul>
+              </div>
+            )}
           </div>
 
           <Button
