@@ -34,14 +34,51 @@ const Index = () => {
   const [userName, setUserName] = useState<string>("");
 
   useEffect(() => {
+    let mounted = true;
+    let redirecting = false;
+
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
+      (_event, session) => {
+        if (!mounted || redirecting) return;
+        
         setUser(session?.user ?? null);
+        
         if (!session?.user) {
+          redirecting = true;
           navigate("/auth");
         } else {
-          // Fetch user's full name
+          // Defer database call to avoid deadlock
+          setTimeout(async () => {
+            if (!mounted) return;
+            
+            const { data: profile } = await supabase
+              .from("profiles")
+              .select("full_name")
+              .eq("id", session.user.id)
+              .single();
+            
+            setUserName(profile?.full_name || session.user.email || "");
+          }, 0);
+        }
+        setLoading(false);
+      }
+    );
+
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!mounted || redirecting) return;
+      
+      setUser(session?.user ?? null);
+      
+      if (!session?.user) {
+        redirecting = true;
+        navigate("/auth");
+      } else {
+        // Defer database call to avoid deadlock
+        setTimeout(async () => {
+          if (!mounted) return;
+          
           const { data: profile } = await supabase
             .from("profiles")
             .select("full_name")
@@ -49,30 +86,15 @@ const Index = () => {
             .single();
           
           setUserName(profile?.full_name || session.user.email || "");
-        }
-        setLoading(false);
-      }
-    );
-
-    // Check for existing session
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      if (!session?.user) {
-        navigate("/auth");
-      } else {
-        // Fetch user's full name
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("full_name")
-          .eq("id", session.user.id)
-          .single();
-        
-        setUserName(profile?.full_name || session.user.email || "");
+        }, 0);
       }
       setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, [navigate]);
 
   const handleLogout = async () => {
