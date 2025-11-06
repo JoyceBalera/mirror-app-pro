@@ -1,13 +1,10 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, Clock, Pencil, KeyRound } from "lucide-react";
+import { CheckCircle2, Clock, Pencil } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
 
 interface UserCardProps {
   user: {
@@ -26,40 +23,9 @@ interface UserCardProps {
 
 const UserCard = ({ user, onEdit }: UserCardProps) => {
   const navigate = useNavigate();
-  const { toast } = useToast();
-  const [loading, setLoading] = useState(false);
   const hasTested = user.test_sessions && user.test_sessions.length > 0 && 
     user.test_sessions.some(session => session.completed_at);
   const lastTest = user.test_sessions?.find(session => session.completed_at);
-  const DEFAULT_PASSWORD = "Temp@2024";
-
-  const handleResetPassword = async () => {
-    try {
-      setLoading(true);
-      
-      const { error } = await supabase.functions.invoke('edit-user', {
-        body: {
-          userId: user.id,
-          password: DEFAULT_PASSWORD,
-        },
-      });
-
-      if (error) throw error;
-
-      toast({
-        title: "Senha resetada",
-        description: `Nova senha de ${user.full_name || user.email}: ${DEFAULT_PASSWORD}`,
-      });
-    } catch (error: any) {
-      toast({
-        title: "Erro ao resetar senha",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <Card className="p-6 hover:shadow-lg transition-shadow">
@@ -100,16 +66,6 @@ const UserCard = ({ user, onEdit }: UserCardProps) => {
         </div>
 
         <div className="flex gap-2">
-          <Button
-            onClick={handleResetPassword}
-            variant="outline"
-            size="sm"
-            className="gap-2"
-            disabled={loading}
-          >
-            <KeyRound className="w-4 h-4" />
-            Reset
-          </Button>
           <Button
             onClick={onEdit}
             variant="outline"
