@@ -71,10 +71,10 @@ serve(async (req) => {
       throw updateError;
     }
 
-    // Update profile
+    // Update profile with email
     const { error: profileError } = await supabaseAdmin
       .from("profiles")
-      .update({ full_name: fullName })
+      .update({ full_name: fullName, email })
       .eq("id", userId);
 
     if (profileError) {

@@ -59,7 +59,7 @@ const AdminDashboard = () => {
 
       if (error) throw error;
 
-      // Fetch user roles and emails
+      // Fetch user roles
       const usersWithRoles = await Promise.all(
         (profiles || []).map(async (user) => {
           const { data: roleData } = await supabase
@@ -68,11 +68,8 @@ const AdminDashboard = () => {
             .eq("user_id", user.id)
             .single();
 
-          const { data: authData } = await supabase.auth.admin.getUserById(user.id);
-
           return {
             ...user,
-            email: authData?.user?.email,
             role: roleData?.role || "user",
           };
         })
