@@ -18,8 +18,8 @@ const CreateUserDialog = ({ onUserCreated }: CreateUserDialogProps) => {
   const [loading, setLoading] = useState(false);
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [role, setRole] = useState<"user" | "admin">("user");
+  const DEFAULT_PASSWORD = "Temp@2024";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,7 +30,7 @@ const CreateUserDialog = ({ onUserCreated }: CreateUserDialogProps) => {
       const { data, error } = await supabase.functions.invoke('create-user', {
         body: {
           email,
-          password,
+          password: DEFAULT_PASSWORD,
           fullName,
           role,
         },
@@ -46,7 +46,6 @@ const CreateUserDialog = ({ onUserCreated }: CreateUserDialogProps) => {
       // Reset form
       setFullName("");
       setEmail("");
-      setPassword("");
       setRole("user");
       setOpen(false);
       onUserCreated();
@@ -98,23 +97,17 @@ const CreateUserDialog = ({ onUserCreated }: CreateUserDialogProps) => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-            />
-          </div>
+              />
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="password">Senha</Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={6}
-            />
-          </div>
+            <div className="space-y-2 bg-muted p-3 rounded-md">
+              <Label className="text-sm font-medium">Senha Temporária</Label>
+              <p className="text-sm text-muted-foreground">
+                Senha padrão: <span className="font-mono font-semibold">{DEFAULT_PASSWORD}</span>
+              </p>
+            </div>
 
-          <div className="space-y-2">
+            <div className="space-y-2">
             <Label htmlFor="role">Tipo de Usuário</Label>
             <Select value={role} onValueChange={(value: "user" | "admin") => setRole(value)}>
               <SelectTrigger>

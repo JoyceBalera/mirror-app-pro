@@ -26,6 +26,7 @@ const EditUserDialog = ({ user, currentRole, open, onOpenChange, onUserEdited }:
   const [email, setEmail] = useState(user.email || "");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<"user" | "admin">(currentRole);
+  const DEFAULT_PASSWORD = "Temp@2024";
 
   useEffect(() => {
     setFullName(user.full_name || "");
@@ -69,6 +70,36 @@ const EditUserDialog = ({ user, currentRole, open, onOpenChange, onUserEdited }:
     }
   };
 
+  const handleResetPassword = async () => {
+    try {
+      setLoading(true);
+      
+      const { error } = await supabase.functions.invoke('edit-user', {
+        body: {
+          userId: user.id,
+          password: DEFAULT_PASSWORD,
+        },
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Senha resetada",
+        description: `Nova senha temporária: ${DEFAULT_PASSWORD}`,
+      });
+      
+      setPassword("");
+    } catch (error: any) {
+      toast({
+        title: "Erro ao resetar senha",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
@@ -103,17 +134,28 @@ const EditUserDialog = ({ user, currentRole, open, onOpenChange, onUserEdited }:
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="password">Nova Senha (opcional)</Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="Deixe vazio para manter a atual"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              minLength={6}
-            />
-          </div>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password">Nova Senha (deixe vazio para não alterar)</Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleResetPassword}
+                  disabled={loading}
+                >
+                  Resetar para Temp@2024
+                </Button>
+              </div>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Digite a nova senha"
+                minLength={6}
+              />
+            </div>
 
           <div className="space-y-2">
             <Label htmlFor="role">Tipo de Usuário</Label>
