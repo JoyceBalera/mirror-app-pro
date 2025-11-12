@@ -343,8 +343,8 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen gradient-hero py-12 px-4">
-      <div className="max-w-3xl mx-auto">
+    <div className="min-h-screen gradient-hero py-4 px-3 sm:py-8 sm:px-4 md:py-12 overflow-y-auto pb-20 sm:pb-8">
+      <div className="max-w-3xl w-full mx-auto">
         <QuestionCard
           question={questions[currentQuestionIndex]}
           currentAnswer={currentAnswer?.score}
@@ -353,26 +353,28 @@ const Index = () => {
           totalQuestions={questions.length}
         />
 
-        <div className="flex gap-4 mt-8 justify-between">
+        <div className="flex gap-2 sm:gap-4 mt-4 sm:mt-8 justify-between">
           <Button
             onClick={handlePrevious}
             disabled={currentQuestionIndex === 0}
             variant="outline"
-            size="lg"
-            className="gap-2"
+            size="sm"
+            className="gap-1 sm:gap-2 text-xs sm:text-sm md:h-11 md:px-8"
           >
-            <ChevronLeft className="w-5 h-5" />
-            Anterior
+            <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+            <span className="hidden sm:inline">Anterior</span>
+            <span className="sm:hidden">Ant.</span>
           </Button>
 
           <Button
             onClick={handleNext}
             disabled={!currentAnswer}
-            size="lg"
-            className="gap-2 gradient-primary hover:opacity-90 disabled:opacity-50"
+            size="sm"
+            className="gap-1 sm:gap-2 text-xs sm:text-sm gradient-primary hover:opacity-90 disabled:opacity-50 md:h-11 md:px-8"
           >
-            {currentQuestionIndex === questions.length - 1 ? "Ver Resultados" : "Próxima"}
-            <ChevronRight className="w-5 h-5" />
+            <span className="hidden sm:inline">{currentQuestionIndex === questions.length - 1 ? "Ver Resultados" : "Próxima"}</span>
+            <span className="sm:hidden">{currentQuestionIndex === questions.length - 1 ? "Resultados" : "Próx."}</span>
+            <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
           </Button>
         </div>
       </div>
