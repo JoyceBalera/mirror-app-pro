@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { SCORING, TRAIT_LABELS, getTraitPercentage } from "@/constants/scoring";
+import { generateTestResultPDF } from "@/utils/pdfGenerator";
 
 interface TestResult {
   id: string;
@@ -267,6 +268,31 @@ const UserDetails = () => {
                     Teste #{results.length - index}
                   </h3>
                   <div className="flex items-center gap-2">
+                    <Button
+                      onClick={() => {
+                        const aiText = result.ai_analyses?.[0]?.analysis_text;
+                        generateTestResultPDF(
+                          result.trait_scores,
+                          result.facet_scores,
+                          result.classifications,
+                          {
+                            userName: user?.full_name,
+                            testDate: new Date(result.test_sessions.completed_at!),
+                            aiAnalysis: aiText,
+                          }
+                        );
+                        toast({
+                          title: "PDF gerado!",
+                          description: "O relatório foi baixado com sucesso.",
+                        });
+                      }}
+                      variant="outline"
+                      size="sm"
+                      className="gap-2"
+                    >
+                      <Download className="w-4 h-4" />
+                      PDF
+                    </Button>
                     <Button
                       onClick={() => handleRecalculateResults(result.session_id)}
                       disabled={recalculating === result.session_id}
