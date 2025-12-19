@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, Download, Home, LogOut, Sparkles, Loader2 } from "lucide-react";
+import { ArrowLeft, Download, Home, LogOut, Sparkles, Loader2, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -35,6 +35,7 @@ const UserDetails = () => {
   const [loading, setLoading] = useState(true);
   const [expandedAnalysis, setExpandedAnalysis] = useState<string | null>(null);
   const [generatingAnalysis, setGeneratingAnalysis] = useState<string | null>(null);
+  const [recalculating, setRecalculating] = useState<string | null>(null);
 
   useEffect(() => {
     if (userId) {
@@ -170,6 +171,35 @@ const UserDetails = () => {
     }
   };
 
+  const handleRecalculateResults = async (sessionId: string) => {
+    setRecalculating(sessionId);
+    try {
+      const { data, error } = await supabase.functions.invoke("recalculate-results", {
+        body: { session_id: sessionId },
+      });
+
+      if (error) throw error;
+      if (!data.success) throw new Error(data.error);
+
+      toast({
+        title: "Resultados recalculados!",
+        description: `${data.answers_count} respostas processadas com sucesso.`,
+      });
+
+      // Recarregar os dados
+      fetchUserData();
+    } catch (error: any) {
+      console.error("Erro ao recalcular:", error);
+      toast({
+        title: "Erro ao recalcular",
+        description: error.message || "Não foi possível recalcular os resultados.",
+        variant: "destructive",
+      });
+    } finally {
+      setRecalculating(null);
+    }
+  };
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate("/auth");
@@ -242,9 +272,30 @@ const UserDetails = () => {
                   <h3 className="text-lg font-semibold">
                     Teste #{results.length - index}
                   </h3>
-                  <p className="text-sm text-muted-foreground">
-                    {format(new Date(result.test_sessions.completed_at!), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
-                  </p>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      onClick={() => handleRecalculateResults(result.session_id)}
+                      disabled={recalculating === result.session_id}
+                      variant="outline"
+                      size="sm"
+                      className="gap-2"
+                    >
+                      {recalculating === result.session_id ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Recalculando...
+                        </>
+                      ) : (
+                        <>
+                          <RefreshCw className="w-4 h-4" />
+                          Recalcular
+                        </>
+                      )}
+                    </Button>
+                    <p className="text-sm text-muted-foreground">
+                      {format(new Date(result.test_sessions.completed_at!), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                    </p>
+                  </div>
                 </div>
 
                 {/* Big Five Scores */}
