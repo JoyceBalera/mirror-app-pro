@@ -136,6 +136,15 @@ const questions = [
   { id: "N6_4", trait: "neuroticism", facet: "N6", keyed: "minus" },
 ];
 
+// Mapeamento de nomes de traits em inglês para português
+const traitNameMap: Record<string, string> = {
+  neuroticism: "neuroticismo",
+  extraversion: "extroversão",
+  openness: "abertura",
+  agreeableness: "amabilidade",
+  conscientiousness: "conscienciosidade",
+};
+
 const getTraitClassification = (score: number): string => {
   if (score >= 24 && score <= 55) return "Baixa";
   if (score >= 56 && score <= 87) return "Média";
@@ -222,17 +231,27 @@ serve(async (req) => {
 
     console.log(`[recalculate-results] Trait scores calculados:`, traitScores);
 
-    // Calcular classificações
+    // Converter para nomes em português (consistente com Index.tsx)
+    const traitScoresPt: Record<string, number> = {};
+    const facetScoresPt: Record<string, Record<string, number>> = {};
+    
+    for (const [trait, score] of Object.entries(traitScores)) {
+      const traitPt = traitNameMap[trait] || trait;
+      traitScoresPt[traitPt] = score;
+      facetScoresPt[traitPt] = facetScores[trait];
+    }
+
+    // Calcular classificações (usando nomes em português)
     const classifications: Record<string, string> = {};
-    for (const trait of Object.keys(traitScores)) {
-      classifications[trait] = getTraitClassification(traitScores[trait]);
+    for (const [trait, score] of Object.entries(traitScoresPt)) {
+      classifications[trait] = getTraitClassification(score);
     }
 
     const facetClassifications: Record<string, Record<string, string>> = {};
-    for (const trait of Object.keys(facetScores)) {
+    for (const trait of Object.keys(facetScoresPt)) {
       facetClassifications[trait] = {};
-      for (const facet of Object.keys(facetScores[trait])) {
-        facetClassifications[trait][facet] = getFacetClassification(facetScores[trait][facet]);
+      for (const facet of Object.keys(facetScoresPt[trait])) {
+        facetClassifications[trait][facet] = getFacetClassification(facetScoresPt[trait][facet]);
       }
     }
 
@@ -255,8 +274,8 @@ serve(async (req) => {
       const { data, error: updateError } = await supabase
         .from('test_results')
         .update({
-          trait_scores: traitScores,
-          facet_scores: facetScores,
+          trait_scores: traitScoresPt,
+          facet_scores: facetScoresPt,
           classifications: classifications,
           calculated_at: new Date().toISOString(),
         })
@@ -275,8 +294,8 @@ serve(async (req) => {
         .from('test_results')
         .insert({
           session_id: session_id,
-          trait_scores: traitScores,
-          facet_scores: facetScores,
+          trait_scores: traitScoresPt,
+          facet_scores: facetScoresPt,
           classifications: classifications,
         })
         .select()
@@ -293,8 +312,8 @@ serve(async (req) => {
       success: true,
       message: 'Resultado recalculado com sucesso',
       answers_count: answers.length,
-      trait_scores: traitScores,
-      facet_scores: facetScores,
+      trait_scores: traitScoresPt,
+      facet_scores: facetScoresPt,
       classifications: classifications,
       result: resultData,
     }), {

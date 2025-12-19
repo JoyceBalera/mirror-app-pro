@@ -8,6 +8,7 @@ import { ArrowLeft, Download, Home, LogOut, Sparkles, Loader2, RefreshCw } from 
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { SCORING, TRAIT_LABELS, getTraitPercentage } from "@/constants/scoring";
 
 interface TestResult {
   id: string;
@@ -96,14 +97,7 @@ const UserDetails = () => {
   };
 
   const getTraitLabel = (trait: string) => {
-    const labels: { [key: string]: string } = {
-      neuroticism: "Neuroticismo",
-      extraversion: "Extroversão",
-      openness: "Abertura",
-      agreeableness: "Amabilidade",
-      conscientiousness: "Conscienciosidade",
-    };
-    return labels[trait] || trait;
+    return TRAIT_LABELS[trait] || trait;
   };
 
   const getClassificationLabel = (classification: string | number) => {
@@ -305,9 +299,11 @@ const UserDetails = () => {
                     <div key={trait}>
                       <div className="flex justify-between mb-2">
                         <span className="text-sm">{getTraitLabel(trait)}</span>
-                        <span className="text-sm font-medium">{score.toFixed(1)}</span>
+                        <span className="text-sm font-medium">
+                          {score.toFixed(0)} <span className="text-muted-foreground">/ {SCORING.TRAIT_MAX}</span>
+                        </span>
                       </div>
-                      <Progress value={(score / 5) * 100} className="h-2" />
+                      <Progress value={getTraitPercentage(score)} className="h-2" />
                       <p className="text-xs text-muted-foreground mt-1">
                         Classificação: {getClassificationLabel(result.classifications[trait])}
                       </p>
