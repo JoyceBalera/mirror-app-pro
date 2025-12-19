@@ -188,14 +188,21 @@ const Index = () => {
 
     setAnswers(newAnswers);
 
-    // Save answer to database
+    // Save answer to database (upsert para evitar duplicatas)
     if (currentSessionId) {
       try {
-        await supabase.from('test_answers').insert({
-          session_id: currentSessionId,
-          question_id: questionId,
-          score: score,
-        });
+        await supabase.from('test_answers').upsert(
+          {
+            session_id: currentSessionId,
+            question_id: questionId,
+            score: score,
+            answered_at: new Date().toISOString(),
+          },
+          { 
+            onConflict: 'session_id,question_id',
+            ignoreDuplicates: false 
+          }
+        );
       } catch (error) {
         console.error('Error saving answer:', error);
       }
