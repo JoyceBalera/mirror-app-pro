@@ -15,6 +15,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { SCORING, getTraitPercentage, getFacetPercentage } from "@/constants/scoring";
 
 interface ResultsProps {
   traitScores: TraitScore[];
@@ -33,11 +34,11 @@ export const Results = ({ traitScores, onRestart, sessionId, userName }: Results
   const hasGeneratedRef = useRef(false);
 
   const getScoreColor = (score: number) => {
-    // Para facetas (4-20)
-    if (score >= 4 && score <= 9) return "bg-red-500";
-    if (score >= 10 && score <= 15) return "bg-yellow-500";
-    if (score >= 16 && score <= 20) return "bg-green-500";
-    return "bg-gray-500";
+    // Usa a função de porcentagem para classificar por faixas
+    const percentage = getFacetPercentage(score);
+    if (percentage < 37.5) return "bg-red-500";      // Baixo (4-9)
+    if (percentage < 75) return "bg-yellow-500";     // Médio (10-15)
+    return "bg-green-500";                           // Alto (16-20)
   };
 
   const handleGenerateAnalysis = useCallback(async () => {
@@ -381,7 +382,7 @@ export const Results = ({ traitScores, onRestart, sessionId, userName }: Results
                   </div>
                 </div>
                 <Progress
-                  value={(trait.score / 120) * 100}
+                  value={getTraitPercentage(trait.score)}
                   className="h-3"
                 />
               </div>
