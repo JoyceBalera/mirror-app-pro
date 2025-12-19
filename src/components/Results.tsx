@@ -170,6 +170,26 @@ export const Results = ({ traitScores, onRestart, sessionId, userName }: Results
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Mantém array vazio para executar apenas na montagem
 
+  // Auto-fechar modal e baixar PDF quando análise terminar
+  useEffect(() => {
+    if (showWaitDialog && aiAnalysis && !isGenerating) {
+      console.log("Análise pronta, fechando modal e iniciando download...");
+      setShowWaitDialog(false);
+      // Pequeno delay para garantir que o modal fechou
+      setTimeout(() => {
+        handleDownload();
+      }, 150);
+    }
+  }, [aiAnalysis, isGenerating, showWaitDialog]);
+
+  // Fechar modal em caso de erro
+  useEffect(() => {
+    if (showWaitDialog && error && !isGenerating) {
+      console.log("Erro detectado, fechando modal...");
+      setShowWaitDialog(false);
+    }
+  }, [error, isGenerating, showWaitDialog]);
+
   // Log do estado atual no render
   console.log("=== RENDER Results ===");
   console.log("aiAnalysis:", aiAnalysis ? `${aiAnalysis.length} caracteres` : "null");
@@ -492,10 +512,29 @@ export const Results = ({ traitScores, onRestart, sessionId, userName }: Results
                 Preparando seu PDF completo
               </AlertDialogTitle>
               <AlertDialogDescription>
-                Estamos finalizando sua análise personalizada para incluir no PDF. 
-                Isso levará apenas alguns segundos. Aguarde um momento...
+                Estamos finalizando sua análise personalizada para incluir no PDF.
               </AlertDialogDescription>
             </AlertDialogHeader>
+            <div className="flex justify-end gap-2 mt-4">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => {
+                  setShowWaitDialog(false);
+                  // Baixa o PDF sem a análise
+                  handleDownload();
+                }}
+              >
+                Baixar sem análise
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => setShowWaitDialog(false)}
+              >
+                Cancelar
+              </Button>
+            </div>
           </AlertDialogContent>
         </AlertDialog>
       </div>
