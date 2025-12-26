@@ -10,6 +10,7 @@ import NotFound from "./pages/NotFound";
 import AdminDashboard from "./pages/AdminDashboard";
 import UserDetails from "./pages/UserDetails";
 import DesenhoHumanoTest from "./pages/DesenhoHumanoTest";
+import DesenhoHumanoResults from "./pages/DesenhoHumanoResults";
 import Dashboard from "./pages/Dashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -47,6 +48,7 @@ const App = () => {
           <Route path="/auth" element={<Auth />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/desenho-humano/test" element={<DesenhoHumanoTest />} />
+          <Route path="/desenho-humano/results/:id" element={<DesenhoHumanoResults />} />
           <Route path="/admin/dashboard" element={
             <ProtectedRoute>
               <AdminDashboard />

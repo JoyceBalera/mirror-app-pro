@@ -46,6 +46,89 @@ export type Database = {
           },
         ]
       }
+      human_design_results: {
+        Row: {
+          activated_gates: number[]
+          authority: string | null
+          birth_date: string
+          birth_lat: number | null
+          birth_location: string
+          birth_lon: number | null
+          birth_time: string
+          centers: Json
+          channels: Json
+          created_at: string
+          definition: string | null
+          design_activations: Json
+          design_date: string | null
+          energy_type: string
+          id: string
+          incarnation_cross: string | null
+          personality_activations: Json
+          profile: string | null
+          session_id: string | null
+          strategy: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          activated_gates?: number[]
+          authority?: string | null
+          birth_date: string
+          birth_lat?: number | null
+          birth_location: string
+          birth_lon?: number | null
+          birth_time: string
+          centers?: Json
+          channels?: Json
+          created_at?: string
+          definition?: string | null
+          design_activations?: Json
+          design_date?: string | null
+          energy_type: string
+          id?: string
+          incarnation_cross?: string | null
+          personality_activations?: Json
+          profile?: string | null
+          session_id?: string | null
+          strategy?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          activated_gates?: number[]
+          authority?: string | null
+          birth_date?: string
+          birth_lat?: number | null
+          birth_location?: string
+          birth_lon?: number | null
+          birth_time?: string
+          centers?: Json
+          channels?: Json
+          created_at?: string
+          definition?: string | null
+          design_activations?: Json
+          design_date?: string | null
+          energy_type?: string
+          id?: string
+          incarnation_cross?: string | null
+          personality_activations?: Json
+          profile?: string | null
+          session_id?: string | null
+          strategy?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "human_design_results_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "human_design_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       human_design_sessions: {
         Row: {
           completed_at: string | null

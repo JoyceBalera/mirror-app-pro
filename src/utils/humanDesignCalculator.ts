@@ -97,7 +97,9 @@ const PLANETS = [
 
 // ===== FUNÇÕES DE CÁLCULO PLANETÁRIO =====
 
-async function getPlanetLongitude(planetName: string, toi: TimeOfInterest): Promise<number> {
+type TimeOfInterestType = ReturnType<typeof createTimeOfInterest.fromDate>;
+
+async function getPlanetLongitude(planetName: string, toi: TimeOfInterestType): Promise<number> {
   let longitude: number;
   
   switch (planetName) {
@@ -172,12 +174,6 @@ async function getPlanetLongitude(planetName: string, toi: TimeOfInterest): Prom
       longitude = coords.lon;
       break;
     }
-    case 'Pluto': {
-      const planet = createPluto(toi);
-      const coords = await planet.getGeocentricEclipticSphericalDateCoordinates();
-      longitude = coords.lon;
-      break;
-    }
     default:
       throw new Error(`Planeta não suportado: ${planetName}`);
   }
@@ -187,7 +183,7 @@ async function getPlanetLongitude(planetName: string, toi: TimeOfInterest): Prom
 
 // Aproximação matemática do Nodo Lunar Norte
 // Baseado no ciclo de 18.6 anos dos nodos
-function calculateLunarNodeApprox(toi: TimeOfInterest, node: 'north' | 'south'): number {
+function calculateLunarNodeApprox(toi: TimeOfInterestType, node: 'north' | 'south'): number {
   const jd = toi.getJulianDay();
   const jd2000 = 2451545.0; // J2000.0 epoch
   const daysSinceJ2000 = jd - jd2000;
