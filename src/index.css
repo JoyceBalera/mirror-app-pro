@@ -4,69 +4,75 @@
 
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
 All colors MUST be HSL.
+
+Nova Paleta:
+- Principal (Carmim): #7B192B -> 348 66% 29%
+- Background (Off-White): #F7F3EF -> 30 32% 95%
+- Secundária (Dusty Mauve): #BFAFB2 -> 353 10% 72%
+- Destaque (Ouro): #D4AF37 -> 46 64% 52%
 */
 
 @layer base {
   :root {
-    --background: 240 10% 98%;
-    --foreground: 240 10% 10%;
+    --background: 30 32% 95%;
+    --foreground: 348 66% 25%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 10%;
+    --card: 30 32% 98%;
+    --card-foreground: 348 66% 25%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 10%;
+    --popover: 30 32% 98%;
+    --popover-foreground: 348 66% 25%;
 
-    --primary: 262 83% 58%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 348 66% 29%;
+    --primary-foreground: 30 32% 95%;
 
-    --secondary: 240 5% 96%;
-    --secondary-foreground: 240 10% 10%;
+    --secondary: 353 10% 72%;
+    --secondary-foreground: 348 66% 20%;
 
-    --muted: 240 5% 96%;
-    --muted-foreground: 240 4% 46%;
+    --muted: 353 10% 85%;
+    --muted-foreground: 348 30% 40%;
 
-    --accent: 262 83% 95%;
-    --accent-foreground: 262 83% 30%;
+    --accent: 46 64% 52%;
+    --accent-foreground: 348 66% 15%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 240 6% 90%;
-    --input: 240 6% 90%;
-    --ring: 262 83% 58%;
+    --border: 353 10% 82%;
+    --input: 353 10% 82%;
+    --ring: 348 66% 29%;
 
     --radius: 0.75rem;
   }
 
   .dark {
-    --background: 240 10% 10%;
-    --foreground: 240 5% 96%;
+    --background: 348 30% 8%;
+    --foreground: 30 32% 95%;
 
-    --card: 240 10% 13%;
-    --card-foreground: 240 5% 96%;
+    --card: 348 30% 12%;
+    --card-foreground: 30 32% 95%;
 
-    --popover: 240 10% 13%;
-    --popover-foreground: 240 5% 96%;
+    --popover: 348 30% 12%;
+    --popover-foreground: 30 32% 95%;
 
-    --primary: 262 83% 58%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 348 66% 35%;
+    --primary-foreground: 30 32% 95%;
 
-    --secondary: 240 5% 20%;
-    --secondary-foreground: 240 5% 96%;
+    --secondary: 353 10% 30%;
+    --secondary-foreground: 30 32% 90%;
 
-    --muted: 240 5% 20%;
-    --muted-foreground: 240 5% 64%;
+    --muted: 353 10% 20%;
+    --muted-foreground: 353 10% 60%;
 
-    --accent: 262 83% 25%;
-    --accent-foreground: 262 83% 95%;
+    --accent: 46 64% 45%;
+    --accent-foreground: 30 32% 95%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 240 5% 20%;
-    --input: 240 5% 20%;
-    --ring: 262 83% 58%;
+    --border: 353 10% 25%;
+    --input: 353 10% 25%;
+    --ring: 348 66% 35%;
   }
 }
 
@@ -82,30 +88,30 @@ All colors MUST be HSL.
 
 @layer utilities {
   .gradient-hero {
-    background: linear-gradient(135deg, hsl(262, 83%, 95%) 0%, hsl(220, 70%, 95%) 100%);
+    background: linear-gradient(135deg, hsl(30, 32%, 95%) 0%, hsl(353, 10%, 88%) 100%);
   }
 
   .gradient-primary {
-    background: linear-gradient(135deg, hsl(262, 83%, 58%) 0%, hsl(220, 70%, 50%) 100%);
+    background: linear-gradient(135deg, hsl(348, 66%, 29%) 0%, hsl(348, 66%, 20%) 100%);
   }
 
   .trait-openness {
-    @apply text-blue-600;
+    @apply text-primary;
   }
 
   .trait-conscientiousness {
-    @apply text-green-600;
+    @apply text-accent;
   }
 
   .trait-extraversion {
-    @apply text-purple-600;
+    color: hsl(348, 50%, 45%);
   }
 
   .trait-agreeableness {
-    @apply text-amber-600;
+    @apply text-secondary;
   }
 
   .trait-neuroticism {
-    @apply text-red-600;
+    color: hsl(348, 66%, 20%);
   }
 }
