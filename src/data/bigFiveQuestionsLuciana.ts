@@ -460,31 +460,31 @@ export const traitInfoLuciana: Record<string, TraitInfo> = {
   neuroticism: {
     name: "Neuroticismo",
     description: "Tendência a experimentar emoções negativas como ansiedade, raiva e depressão. Pessoas com alto neuroticismo são mais propensas a reagir emocionalmente a eventos estressantes.",
-    color: "bg-rose-500",
+    color: "trait-neuroticism",
     facets: ["Ansiedade", "Hostilidade", "Depressão", "Constrangimento", "Impulsividade", "Vulnerabilidade"],
   },
   extraversion: {
     name: "Extroversão",
     description: "Grau de interação social, atividade e capacidade de sentir emoções positivas. Extrovertidos tendem a ser sociáveis, assertivos e cheios de energia.",
-    color: "bg-amber-500",
+    color: "trait-extraversion",
     facets: ["Calor", "Sociabilidade", "Assertividade", "Atividade", "Busca de Emoções", "Emoções Positivas"],
   },
   openness: {
     name: "Abertura à Experiência",
     description: "Apreciação por novas experiências, criatividade e curiosidade intelectual. Pessoas abertas tendem a ser imaginativas, criativas e abertas a novas ideias.",
-    color: "bg-violet-500",
+    color: "trait-openness",
     facets: ["Fantasia", "Estética", "Sentimentos", "Ações", "Ideias", "Valores"],
   },
   agreeableness: {
     name: "Amabilidade",
     description: "Tendência a ser cooperativo, confiante e prestativo. Pessoas amáveis tendem a valorizar a harmonia social e são geralmente mais empáticas.",
-    color: "bg-emerald-500",
+    color: "trait-agreeableness",
     facets: ["Confiança", "Franqueza", "Altruísmo", "Complacência", "Modéstia", "Sensibilidade"],
   },
   conscientiousness: {
     name: "Conscienciosidade",
     description: "Grau de organização, persistência e motivação para alcançar objetivos. Pessoas conscienciosas tendem a ser disciplinadas, organizadas e confiáveis.",
-    color: "bg-sky-500",
+    color: "trait-conscientiousness",
     facets: ["Competência", "Ordem", "Senso de dever", "Esforço por Realização", "Autodisciplina", "Ponderação"],
   },
 };
