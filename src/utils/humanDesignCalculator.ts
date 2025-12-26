@@ -181,21 +181,72 @@ async function getPlanetLongitude(planetName: string, toi: TimeOfInterestType): 
   return longitude;
 }
 
-// Aproximação matemática do Nodo Lunar Norte
-// Baseado no ciclo de 18.6 anos dos nodos
+// Cálculo preciso do True North Node (Nodo Lunar Norte Verdadeiro)
+// Baseado na fórmula astronômica de Jean Meeus (Astronomical Algorithms)
 function calculateLunarNodeApprox(toi: TimeOfInterestType, node: 'north' | 'south'): number {
   const jd = toi.getJulianDay();
   const jd2000 = 2451545.0; // J2000.0 epoch
-  const daysSinceJ2000 = jd - jd2000;
   
-  // O nodo lunar regride ~19.34° por ano
-  // Época J2000: Nodo Norte em ~125.04°
-  const initialNodeLong = 125.04;
-  const yearsSinceJ2000 = daysSinceJ2000 / 365.25;
-  const nodeLongitude = (initialNodeLong - (19.34 * yearsSinceJ2000)) % 360;
+  // T = séculos julianos desde J2000.0
+  const T = (jd - jd2000) / 36525.0;
+  
+  // Fórmula de Meeus para a longitude média do Nodo Norte Ascendente
+  // Ω = 125.0445479° - 1934.1362891° * T + 0.0020754° * T² + T³/467441 - T⁴/60616000
+  let omega = 125.0445479 
+    - 1934.1362891 * T 
+    + 0.0020754 * T * T 
+    + (T * T * T) / 467441.0 
+    - (T * T * T * T) / 60616000.0;
+  
+  // Correções periódicas principais (nutação)
+  // L' = longitude média da Lua
+  const Lprime = 218.3164477 
+    + 481267.88123421 * T 
+    - 0.0015786 * T * T 
+    + (T * T * T) / 538841.0 
+    - (T * T * T * T) / 65194000.0;
+  
+  // D = elongação média da Lua
+  const D = 297.8501921 
+    + 445267.1114034 * T 
+    - 0.0018819 * T * T 
+    + (T * T * T) / 545868.0 
+    - (T * T * T * T) / 113065000.0;
+  
+  // M = anomalia média do Sol
+  const M = 357.5291092 
+    + 35999.0502909 * T 
+    - 0.0001536 * T * T 
+    + (T * T * T) / 24490000.0;
+  
+  // M' = anomalia média da Lua
+  const Mprime = 134.9633964 
+    + 477198.8675055 * T 
+    + 0.0087414 * T * T 
+    + (T * T * T) / 69699.0 
+    - (T * T * T * T) / 14712000.0;
+  
+  // Converter para radianos
+  const degToRad = Math.PI / 180;
+  const omegaRad = omega * degToRad;
+  const LprimeRad = Lprime * degToRad;
+  const DRad = D * degToRad;
+  const MRad = M * degToRad;
+  const MprimeRad = Mprime * degToRad;
+  
+  // Correções principais para True Node (em graus)
+  const correction = 
+    - 1.4979 * Math.sin(2 * (DRad - omegaRad))
+    - 0.1500 * Math.sin(MRad)
+    - 0.1226 * Math.sin(2 * DRad)
+    + 0.1176 * Math.sin(2 * omegaRad)
+    - 0.0801 * Math.sin(2 * (MprimeRad - omegaRad));
+  
+  omega += correction;
   
   // Normalizar para 0-360
-  let result = nodeLongitude < 0 ? nodeLongitude + 360 : nodeLongitude;
+  let result = omega % 360;
+  if (result < 0) result += 360;
   
   if (node === 'south') {
     result = (result + 180) % 360;
@@ -322,6 +373,19 @@ function determineChannels(allActiveGates: number[]): ChannelActivation[] {
 
 // ===== DETERMINAÇÃO DO TIPO =====
 
+// Canais que conectam diretamente um motor ao Throat
+const MOTOR_TO_THROAT_CHANNELS: string[] = [
+  '21-45',  // Heart → Throat
+  '12-22',  // Throat ↔ Solar (Abertura)
+  '35-36',  // Throat ↔ Solar (Transitoriedade)
+  '48-16',  // Spleen → Throat (Talento) - Spleen não é motor!
+  '20-57',  // Throat ↔ Spleen - Spleen não é motor!
+  '57-20',  // Mesmo canal
+  // Canais Solar → Throat
+  // Canais Root → Throat (não existem diretos)
+  // Canais Sacral → Throat indiretos
+];
+
 function determineType(centers: CenterDefinition[], channels: ChannelActivation[]): { type: string; strategy: string } {
   const sacralCenter = centers.find(c => c.id === 'sacral');
   const throatCenter = centers.find(c => c.id === 'throat');
@@ -334,67 +398,71 @@ function determineType(centers: CenterDefinition[], channels: ChannelActivation[
   
   // Reflector: Nenhum centro definido
   if (definedCenters.length === 0) {
-    return { type: 'Reflector', strategy: 'Esperar um ciclo lunar (28 dias)' };
+    return { type: 'Refletor', strategy: 'Esperar um ciclo lunar (28 dias)' };
   }
   
-  // Verificar se algum motor está conectado ao Throat
-  const motorConnectedToThroat = activeChannels.some(ch => {
-    const center1 = ch.centers[0];
-    const center2 = ch.centers[1];
-    const isMotor1 = MOTOR_CENTERS.includes(center1);
-    const isMotor2 = MOTOR_CENTERS.includes(center2);
-    const isThroat1 = center1 === 'throat';
-    const isThroat2 = center2 === 'throat';
+  // Função para verificar se há caminho de um motor até o Throat através de canais ativos
+  const hasMotorToThroatConnection = (): boolean => {
+    // Centros motores: Root, Sacral, Solar Plexus, Heart/Ego
+    const motorCenterIds = ['root', 'sacral', 'solar', 'heart'];
     
-    return (isMotor1 && isThroat2) || (isMotor2 && isThroat1);
-  });
-  
-  // Também verificar conexão indireta ao Throat
-  const checkIndirectConnection = (startCenters: string[], targetCenter: string): boolean => {
-    const visited = new Set<string>();
-    const queue = [...startCenters];
-    
-    while (queue.length > 0) {
-      const current = queue.shift()!;
-      if (current === targetCenter) return true;
-      if (visited.has(current)) continue;
-      visited.add(current);
+    // Para cada motor definido, verificar se há caminho até o Throat
+    for (const motorId of motorCenterIds) {
+      const motorCenter = centers.find(c => c.id === motorId);
+      if (!motorCenter?.defined) continue;
       
-      // Encontrar canais conectados a este centro
-      activeChannels.forEach(ch => {
-        if (ch.centers[0] === current && !visited.has(ch.centers[1])) {
-          queue.push(ch.centers[1]);
+      // BFS para encontrar caminho até o Throat
+      const visited = new Set<string>();
+      const queue: string[] = [motorId];
+      
+      while (queue.length > 0) {
+        const currentCenterId = queue.shift()!;
+        
+        if (currentCenterId === 'throat') {
+          return true;
         }
-        if (ch.centers[1] === current && !visited.has(ch.centers[0])) {
-          queue.push(ch.centers[0]);
+        
+        if (visited.has(currentCenterId)) continue;
+        visited.add(currentCenterId);
+        
+        // Encontrar centros conectados através de canais ativos
+        for (const ch of activeChannels) {
+          if (ch.centers[0] === currentCenterId && !visited.has(ch.centers[1])) {
+            queue.push(ch.centers[1]);
+          }
+          if (ch.centers[1] === currentCenterId && !visited.has(ch.centers[0])) {
+            queue.push(ch.centers[0]);
+          }
         }
-      });
+      }
     }
+    
     return false;
   };
   
-  const definedMotors = MOTOR_CENTERS.filter(motor => 
-    centers.find(c => c.id === motor)?.defined
-  );
+  // Verificar se motor está conectado ao Throat (direto ou indiretamente)
+  const motorToThroat = hasMotorToThroatConnection();
   
-  const motorToThroat = motorConnectedToThroat || 
-    (definedMotors.length > 0 && checkIndirectConnection(definedMotors, 'throat'));
-  
-  // Manifestor: Motor conectado ao Throat SEM Sacral definido
+  // Manifestor: Motor (NÃO Sacral) conectado ao Throat E Sacral NÃO definido
+  // O motor pode ser: Heart, Solar, ou Root (mas não via Sacral)
   if (!sacralDefined && throatDefined && motorToThroat) {
+    // Confirmar que a conexão não passa pelo Sacral
+    // Um Manifestor tem motor conectado ao Throat SEM usar o Sacral
     return { type: 'Manifestor', strategy: 'Informar antes de agir' };
   }
   
   // Generator ou Manifesting Generator: Sacral definido
   if (sacralDefined) {
-    // MG: Sacral + motor conectado ao Throat
+    // MG: Sacral definido E motor conectado ao Throat
+    // O Sacral é um motor, então se há conexão do Sacral ao Throat = MG
     if (motorToThroat) {
       return { type: 'Gerador Manifestante', strategy: 'Responder e então informar' };
     }
     return { type: 'Gerador', strategy: 'Esperar para responder' };
   }
   
-  // Projector: Tem centros definidos, mas não Sacral
+  // Projector: Tem centros definidos, mas não Sacral, e motor NÃO conectado ao Throat
+  // Ou não tem motor definido
   return { type: 'Projetor', strategy: 'Esperar pelo convite' };
 }
 

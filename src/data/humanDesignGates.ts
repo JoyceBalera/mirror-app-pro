@@ -1,6 +1,6 @@
 // Human Design - Mapeamento dos 64 Gates
 // Baseado no I Ching e na roda do Mandala HD
-// O Gate 41 começa em ~58° do zodíaco (Aquário 28°)
+// Gate 41 começa em Aquário 2° = 302° do zodíaco tropical
 
 // Sequência dos 64 gates na ordem do Mandala HD (começando no Gate 41)
 export const GATE_SEQUENCE: number[] = [
@@ -14,8 +14,10 @@ export const GATE_SEQUENCE: number[] = [
   26, 11, 10, 58, 38, 54, 61, 60   // Libra/Escorpião/Sagitário/Capricórnio
 ];
 
-// Offset do Mandala HD - Gate 41 começa aproximadamente em 58° absoluto
-export const MANDALA_OFFSET = 58.0;
+// Offset do Mandala HD - Gate 41 começa em Aquário 2° (302° do zodíaco)
+// Pesquisa confirmou: Gate 41 = Aquário 2°00' - 7°37'
+// Aquário começa em 300° (signo 11), então Gate 41 começa em 300° + 2° = 302°
+export const MANDALA_OFFSET = 302.0;
 
 // Graus por gate (360° / 64 gates)
 export const DEGREES_PER_GATE = 5.625;
