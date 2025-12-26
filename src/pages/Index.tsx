@@ -147,9 +147,23 @@ const Index = () => {
   };
 
   const handleStart = async () => {
-    if (!user) return;
+    console.log('🚀 handleStart() chamado');
+    console.log('👤 User:', user?.id);
+    console.log('🔄 roleLoading:', roleLoading);
+    
+    if (!user) {
+      console.log('❌ User não encontrado, retornando');
+      toast({
+        title: "Erro",
+        description: "Usuário não autenticado. Faça login novamente.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     try {
+      console.log('📝 Criando test_session para user_id:', user.id);
+      
       // Create a new test session
       const { data: session, error } = await supabase
         .from('test_sessions')
@@ -157,16 +171,24 @@ const Index = () => {
         .select()
         .single();
 
-      if (error) throw error;
+      console.log('📦 Resultado da inserção:', { session, error });
 
+      if (error) {
+        console.error('❌ Erro ao criar sessão:', error);
+        throw error;
+      }
+
+      console.log('✅ Sessão criada com sucesso:', session.id);
       setCurrentSessionId(session.id);
       setScreen("test");
       setCurrentQuestionIndex(0);
       setAnswers([]);
+      console.log('🎯 Transição para tela de teste concluída');
     } catch (error: any) {
+      console.error('❌ Erro capturado:', error);
       toast({
-        title: "Erro",
-        description: "Não foi possível iniciar o teste",
+        title: "Erro ao iniciar teste",
+        description: error.message || "Não foi possível iniciar o teste. Tente novamente.",
         variant: "destructive",
       });
     }
