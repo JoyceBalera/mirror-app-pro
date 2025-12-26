@@ -244,7 +244,9 @@ const UserDetails = () => {
             <div>
               <p className="text-sm text-muted-foreground">Cadastrado em</p>
               <p className="font-medium">
-                {format(new Date(user?.created_at), "dd/MM/yyyy", { locale: ptBR })}
+                {user?.created_at 
+                  ? format(new Date(user.created_at), "dd/MM/yyyy", { locale: ptBR })
+                  : 'Não informado'}
               </p>
             </div>
           </div>
@@ -313,7 +315,9 @@ const UserDetails = () => {
                       )}
                     </Button>
                     <p className="text-sm text-muted-foreground">
-                      {format(new Date(result.test_sessions.completed_at!), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                      {result.test_sessions.completed_at 
+                        ? format(new Date(result.test_sessions.completed_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })
+                        : 'Em andamento'}
                     </p>
                   </div>
                 </div>
