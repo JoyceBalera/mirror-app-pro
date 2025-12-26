@@ -34,11 +34,10 @@ export const Results = ({ traitScores, onRestart, sessionId, userName }: Results
   const hasGeneratedRef = useRef(false);
 
   const getScoreColor = (score: number) => {
-    // Usa a função de porcentagem para classificar por faixas
-    const percentage = getFacetPercentage(score);
-    if (percentage < 37.5) return "bg-red-500";      // Baixo (4-9)
-    if (percentage < 75) return "bg-yellow-500";     // Médio (10-15)
-    return "bg-green-500";                           // Alto (16-20)
+    // Faixas de faceta para 10 questões (10-50)
+    if (score <= 23) return "bg-red-500";      // Baixa (10-23)
+    if (score <= 36) return "bg-yellow-500";   // Média (24-36)
+    return "bg-green-500";                     // Alta (37-50)
   };
 
   const handleGenerateAnalysis = useCallback(async () => {
