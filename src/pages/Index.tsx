@@ -5,7 +5,7 @@ import { User } from "@supabase/supabase-js";
 import { Welcome } from "@/components/Welcome";
 import { QuestionCard } from "@/components/QuestionCard";
 import { Results } from "@/components/Results";
-import { questions, traitInfo } from "@/data/questions";
+import { questionsLuciana as questions, traitInfoLuciana as traitInfo } from "@/data/bigFiveQuestionsLuciana";
 import { Answer, TraitScore } from "@/types/test";
 import {
   calculateScore,

@@ -1,38 +1,7 @@
 import { Answer } from "@/types/test";
-import { questions } from "@/data/questions";
+import { questionsLuciana as questions, facetNamesLuciana } from "@/data/bigFiveQuestionsLuciana";
 
-export const facetNames: Record<string, string> = {
-  N1: "Ansiedade",
-  N2: "Raiva/Hostilidade",
-  N3: "Depressão",
-  N4: "Constrangimento",
-  N5: "Impulsividade",
-  N6: "Vulnerabilidade ao Estresse",
-  E1: "Acolhimento",
-  E2: "Gregariedade",
-  E3: "Assertividade",
-  E4: "Atividade",
-  E5: "Busca por Sensações",
-  E6: "Emoções Positivas",
-  O1: "Fantasia",
-  O2: "Estética",
-  O3: "Sentimentos",
-  O4: "Ideias",
-  O5: "Ações Variadas",
-  O6: "Valores",
-  A1: "Confiança",
-  A2: "Franqueza",
-  A3: "Altruísmo",
-  A4: "Complacência",
-  A5: "Modéstia",
-  A6: "Sensibilidade",
-  C1: "Comprometimento",
-  C2: "Ordem",
-  C3: "Senso de Dever",
-  C4: "Esforço por Realizações",
-  C5: "Autodisciplina",
-  C6: "Ponderação",
-};
+export const facetNames: Record<string, string> = facetNamesLuciana;
 
 export const calculateScore = (answers: Answer[]) => {
   const traitScores: Record<string, number> = {
@@ -70,16 +39,18 @@ export const calculateScore = (answers: Answer[]) => {
   };
 };
 
+// Novas faixas para 300 questões (60 perguntas por traço, escala 60-300)
 export const getTraitClassification = (score: number): string => {
-  if (score >= 24 && score <= 47) return "Baixa";
-  if (score >= 48 && score <= 83) return "Média";
-  if (score >= 84 && score <= 120) return "Alta";
+  if (score >= 60 && score <= 140) return "Baixa";
+  if (score >= 141 && score <= 220) return "Média";
+  if (score >= 221 && score <= 300) return "Alta";
   return "Indefinido";
 };
 
+// Novas faixas para 10 perguntas por faceta (escala 10-50)
 export const getFacetClassification = (score: number): string => {
-  if (score >= 4 && score <= 9) return "Baixa";
-  if (score >= 10 && score <= 15) return "Média";
-  if (score >= 16 && score <= 20) return "Alta";
+  if (score >= 10 && score <= 23) return "Baixa";
+  if (score >= 24 && score <= 36) return "Média";
+  if (score >= 37 && score <= 50) return "Alta";
   return "Indefinido";
 };
