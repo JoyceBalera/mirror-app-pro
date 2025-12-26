@@ -1,11 +1,14 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, ArrowLeft, Download, User, Zap, Heart, Brain, Target } from "lucide-react";
+import { Loader2, ArrowLeft, Brain, User, Zap, Target } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import BodyGraph from "@/components/humandesign/BodyGraph";
+import PlanetaryColumn from "@/components/humandesign/PlanetaryColumn";
+import AnalysisSections from "@/components/humandesign/AnalysisSections";
 
 interface HumanDesignResult {
   id: string;
@@ -100,6 +103,9 @@ const DesenhoHumanoResults = () => {
 
   const personalityGates = result.personality_activations?.map((a: any) => a.gate) || [];
   const designGates = result.design_activations?.map((a: any) => a.gate) || [];
+  const definedCenters = Object.entries(result.centers || {})
+    .filter(([_, isDefined]) => isDefined)
+    .map(([centerId]) => centerId);
 
   return (
     <div className="min-h-screen bg-background">
@@ -124,7 +130,7 @@ const DesenhoHumanoResults = () => {
       </header>
 
       <main className="bg-[#F7F3EF] min-h-[calc(100vh-80px)] py-8 px-4">
-        <div className="max-w-4xl mx-auto space-y-6">
+        <div className="max-w-6xl mx-auto space-y-6">
           
           {/* Card Principal - Tipo */}
           <Card className="bg-white border-2 border-[#BFAFB2] overflow-hidden">
@@ -159,61 +165,36 @@ const DesenhoHumanoResults = () => {
             </CardContent>
           </Card>
 
-          {/* Gates Ativados */}
-          <div className="grid md:grid-cols-2 gap-6">
-            {/* Personalidade (Consciente) */}
-            <Card className="bg-white border-2 border-[#BFAFB2]">
-              <CardHeader className="bg-black text-white">
-                <CardTitle className="flex items-center gap-2">
-                  <span className="text-lg">☀️</span>
-                  Personalidade (Consciente)
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-4">
-                <div className="space-y-2">
-                  {result.personality_activations?.slice(0, 10).map((activation: any, idx: number) => (
-                    <div key={idx} className="flex justify-between items-center p-2 bg-gray-50 rounded">
-                      <span className="font-medium">{activation.planetLabel}</span>
-                      <div className="text-right">
-                        <span className="font-bold text-[#7B192B]">Gate {activation.gate}</span>
-                        <span className="text-muted-foreground text-sm ml-1">L{activation.line}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+          {/* BodyGraph + Colunas Planetárias */}
+          <div className="grid lg:grid-cols-3 gap-6">
+            {/* Coluna Design (Esquerda) */}
+            <PlanetaryColumn
+              title="Design"
+              activations={result.design_activations || []}
+              variant="design"
+            />
 
-            {/* Design (Inconsciente) */}
-            <Card className="bg-white border-2 border-[#BFAFB2]">
-              <CardHeader className="bg-[#7B192B] text-white">
-                <CardTitle className="flex items-center gap-2">
-                  <span className="text-lg">🔴</span>
-                  Design (Inconsciente)
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-4">
-                <div className="space-y-2">
-                  {result.design_activations?.slice(0, 10).map((activation: any, idx: number) => (
-                    <div key={idx} className="flex justify-between items-center p-2 bg-gray-50 rounded">
-                      <span className="font-medium">{activation.planetLabel}</span>
-                      <div className="text-right">
-                        <span className="font-bold text-[#7B192B]">Gate {activation.gate}</span>
-                        <span className="text-muted-foreground text-sm ml-1">L{activation.line}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+            {/* BodyGraph (Centro) */}
+            <BodyGraph
+              definedCenters={definedCenters}
+              activeChannels={result.channels || []}
+              activatedGates={result.activated_gates || []}
+              personalityGates={personalityGates}
+              designGates={designGates}
+            />
+
+            {/* Coluna Personalidade (Direita) */}
+            <PlanetaryColumn
+              title="Personalidade"
+              activations={result.personality_activations || []}
+              variant="personality"
+            />
           </div>
 
           {/* Canais Ativos */}
           <Card className="bg-white border-2 border-[#BFAFB2]">
-            <CardHeader>
-              <CardTitle className="text-[#7B192B]">Canais Definidos</CardTitle>
-            </CardHeader>
-            <CardContent>
+            <CardContent className="p-4">
+              <h3 className="font-bold text-[#7B192B] mb-3">Canais Definidos</h3>
               {result.channels && Array.isArray(result.channels) ? (
                 <div className="flex flex-wrap gap-2">
                   {result.channels
@@ -236,6 +217,15 @@ const DesenhoHumanoResults = () => {
               )}
             </CardContent>
           </Card>
+
+          {/* Seções de Análise */}
+          <AnalysisSections
+            energyType={result.energy_type}
+            authority={result.authority}
+            profile={result.profile}
+            definition={result.definition}
+            strategy={result.strategy}
+          />
 
           {/* Dados de Nascimento */}
           <Card className="bg-white border-2 border-[#BFAFB2]">
