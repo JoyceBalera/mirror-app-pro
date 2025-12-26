@@ -14,7 +14,7 @@ import {
   facetNames,
 } from "@/utils/scoreCalculator";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, LogOut, LayoutDashboard } from "lucide-react";
+import { LogOut, LayoutDashboard } from "lucide-react";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useToast } from "@/hooks/use-toast";
 
@@ -174,52 +174,95 @@ const Index = () => {
 
   const handleAnswer = async (score: number) => {
     const questionId = questions[currentQuestionIndex].id;
-    const existingAnswerIndex = answers.findIndex(
-      (a) => a.questionId === questionId
-    );
-
-    let newAnswers: Answer[];
-    if (existingAnswerIndex >= 0) {
-      newAnswers = [...answers];
-      newAnswers[existingAnswerIndex] = { questionId, score };
-    } else {
-      newAnswers = [...answers, { questionId, score }];
-    }
-
+    const newAnswers = [...answers, { questionId, score }];
     setAnswers(newAnswers);
 
-    // Save answer to database (upsert para evitar duplicatas)
+    // Save answer to database
     if (currentSessionId) {
       try {
-        await supabase.from('test_answers').upsert(
-          {
-            session_id: currentSessionId,
-            question_id: questionId,
-            score: score,
-            answered_at: new Date().toISOString(),
-          },
-          { 
-            onConflict: 'session_id,question_id',
-            ignoreDuplicates: false 
-          }
-        );
+        await supabase.from('test_answers').insert({
+          session_id: currentSessionId,
+          question_id: questionId,
+          score: score,
+          answered_at: new Date().toISOString(),
+        });
       } catch (error) {
         console.error('Error saving answer:', error);
       }
     }
-  };
 
-  const handleNext = () => {
+    // Auto-advance to next question or calculate results
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else {
-      calculateResults();
-    }
-  };
+      // Last question - calculate results with the new answers
+      const { scores, facetScores } = calculateScore(newAnswers);
 
-  const handlePrevious = () => {
-    if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex(currentQuestionIndex - 1);
+      const results: TraitScore[] = Object.entries(scores).map(([trait, score]) => {
+        const traitKey = trait as keyof typeof scores;
+        const facets = Object.entries(facetScores[traitKey]).map(
+          ([facetKey, facetScore]) => ({
+            name: facetNames[facetKey] || facetKey,
+            score: facetScore,
+            classification: getFacetClassification(facetScore),
+          })
+        );
+
+        return {
+          name: traitInfo[traitKey].name,
+          score,
+          classification: getTraitClassification(score),
+          color: traitInfo[traitKey].color,
+          facets,
+        };
+      });
+
+      setTraitScores(results);
+
+      // Save results to database
+      try {
+        const traitScoresObj = results.reduce((acc, result) => {
+          acc[result.name.toLowerCase()] = result.score;
+          return acc;
+        }, {} as Record<string, number>);
+
+        const facetScoresObj = results.reduce((acc, result) => {
+          acc[result.name.toLowerCase()] = result.facets.reduce((fAcc, facet) => {
+            fAcc[facet.name] = facet.score;
+            return fAcc;
+          }, {} as Record<string, number>);
+          return acc;
+        }, {} as Record<string, Record<string, number>>);
+
+        const classificationsObj = results.reduce((acc, result) => {
+          acc[result.name.toLowerCase()] = result.classification;
+          return acc;
+        }, {} as Record<string, string>);
+
+        await supabase.from('test_results').insert({
+          session_id: currentSessionId,
+          trait_scores: traitScoresObj,
+          facet_scores: facetScoresObj,
+          classifications: classificationsObj,
+        });
+
+        await supabase
+          .from('test_sessions')
+          .update({
+            status: 'completed',
+            completed_at: new Date().toISOString(),
+          })
+          .eq('id', currentSessionId);
+      } catch (error: any) {
+        console.error('Error saving results:', error);
+        toast({
+          title: "Aviso",
+          description: "Resultados gerados mas não puderam ser salvos no banco",
+          variant: "destructive",
+        });
+      }
+
+      setScreen("results");
     }
   };
 
@@ -359,31 +402,6 @@ const Index = () => {
           questionNumber={currentQuestionIndex + 1}
           totalQuestions={questions.length}
         />
-
-        <div className="flex gap-2 sm:gap-4 mt-4 sm:mt-8 justify-between">
-          <Button
-            onClick={handlePrevious}
-            disabled={currentQuestionIndex === 0}
-            variant="outline"
-            size="sm"
-            className="gap-1 sm:gap-2 text-xs sm:text-sm md:h-11 md:px-8"
-          >
-            <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
-            <span className="hidden sm:inline">Anterior</span>
-            <span className="sm:hidden">Ant.</span>
-          </Button>
-
-          <Button
-            onClick={handleNext}
-            disabled={!currentAnswer}
-            size="sm"
-            className="gap-1 sm:gap-2 text-xs sm:text-sm gradient-primary hover:opacity-90 disabled:opacity-50 md:h-11 md:px-8"
-          >
-            <span className="hidden sm:inline">{currentQuestionIndex === questions.length - 1 ? "Ver Resultados" : "Próxima"}</span>
-            <span className="sm:hidden">{currentQuestionIndex === questions.length - 1 ? "Resultados" : "Próx."}</span>
-            <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
-          </Button>
-        </div>
       </div>
     </div>
   );
