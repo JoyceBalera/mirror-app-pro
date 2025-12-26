@@ -71,9 +71,9 @@ export const calculateScore = (answers: Answer[]) => {
 };
 
 export const getTraitClassification = (score: number): string => {
-  if (score >= 24 && score <= 55) return "Baixa";
-  if (score >= 56 && score <= 87) return "Média";
-  if (score >= 88 && score <= 120) return "Alta";
+  if (score >= 24 && score <= 47) return "Baixa";
+  if (score >= 48 && score <= 83) return "Média";
+  if (score >= 84 && score <= 120) return "Alta";
   return "Indefinido";
 };
 
