@@ -292,10 +292,12 @@ export async function calculatePlanetaryPositions(date: Date): Promise<Planetary
 
 // ===== CÁLCULO DA DATA DO DESIGN =====
 
+/**
+ * Calcula a Design Date com precisão de minutos usando iteração por timestamp.
+ * O Design é quando o Sol estava exatamente 88° antes da posição no nascimento.
+ * Usa velocidade média do Sol (~0.985647°/dia) para convergir rapidamente.
+ */
 export async function calculateDesignDate(birthDate: Date): Promise<Date> {
-  // O Design é calculado quando o Sol estava 88° antes da posição no nascimento
-  // Aproximação: ~88-89 dias antes (Sol move ~1°/dia)
-  
   const toi = createTimeOfInterest.fromDate(birthDate);
   const sun = createSun(toi);
   const birthSunCoords = await sun.getGeocentricEclipticSphericalDateCoordinates();
@@ -304,31 +306,35 @@ export async function calculateDesignDate(birthDate: Date): Promise<Date> {
   // Longitude alvo = Sol nascimento - 88°
   const targetLong = (birthSunLong - 88 + 360) % 360;
   
-  // Estimativa inicial: ~88.5 dias antes
-  let designDate = new Date(birthDate);
-  designDate.setDate(designDate.getDate() - 88);
+  // Velocidade média do Sol: ~0.985647° por dia
+  const SUN_DEGREES_PER_DAY = 0.985647;
+  const MS_PER_DAY = 86400000;
   
-  // Refinamento iterativo (busca binária simplificada)
-  for (let i = 0; i < 10; i++) {
-    const testToi = createTimeOfInterest.fromDate(designDate);
+  // Estimativa inicial: 88° / velocidade = ~89.27 dias antes
+  let designTimestamp = birthDate.getTime() - (88 / SUN_DEGREES_PER_DAY) * MS_PER_DAY;
+  
+  // Refinamento iterativo usando timestamp (preserva hora/minuto)
+  for (let i = 0; i < 15; i++) {
+    const testDate = new Date(designTimestamp);
+    const testToi = createTimeOfInterest.fromDate(testDate);
     const testSun = createSun(testToi);
     const testCoords = await testSun.getGeocentricEclipticSphericalDateCoordinates();
     const testLong = testCoords.lon;
     
-    // Calcular diferença considerando a volta do zodíaco
-    let diff = targetLong - testLong;
-    if (diff > 180) diff -= 360;
-    if (diff < -180) diff += 360;
+    // Calcular diferença angular considerando wrap-around
+    let diffDeg = targetLong - testLong;
+    if (diffDeg > 180) diffDeg -= 360;
+    if (diffDeg < -180) diffDeg += 360;
     
-    // Se estamos próximos o suficiente (< 0.1°), pare
-    if (Math.abs(diff) < 0.1) break;
+    // Se estamos próximos o suficiente (< 0.01° = ~15 minutos de precisão)
+    if (Math.abs(diffDeg) < 0.01) break;
     
-    // Ajustar: ~1 dia por grau
-    const daysToAdjust = diff;
-    designDate.setDate(designDate.getDate() + daysToAdjust);
+    // Converter diferença angular em fração de dia e ajustar timestamp
+    const deltaDays = diffDeg / SUN_DEGREES_PER_DAY;
+    designTimestamp += deltaDays * MS_PER_DAY;
   }
   
-  return designDate;
+  return new Date(designTimestamp);
 }
 
 // ===== DETERMINAÇÃO DOS CENTROS =====
