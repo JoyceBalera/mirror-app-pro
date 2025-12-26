@@ -101,13 +101,25 @@ const DesenhoHumanoResults = () => {
 
     setRecalculating(true);
     try {
-      // Reconstruir a data/hora UTC do nascimento a partir dos dados salvos
-      const [year, month, day] = result.birth_date.split('-').map(Number);
-      const [hours, minutes] = result.birth_time.split(':').map(Number);
+      // Verificar se birth_time já tem segundos (HH:MM:SS) ou só HH:MM
+      const timeParts = result.birth_time.split(':');
+      const timeValue = timeParts.length === 3 
+        ? result.birth_time  // Já tem segundos (HH:MM:SS)
+        : `${result.birth_time}:00`;  // Só tem HH:MM, adicionar segundos
       
-      // Buscar o design_date salvo para determinar o offset original
-      // Usamos UTC diretamente como salvo no banco
-      const birthDateTimeUTC = new Date(`${result.birth_date}T${result.birth_time}:00Z`);
+      // Reconstruir a data/hora UTC do nascimento
+      const birthDateTimeUTC = new Date(`${result.birth_date}T${timeValue}Z`);
+      
+      // Validar se a data é válida
+      if (isNaN(birthDateTimeUTC.getTime())) {
+        toast({
+          title: "Erro",
+          description: "Data de nascimento inválida. Verifique os dados salvos.",
+          variant: "destructive",
+        });
+        setRecalculating(false);
+        return;
+      }
       
       // Recalcular o chart
       const chart = await calculateHumanDesignChart(birthDateTimeUTC, {
