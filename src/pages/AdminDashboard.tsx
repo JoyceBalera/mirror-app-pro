@@ -22,6 +22,10 @@ interface Profile {
     completed_at: string | null;
     status: string;
   }>;
+  test_access?: {
+    has_big_five: boolean;
+    has_desenho_humano: boolean;
+  };
 }
 
 const AdminDashboard = () => {
@@ -32,7 +36,13 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filter, setFilter] = useState("all");
-  const [editingUser, setEditingUser] = useState<{ id: string; full_name: string | null; email?: string; role: "user" | "admin" } | null>(null);
+  const [editingUser, setEditingUser] = useState<{ 
+    id: string; 
+    full_name: string | null; 
+    email?: string; 
+    role: "user" | "admin";
+    test_access?: { has_big_five: boolean; has_desenho_humano: boolean };
+  } | null>(null);
 
   useEffect(() => {
     fetchUsers();
@@ -59,8 +69,8 @@ const AdminDashboard = () => {
 
       if (error) throw error;
 
-      // Fetch user roles
-      const usersWithRoles = await Promise.all(
+      // Fetch user roles and test access
+      const usersWithRolesAndAccess = await Promise.all(
         (profiles || []).map(async (user) => {
           const { data: roleData } = await supabase
             .from("user_roles")
@@ -68,15 +78,22 @@ const AdminDashboard = () => {
             .eq("user_id", user.id)
             .single();
 
+          const { data: accessData } = await supabase
+            .from("user_test_access")
+            .select("has_big_five, has_desenho_humano")
+            .eq("user_id", user.id)
+            .maybeSingle();
+
           return {
             ...user,
             role: roleData?.role || "user",
+            test_access: accessData || { has_big_five: false, has_desenho_humano: false },
           };
         })
       );
 
-      setUsers(usersWithRoles);
-      setFilteredUsers(usersWithRoles);
+      setUsers(usersWithRolesAndAccess);
+      setFilteredUsers(usersWithRolesAndAccess);
     } catch (error: any) {
       toast({
         title: "Erro",
@@ -233,7 +250,8 @@ const AdminDashboard = () => {
                   id: user.id, 
                   full_name: user.full_name, 
                   email: user.email,
-                  role: user.role || "user" 
+                  role: user.role || "user",
+                  test_access: user.test_access
                 })}
               />
             ))
