@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -12,6 +13,10 @@ interface EditUserDialogProps {
     id: string;
     full_name: string | null;
     email?: string;
+    test_access?: {
+      has_big_five: boolean;
+      has_desenho_humano: boolean;
+    };
   };
   currentRole: "user" | "admin";
   open: boolean;
@@ -26,12 +31,16 @@ const EditUserDialog = ({ user, currentRole, open, onOpenChange, onUserEdited }:
   const [email, setEmail] = useState(user.email || "");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<"user" | "admin">(currentRole);
+  const [hasBigFive, setHasBigFive] = useState(user.test_access?.has_big_five ?? false);
+  const [hasDesenhoHumano, setHasDesenhoHumano] = useState(user.test_access?.has_desenho_humano ?? false);
 
   useEffect(() => {
     setFullName(user.full_name || "");
     setEmail(user.email || "");
     setPassword("");
     setRole(currentRole);
+    setHasBigFive(user.test_access?.has_big_five ?? false);
+    setHasDesenhoHumano(user.test_access?.has_desenho_humano ?? false);
   }, [user, currentRole]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -46,6 +55,8 @@ const EditUserDialog = ({ user, currentRole, open, onOpenChange, onUserEdited }:
           password: password || undefined,
           fullName,
           role,
+          hasBigFive,
+          hasDesenhoHumano,
         },
       });
 
@@ -127,6 +138,34 @@ const EditUserDialog = ({ user, currentRole, open, onOpenChange, onUserEdited }:
                 <SelectItem value="admin">Administrador</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="space-y-4 pt-4 border-t">
+            <Label className="text-base font-semibold">Permissões de Testes</Label>
+            
+            <div className="flex items-center justify-between">
+              <div>
+                <Label htmlFor="bigFive">Big Five</Label>
+                <p className="text-xs text-muted-foreground">Teste de personalidade</p>
+              </div>
+              <Switch
+                id="bigFive"
+                checked={hasBigFive}
+                onCheckedChange={setHasBigFive}
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div>
+                <Label htmlFor="desenhoHumano">Desenho Humano</Label>
+                <p className="text-xs text-muted-foreground">Mapa energético</p>
+              </div>
+              <Switch
+                id="desenhoHumano"
+                checked={hasDesenhoHumano}
+                onCheckedChange={setHasDesenhoHumano}
+              />
+            </div>
           </div>
 
           <div className="flex gap-2 justify-end pt-4">

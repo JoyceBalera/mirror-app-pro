@@ -17,6 +17,10 @@ interface UserCardProps {
       completed_at: string | null;
       status: string;
     }>;
+    test_access?: {
+      has_big_five: boolean;
+      has_desenho_humano: boolean;
+    };
   };
   onEdit: () => void;
 }
@@ -53,6 +57,28 @@ const UserCard = ({ user, onEdit }: UserCardProps) => {
               ) : (
                 <Badge variant="secondary" className="bg-orange-100 text-orange-700">
                   Pendente
+                </Badge>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-xs text-muted-foreground">Testes liberados:</span>
+              {user.test_access?.has_big_five ? (
+                <Badge variant="outline" className="bg-primary/10 text-primary text-xs">
+                  Big Five ✓
+                </Badge>
+              ) : (
+                <Badge variant="outline" className="bg-muted text-muted-foreground text-xs">
+                  Big Five ✗
+                </Badge>
+              )}
+              {user.test_access?.has_desenho_humano ? (
+                <Badge variant="outline" className="bg-primary/10 text-primary text-xs">
+                  Desenho Humano ✓
+                </Badge>
+              ) : (
+                <Badge variant="outline" className="bg-muted text-muted-foreground text-xs">
+                  Desenho Humano ✗
                 </Badge>
               )}
             </div>

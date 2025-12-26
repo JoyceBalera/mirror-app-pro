@@ -43,13 +43,13 @@ serve(async (req) => {
     }
 
     // Get request body
-    const { userId, email, password, fullName, role } = await req.json();
+    const { userId, email, password, fullName, role, hasBigFive, hasDesenhoHumano } = await req.json();
 
     if (!userId || !email || !fullName || !role) {
       throw new Error("Missing required fields");
     }
 
-    console.log("Updating user:", userId);
+    console.log("Updating user:", userId, { hasBigFive, hasDesenhoHumano });
 
     // Update user in auth.users
     const updateData: any = {
@@ -98,6 +98,49 @@ serve(async (req) => {
       if (roleUpdateError) {
         console.error("Error updating role:", roleUpdateError);
         throw roleUpdateError;
+      }
+    }
+
+    // Update test access permissions
+    if (hasBigFive !== undefined || hasDesenhoHumano !== undefined) {
+      console.log("Updating test access permissions");
+      
+      // Check if record exists
+      const { data: existingAccess } = await supabaseAdmin
+        .from("user_test_access")
+        .select("id")
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (existingAccess) {
+        // Update existing record
+        const { error: accessUpdateError } = await supabaseAdmin
+          .from("user_test_access")
+          .update({
+            has_big_five: hasBigFive ?? false,
+            has_desenho_humano: hasDesenhoHumano ?? false,
+            updated_at: new Date().toISOString()
+          })
+          .eq("user_id", userId);
+
+        if (accessUpdateError) {
+          console.error("Error updating test access:", accessUpdateError);
+          throw accessUpdateError;
+        }
+      } else if (hasBigFive || hasDesenhoHumano) {
+        // Create new record only if at least one permission is enabled
+        const { error: accessInsertError } = await supabaseAdmin
+          .from("user_test_access")
+          .insert({
+            user_id: userId,
+            has_big_five: hasBigFive ?? false,
+            has_desenho_humano: hasDesenhoHumano ?? false
+          });
+
+        if (accessInsertError) {
+          console.error("Error inserting test access:", accessInsertError);
+          throw accessInsertError;
+        }
       }
     }
 
