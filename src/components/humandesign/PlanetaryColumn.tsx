@@ -50,69 +50,66 @@ const PlanetaryColumn = ({ title, activations, variant }: PlanetaryColumnProps) 
     return indexA - indexB;
   });
 
-  const bgColor = isDesign ? 'bg-[#7B192B]' : 'bg-black';
-  const textColor = 'text-white';
-  const accentColor = isDesign ? 'text-red-200' : 'text-gray-300';
-
   return (
-    <div className={`${bgColor} rounded-lg overflow-hidden`}>
+    <div className="flex flex-col">
       {/* Header */}
-      <div className="px-4 py-3 border-b border-white/20">
-        <h3 className={`font-bold text-center ${textColor}`}>
+      <div className="text-center mb-3">
+        <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
           {title}
         </h3>
-        <p className={`text-xs text-center ${accentColor}`}>
-          {isDesign ? '(Inconsciente)' : '(Consciente)'}
-        </p>
       </div>
 
       {/* Ativações */}
-      <div className="divide-y divide-white/10">
+      <div className="space-y-1.5">
         {sortedActivations.map((activation, idx) => {
-          const gateInfo = GATES_DATA[activation.gate];
           const symbol = PLANET_SYMBOLS[activation.planet] || activation.planetLabel;
+          
+          // Determinar seta de direção baseada na linha
+          let arrow = '';
+          if (activation.color) {
+            if (activation.color <= 2) arrow = '→';
+            else if (activation.color >= 5) arrow = '←';
+          }
           
           return (
             <div 
               key={idx} 
-              className="px-3 py-2 flex items-center justify-between hover:bg-white/5 transition-colors"
+              className="flex items-center justify-between gap-2 px-3 py-1.5 bg-muted/30 rounded-md hover:bg-muted/50 transition-colors"
             >
-              {/* Planeta */}
-              <div className="flex items-center gap-2 min-w-[80px]">
-                <span className="text-lg" title={activation.planetLabel}>
+              {/* Símbolo + Gate.Linha */}
+              <div className="flex items-center gap-2">
+                <span className="text-base opacity-70" title={activation.planetLabel}>
                   {symbol}
                 </span>
-                <span className={`text-xs ${accentColor}`}>
-                  {activation.planetLabel}
-                </span>
-              </div>
-
-              {/* Gate e Linha */}
-              <div className="flex items-center gap-1">
-                <span className={`font-bold ${textColor}`}>
+                <span className="font-medium text-foreground">
                   {activation.gate}
-                </span>
-                <span className={`text-sm ${accentColor}`}>
-                  .{activation.line}
+                  <span className="text-muted-foreground">.{activation.line}</span>
                 </span>
               </div>
 
-              {/* Seta de direção (se disponível) */}
-              <div className="w-6 text-center">
-                {activation.color && (
-                  <span className={`text-xs ${accentColor}`}>
-                    {activation.color <= 3 ? '▲' : '▼'}
-                  </span>
-                )}
-              </div>
+              {/* Seta de direção */}
+              {arrow && (
+                <span className="text-muted-foreground text-sm">
+                  {arrow}
+                </span>
+              )}
             </div>
           );
         })}
       </div>
 
-      {/* Footer com contagem */}
-      <div className={`px-4 py-2 border-t border-white/20 ${accentColor} text-xs text-center`}>
-        {activations.length} ativações
+      {/* Setas indicadoras de fluxo */}
+      <div className="flex justify-center mt-3 gap-1">
+        {isDesign ? (
+          <>
+            <span className="text-muted-foreground">→</span>
+          </>
+        ) : (
+          <>
+            <span className="text-muted-foreground">→</span>
+            <span className="text-muted-foreground">←</span>
+          </>
+        )}
       </div>
     </div>
   );
