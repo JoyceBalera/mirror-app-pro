@@ -42,7 +42,7 @@ const Auth = () => {
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        navigate('/');
+        navigate('/dashboard');
       }
     };
     checkUser();
@@ -76,9 +76,9 @@ const Auth = () => {
           title: "Login realizado!",
           description: "Bem-vindo de volta!",
         });
-        navigate('/');
+        navigate('/dashboard');
       } else {
-        const redirectUrl = `${window.location.origin}/`;
+        const redirectUrl = `${window.location.origin}/dashboard`;
         
         const { error } = await supabase.auth.signUp({
           email,

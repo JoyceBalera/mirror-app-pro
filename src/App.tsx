@@ -9,6 +9,7 @@ import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import AdminDashboard from "./pages/AdminDashboard";
 import UserDetails from "./pages/UserDetails";
+import Dashboard from "./pages/Dashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
@@ -43,6 +44,7 @@ const App = () => {
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/admin/dashboard" element={
             <ProtectedRoute>
               <AdminDashboard />
