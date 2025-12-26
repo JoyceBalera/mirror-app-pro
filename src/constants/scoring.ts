@@ -1,12 +1,12 @@
 // Constantes centralizadas para cálculo de scores do Big Five
 export const SCORING = {
-  // Limites para traits (24 questões x 1-5 pontos = 24-120)
-  TRAIT_MIN: 24,
-  TRAIT_MAX: 120,
+  // Limites para traits (60 questões x 1-5 pontos = 60-300)
+  TRAIT_MIN: 60,
+  TRAIT_MAX: 300,
   
-  // Limites para facets (4 questões x 1-5 pontos = 4-20)
-  FACET_MIN: 4,
-  FACET_MAX: 20,
+  // Limites para facets (10 questões x 1-5 pontos = 10-50)
+  FACET_MIN: 10,
+  FACET_MAX: 50,
 };
 
 // Mapeamento de nomes de traits em inglês para português
