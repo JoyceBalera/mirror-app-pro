@@ -110,13 +110,42 @@ const DesenhoHumanoTest = () => {
         activated_gates: chart.allActivatedGates
       };
 
+      // 5.1 Criar sessão de HD como completada
+      const { data: sessionData, error: sessionError } = await supabase
+        .from('human_design_sessions')
+        .insert({
+          user_id: user.id,
+          status: 'completed',
+          completed_at: new Date().toISOString()
+        })
+        .select()
+        .single();
+
+      if (sessionError) throw sessionError;
+
+      // 5.2 Salvar resultado vinculado à sessão
       const { data: result, error } = await supabase
         .from('human_design_results')
-        .insert(insertData as any)
+        .insert({
+          ...insertData,
+          session_id: sessionData.id
+        } as any)
         .select()
         .single();
       
       if (error) throw error;
+
+      // 5.3 Atualizar data de conclusão no user_test_access
+      const { error: accessError } = await supabase
+        .from('user_test_access')
+        .update({ 
+          desenho_humano_completed_at: new Date().toISOString() 
+        })
+        .eq('user_id', user.id);
+
+      if (accessError) {
+        console.error('Erro ao atualizar user_test_access:', accessError);
+      }
       
       toast({
         title: "Mapa gerado com sucesso! 🎉",
