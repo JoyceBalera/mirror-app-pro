@@ -9,11 +9,13 @@ interface BodyGraphProps {
   designGates: number[];
 }
 
-// Cores do design
-const DEFINED_COLOR = "#D4A574"; // Tan/beige para definido
-const UNDEFINED_COLOR = "#FFFFFF"; // Branco para indefinido
+// Cores padrão do Human Design
+const PERSONALITY_COLOR = "#1a1a1a"; // Preto para Personality (consciente)
+const DESIGN_COLOR = "#C41E3A"; // Vermelho para Design (inconsciente)
+const BOTH_COLOR = "#7B192B"; // Marrom-avermelhado para ambos
+const UNDEFINED_COLOR = "#FFFFFF"; // Branco para centros indefinidos
+const DEFINED_COLOR = "#D4A574"; // Tan para centros definidos
 const STROKE_COLOR = "#333333";
-const CHANNEL_DEFINED_COLOR = "#D4A574";
 const CHANNEL_UNDEFINED_COLOR = "#E5E5E5";
 
 // Posições precisas dos centros no SVG
@@ -189,14 +191,52 @@ const BodyGraph = ({
     return activeChannels.filter(ch => ch.isComplete).map(ch => ch.id);
   }, [activeChannels]);
 
-  const getGateColor = (gate: number) => {
+  // Determina a cor do gate baseado em Personality vs Design
+  const getGateColor = (gate: number): { fill: string; type: 'personality' | 'design' | 'both' | 'none' } => {
     const isPersonality = personalityGates.includes(gate);
     const isDesign = designGates.includes(gate);
     
-    if (isPersonality && isDesign) return "#1a1a1a"; // Ambos - preto
-    if (isDesign) return DEFINED_COLOR; // Design - tan
-    if (isPersonality) return "#1a1a1a"; // Personalidade - preto
-    return "transparent";
+    if (isPersonality && isDesign) return { fill: BOTH_COLOR, type: 'both' };
+    if (isDesign) return { fill: DESIGN_COLOR, type: 'design' };
+    if (isPersonality) return { fill: PERSONALITY_COLOR, type: 'personality' };
+    return { fill: "transparent", type: 'none' };
+  };
+
+  // Determina a cor do canal baseado nos gates que o compõem
+  const getChannelColor = (channelId: string): { color: string; type: 'complete' | 'partial' | 'inactive' } => {
+    const gates = channelId.split('-').map(Number);
+    const isComplete = completeChannels.includes(channelId);
+    
+    if (!isComplete) {
+      const hasAnyGate = gates.some(g => activatedGates.includes(g));
+      if (!hasAnyGate) return { color: CHANNEL_UNDEFINED_COLOR, type: 'inactive' };
+      
+      // Canal parcialmente ativo
+      const designActive = gates.some(g => designGates.includes(g));
+      const personalityActive = gates.some(g => personalityGates.includes(g));
+      
+      if (designActive && personalityActive) return { color: BOTH_COLOR, type: 'partial' };
+      if (designActive) return { color: DESIGN_COLOR, type: 'partial' };
+      if (personalityActive) return { color: PERSONALITY_COLOR, type: 'partial' };
+      return { color: CHANNEL_UNDEFINED_COLOR, type: 'inactive' };
+    }
+    
+    // Canal completo
+    const gate1Color = getGateColor(gates[0]);
+    const gate2Color = getGateColor(gates[1]);
+    
+    // Se ambos os gates são de tipos diferentes, é misto
+    if (gate1Color.type !== gate2Color.type) {
+      // Um é personality e outro é design = canal misto
+      const hasDesign = gate1Color.type === 'design' || gate2Color.type === 'design';
+      const hasPersonality = gate1Color.type === 'personality' || gate2Color.type === 'personality';
+      if (hasDesign && hasPersonality) return { color: 'mixed', type: 'complete' };
+    }
+    
+    // Ambos são do mesmo tipo ou um é "both"
+    if (gate1Color.type === 'both' || gate2Color.type === 'both') return { color: BOTH_COLOR, type: 'complete' };
+    if (gate1Color.type === 'design' || gate2Color.type === 'design') return { color: DESIGN_COLOR, type: 'complete' };
+    return { color: PERSONALITY_COLOR, type: 'complete' };
   };
 
   const isGateActivated = (gate: number) => {
@@ -218,7 +258,6 @@ const BodyGraph = ({
 
   const renderCenter = (centerId: string) => {
     const pos = CENTER_POSITIONS[centerId];
-    const center = CENTERS[centerId];
     const isDefined = definedCenters.includes(centerId);
     
     const fillColor = isDefined ? DEFINED_COLOR : UNDEFINED_COLOR;
@@ -362,8 +401,8 @@ const BodyGraph = ({
     Object.entries(GATE_POSITIONS).forEach(([centerId, gates]) => {
       gates.forEach(({ gate, x, y }) => {
         const isActive = isGateActivated(gate);
-        const gateColor = getGateColor(gate);
-        const hasColor = gateColor !== "transparent";
+        const gateColorInfo = getGateColor(gate);
+        const hasColor = gateColorInfo.type !== 'none';
         
         allGates.push(
           <g key={`gate-${gate}`}>
@@ -372,7 +411,7 @@ const BodyGraph = ({
                 cx={x}
                 cy={y}
                 r={10}
-                fill={hasColor ? gateColor : DEFINED_COLOR}
+                fill={hasColor ? gateColorInfo.fill : DEFINED_COLOR}
                 stroke={STROKE_COLOR}
                 strokeWidth={0.5}
               />
@@ -397,11 +436,9 @@ const BodyGraph = ({
 
   const renderChannels = () => {
     return Object.entries(CHANNEL_PATHS).map(([channelId, { path }]) => {
-      const isComplete = completeChannels.includes(channelId);
-      const gates = channelId.split('-').map(Number);
-      const hasAnyGate = gates.some(g => activatedGates.includes(g));
+      const channelColorInfo = getChannelColor(channelId);
       
-      if (!hasAnyGate && !isComplete) {
+      if (channelColorInfo.type === 'inactive') {
         return (
           <path
             key={channelId}
@@ -413,25 +450,31 @@ const BodyGraph = ({
         );
       }
 
-      // Determinar cor do canal
-      const hasPersonality = gates.some(g => personalityGates.includes(g));
-      const hasDesign = gates.some(g => designGates.includes(g));
+      const strokeWidth = channelColorInfo.type === 'complete' ? 5 : 3;
       
-      let strokeColor = CHANNEL_UNDEFINED_COLOR;
-      let strokeWidth = 3;
-      
-      if (isComplete) {
-        if (hasPersonality && hasDesign) {
-          strokeColor = "#1a1a1a"; // Canal misto
-        } else if (hasDesign) {
-          strokeColor = DEFINED_COLOR;
-        } else {
-          strokeColor = "#1a1a1a";
-        }
-        strokeWidth = 5;
-      } else if (hasAnyGate) {
-        strokeColor = hasDesign ? DEFINED_COLOR : "#666";
-        strokeWidth = 3;
+      // Canal misto: renderiza duas linhas lado a lado
+      if (channelColorInfo.color === 'mixed') {
+        return (
+          <g key={channelId}>
+            <path
+              d={path}
+              fill="none"
+              stroke={DESIGN_COLOR}
+              strokeWidth={strokeWidth}
+              strokeLinecap="round"
+              strokeDasharray="8,4"
+            />
+            <path
+              d={path}
+              fill="none"
+              stroke={PERSONALITY_COLOR}
+              strokeWidth={strokeWidth / 2}
+              strokeLinecap="round"
+              strokeDasharray="4,8"
+              strokeDashoffset="4"
+            />
+          </g>
+        );
       }
 
       return (
@@ -439,7 +482,7 @@ const BodyGraph = ({
           key={channelId}
           d={path}
           fill="none"
-          stroke={strokeColor}
+          stroke={channelColorInfo.color}
           strokeWidth={strokeWidth}
           strokeLinecap="round"
         />
@@ -447,10 +490,34 @@ const BodyGraph = ({
     });
   };
 
+  // Legenda visual
+  const renderLegend = () => (
+    <g className="legend" transform="translate(10, 560)">
+      {/* Fundo da legenda */}
+      <rect x="0" y="0" width="480" height="35" fill="white" opacity="0.9" rx="4" />
+      
+      {/* Design (Vermelho) */}
+      <circle cx="20" cy="17" r="6" fill={DESIGN_COLOR} />
+      <text x="32" y="21" fontSize="10" fill="#333">Design (Inconsciente)</text>
+      
+      {/* Personality (Preto) */}
+      <circle cx="160" cy="17" r="6" fill={PERSONALITY_COLOR} />
+      <text x="172" y="21" fontSize="10" fill="#333">Personality (Consciente)</text>
+      
+      {/* Ambos */}
+      <circle cx="320" cy="17" r="6" fill={BOTH_COLOR} />
+      <text x="332" y="21" fontSize="10" fill="#333">Ambos</text>
+      
+      {/* Centro Definido */}
+      <rect x="400" y="11" width="12" height="12" fill={DEFINED_COLOR} stroke={STROKE_COLOR} strokeWidth="0.5" rx="2" />
+      <text x="418" y="21" fontSize="10" fill="#333">Definido</text>
+    </g>
+  );
+
   return (
     <div className="relative">
       <svg 
-        viewBox="0 0 500 600" 
+        viewBox="0 0 500 610" 
         className="w-full max-w-[400px] mx-auto"
         style={{ height: 'auto' }}
       >
@@ -471,6 +538,9 @@ const BodyGraph = ({
         <g className="gates">
           {renderGateNumbers()}
         </g>
+
+        {/* Legenda */}
+        {renderLegend()}
       </svg>
     </div>
   );
