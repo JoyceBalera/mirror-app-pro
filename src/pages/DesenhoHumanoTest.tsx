@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { geocodeLocation } from "@/utils/geocoding";
+import { geocodeLocation, getTimezoneFromCoords, convertLocalBirthToUTC } from "@/utils/geocoding";
 import { calculateHumanDesignChart } from "@/utils/humanDesignCalculator";
 
 const DesenhoHumanoTest = () => {
@@ -75,12 +75,19 @@ const DesenhoHumanoTest = () => {
       setLoadingMessage("Buscando coordenadas do local...");
       const location = await geocodeLocation(birthLocation);
       
-      // 3. Criar datetime de nascimento
-      const birthDateTime = new Date(`${birthDate}T${birthTime}:00`);
+      // 3. Obter timezone do local de nascimento
+      setLoadingMessage("Determinando fuso horário...");
+      const timezoneResult = await getTimezoneFromCoords(location.lat, location.lon);
+      console.log('Timezone detectado:', timezoneResult.timezone, 'GMT', timezoneResult.gmtOffset);
       
-      // 4. Calcular Human Design Chart
+      // 4. Converter hora local para UTC usando timezone correto
+      const birthDateTimeUTC = convertLocalBirthToUTC(birthDate, birthTime, timezoneResult.timezone);
+      console.log('Hora local:', `${birthDate}T${birthTime}`);
+      console.log('Hora UTC:', birthDateTimeUTC.toISOString());
+      
+      // 5. Calcular Human Design Chart com hora UTC correta
       setLoadingMessage("Calculando posições planetárias...");
-      const chart = await calculateHumanDesignChart(birthDateTime, {
+      const chart = await calculateHumanDesignChart(birthDateTimeUTC, {
         lat: location.lat,
         lon: location.lon,
         name: birthLocation
