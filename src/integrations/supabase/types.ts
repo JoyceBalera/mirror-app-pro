@@ -46,6 +46,33 @@ export type Database = {
           },
         ]
       }
+      human_design_sessions: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          id: string
+          started_at: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          started_at?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          started_at?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -192,6 +219,42 @@ export type Database = {
           created_at?: string
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_test_access: {
+        Row: {
+          big_five_completed_at: string | null
+          created_at: string
+          desenho_humano_completed_at: string | null
+          has_big_five: boolean
+          has_desenho_humano: boolean
+          id: string
+          integrated_report_available: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          big_five_completed_at?: string | null
+          created_at?: string
+          desenho_humano_completed_at?: string | null
+          has_big_five?: boolean
+          has_desenho_humano?: boolean
+          id?: string
+          integrated_report_available?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          big_five_completed_at?: string | null
+          created_at?: string
+          desenho_humano_completed_at?: string | null
+          has_big_five?: boolean
+          has_desenho_humano?: boolean
+          id?: string
+          integrated_report_available?: boolean
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
