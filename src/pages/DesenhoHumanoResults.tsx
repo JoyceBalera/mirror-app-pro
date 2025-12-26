@@ -166,30 +166,40 @@ const DesenhoHumanoResults = () => {
           </Card>
 
           {/* BodyGraph + Colunas Planetárias */}
-          <div className="grid lg:grid-cols-3 gap-6">
-            {/* Coluna Design (Esquerda) */}
-            <PlanetaryColumn
-              title="Design"
-              activations={result.design_activations || []}
-              variant="design"
-            />
+          <Card className="bg-white border-2 border-[#BFAFB2] overflow-hidden">
+            <CardContent className="p-6">
+              <div className="grid grid-cols-[auto_1fr_auto] gap-4 md:gap-8 items-start">
+                {/* Coluna Design (Esquerda) */}
+                <div className="min-w-[100px]">
+                  <PlanetaryColumn
+                    title="Design"
+                    activations={result.design_activations || []}
+                    variant="design"
+                  />
+                </div>
 
-            {/* BodyGraph (Centro) */}
-            <BodyGraph
-              definedCenters={definedCenters}
-              activeChannels={result.channels || []}
-              activatedGates={result.activated_gates || []}
-              personalityGates={personalityGates}
-              designGates={designGates}
-            />
+                {/* BodyGraph (Centro) */}
+                <div className="flex justify-center">
+                  <BodyGraph
+                    definedCenters={definedCenters}
+                    activeChannels={result.channels || []}
+                    activatedGates={result.activated_gates || []}
+                    personalityGates={personalityGates}
+                    designGates={designGates}
+                  />
+                </div>
 
-            {/* Coluna Personalidade (Direita) */}
-            <PlanetaryColumn
-              title="Personalidade"
-              activations={result.personality_activations || []}
-              variant="personality"
-            />
-          </div>
+                {/* Coluna Personalidade (Direita) */}
+                <div className="min-w-[100px]">
+                  <PlanetaryColumn
+                    title="Personality"
+                    activations={result.personality_activations || []}
+                    variant="personality"
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Canais Ativos */}
           <Card className="bg-white border-2 border-[#BFAFB2]">
