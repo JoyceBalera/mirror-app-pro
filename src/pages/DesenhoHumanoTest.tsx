@@ -6,6 +6,9 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { geocodeLocation } from "@/utils/geocoding";
+import { calculateHumanDesignChart } from "@/utils/humanDesignCalculator";
 
 const DesenhoHumanoTest = () => {
   const navigate = useNavigate();
@@ -17,6 +20,7 @@ const DesenhoHumanoTest = () => {
   
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState("");
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -55,24 +59,83 @@ const DesenhoHumanoTest = () => {
     setIsSubmitting(true);
     
     try {
-      // Simular processamento - integração futura
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // 1. Verificar usuário logado
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "Erro de autenticação",
+          description: "Você precisa estar logado para gerar seu mapa.",
+          variant: "destructive",
+        });
+        navigate("/auth");
+        return;
+      }
+
+      // 2. Geocodificar local
+      setLoadingMessage("Buscando coordenadas do local...");
+      const location = await geocodeLocation(birthLocation);
       
-      toast({
-        title: "Dados enviados!",
-        description: "Seu mapa energético está sendo gerado...",
+      // 3. Criar datetime de nascimento
+      const birthDateTime = new Date(`${birthDate}T${birthTime}:00`);
+      
+      // 4. Calcular Human Design Chart
+      setLoadingMessage("Calculando posições planetárias...");
+      const chart = await calculateHumanDesignChart(birthDateTime, {
+        lat: location.lat,
+        lon: location.lon,
+        name: birthLocation
       });
       
-      navigate("/dashboard");
+      // 5. Salvar resultado no banco
+      setLoadingMessage("Salvando seu mapa energético...");
+      
+      const insertData = {
+        user_id: user.id,
+        birth_date: birthDate,
+        birth_time: birthTime,
+        birth_location: birthLocation,
+        birth_lat: location.lat,
+        birth_lon: location.lon,
+        design_date: chart.designDate.toISOString(),
+        energy_type: chart.type,
+        strategy: chart.strategy,
+        authority: chart.authority,
+        profile: chart.profile,
+        definition: chart.definition,
+        incarnation_cross: chart.incarnationCross,
+        personality_activations: chart.personality as unknown as any,
+        design_activations: chart.design as unknown as any,
+        centers: chart.centers as unknown as any,
+        channels: chart.channels as unknown as any,
+        activated_gates: chart.allActivatedGates
+      };
+
+      const { data: result, error } = await supabase
+        .from('human_design_results')
+        .insert(insertData as any)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Mapa gerado com sucesso! 🎉",
+        description: `Você é um(a) ${chart.type} com perfil ${chart.profile}`,
+      });
+      
+      // 6. Navegar para página de resultados
+      navigate(`/desenho-humano/results/${result.id}`);
       
     } catch (error: any) {
+      console.error('Erro ao calcular HD:', error);
       toast({
         title: "Erro",
-        description: error.message || "Não foi possível processar seus dados.",
+        description: error.message || "Não foi possível calcular seu mapa.",
         variant: "destructive",
       });
     } finally {
       setIsSubmitting(false);
+      setLoadingMessage("");
     }
   };
 
@@ -115,6 +178,7 @@ const DesenhoHumanoTest = () => {
                     onChange={(e) => setBirthDate(e.target.value)}
                     className={errors.birthDate ? "border-red-500" : ""}
                     max={new Date().toISOString().split("T")[0]}
+                    disabled={isSubmitting}
                   />
                   {errors.birthDate && (
                     <p className="text-sm text-red-500">{errors.birthDate}</p>
@@ -132,6 +196,7 @@ const DesenhoHumanoTest = () => {
                     value={birthTime}
                     onChange={(e) => setBirthTime(e.target.value)}
                     className={errors.birthTime ? "border-red-500" : ""}
+                    disabled={isSubmitting}
                   />
                   {errors.birthTime && (
                     <p className="text-sm text-red-500">{errors.birthTime}</p>
@@ -154,6 +219,7 @@ const DesenhoHumanoTest = () => {
                     placeholder="São Paulo, SP, Brasil"
                     className={errors.birthLocation ? "border-red-500" : ""}
                     minLength={5}
+                    disabled={isSubmitting}
                   />
                   {errors.birthLocation && (
                     <p className="text-sm text-red-500">{errors.birthLocation}</p>
@@ -163,6 +229,13 @@ const DesenhoHumanoTest = () => {
                   </p>
                 </div>
 
+                {/* Loading Message */}
+                {loadingMessage && (
+                  <div className="bg-[#7B192B]/10 text-[#7B192B] p-3 rounded-lg text-center">
+                    {loadingMessage}
+                  </div>
+                )}
+
                 {/* BOTÕES */}
                 <div className="flex justify-between items-center mt-6 pt-4 border-t border-[#BFAFB2]">
                   <Button
@@ -170,6 +243,7 @@ const DesenhoHumanoTest = () => {
                     variant="ghost"
                     className="text-[#BFAFB2] hover:text-[#7B192B]"
                     onClick={() => navigate("/dashboard")}
+                    disabled={isSubmitting}
                   >
                     ← Voltar
                   </Button>
@@ -182,7 +256,7 @@ const DesenhoHumanoTest = () => {
                     {isSubmitting ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Gerando...
+                        Calculando...
                       </>
                     ) : (
                       "GERAR MEU MAPA ✨"
