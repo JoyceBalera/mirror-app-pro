@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2, ArrowLeft, Brain, User, Zap, Target, RefreshCw, ChevronDown, ChevronUp, Bug } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useUserRole } from "@/hooks/useUserRole";
 import BodyGraph from "@/components/humandesign/BodyGraph";
 import PlanetaryColumn from "@/components/humandesign/PlanetaryColumn";
 import AnalysisSections from "@/components/humandesign/AnalysisSections";
@@ -39,6 +40,7 @@ const DesenhoHumanoResults = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const { toast } = useToast();
+  const { isAdmin } = useUserRole();
   
   const [result, setResult] = useState<HumanDesignResult | null>(null);
   const [loading, setLoading] = useState(true);
@@ -372,61 +374,63 @@ const DesenhoHumanoResults = () => {
             </CardContent>
           </Card>
 
-          {/* Painel de Debug (Colapsável) */}
-          <Collapsible open={debugOpen} onOpenChange={setDebugOpen}>
-            <Card className="bg-white border-2 border-amber-300">
-              <CollapsibleTrigger asChild>
-                <CardContent className="p-4 cursor-pointer hover:bg-amber-50 transition-colors">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-amber-700">
-                      <Bug className="h-5 w-5" />
-                      <span className="font-medium">Painel de Debug (Validação)</span>
+          {/* Painel de Debug (Colapsável) - APENAS ADMIN */}
+          {isAdmin && (
+            <Collapsible open={debugOpen} onOpenChange={setDebugOpen}>
+              <Card className="bg-white border-2 border-amber-300">
+                <CollapsibleTrigger asChild>
+                  <CardContent className="p-4 cursor-pointer hover:bg-amber-50 transition-colors">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 text-amber-700">
+                        <Bug className="h-5 w-5" />
+                        <span className="font-medium">Painel de Debug (Validação)</span>
+                      </div>
+                      {debugOpen ? <ChevronUp className="h-5 w-5 text-amber-600" /> : <ChevronDown className="h-5 w-5 text-amber-600" />}
                     </div>
-                    {debugOpen ? <ChevronUp className="h-5 w-5 text-amber-600" /> : <ChevronDown className="h-5 w-5 text-amber-600" />}
-                  </div>
-                </CardContent>
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                <CardContent className="pt-0 p-4 border-t border-amber-200">
-                  <div className="grid md:grid-cols-2 gap-4 text-sm font-mono">
-                    {/* Birth Data */}
-                    <div className="space-y-2">
-                      <h4 className="font-bold text-amber-800">Nascimento (Personality)</h4>
-                      <p><span className="text-muted-foreground">Data/Hora Salva:</span> {result.birth_date} {result.birth_time} UTC</p>
-                      <p><span className="text-muted-foreground">Coordenadas:</span> {result.birth_lat?.toFixed(4)}, {result.birth_lon?.toFixed(4)}</p>
-                      <p><span className="text-muted-foreground">Sol (Personality):</span> {getSunLongitude(result.personality_activations, 'Personality')}</p>
-                    </div>
-                    
-                    {/* Design Data */}
-                    <div className="space-y-2">
-                      <h4 className="font-bold text-amber-800">Design (88° antes)</h4>
-                      <p><span className="text-muted-foreground">Design Date:</span> {formatDesignDate(result.design_date)}</p>
-                      <p><span className="text-muted-foreground">Sol (Design):</span> {getSunLongitude(result.design_activations, 'Design')}</p>
-                    </div>
+                  </CardContent>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <CardContent className="pt-0 p-4 border-t border-amber-200">
+                    <div className="grid md:grid-cols-2 gap-4 text-sm font-mono">
+                      {/* Birth Data */}
+                      <div className="space-y-2">
+                        <h4 className="font-bold text-amber-800">Nascimento (Personality)</h4>
+                        <p><span className="text-muted-foreground">Data/Hora Salva:</span> {result.birth_date} {result.birth_time} UTC</p>
+                        <p><span className="text-muted-foreground">Coordenadas:</span> {result.birth_lat?.toFixed(4)}, {result.birth_lon?.toFixed(4)}</p>
+                        <p><span className="text-muted-foreground">Sol (Personality):</span> {getSunLongitude(result.personality_activations, 'Personality')}</p>
+                      </div>
+                      
+                      {/* Design Data */}
+                      <div className="space-y-2">
+                        <h4 className="font-bold text-amber-800">Design (88° antes)</h4>
+                        <p><span className="text-muted-foreground">Design Date:</span> {formatDesignDate(result.design_date)}</p>
+                        <p><span className="text-muted-foreground">Sol (Design):</span> {getSunLongitude(result.design_activations, 'Design')}</p>
+                      </div>
 
-                    {/* Moon and Mercury debug */}
-                    <div className="md:col-span-2 pt-2 border-t border-amber-100">
-                      <h4 className="font-bold text-amber-800 mb-2">Lua e Mercúrio (Verificação)</h4>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <p className="text-xs text-muted-foreground">Personality</p>
-                          {result.personality_activations?.filter((a: any) => ['Moon', 'Mercury'].includes(a.planet)).map((a: any) => (
-                            <p key={a.planet}>{a.planetLabel}: <strong>{a.gate}.{a.line}</strong> ({a.longitude?.toFixed(2)}°)</p>
-                          ))}
-                        </div>
-                        <div>
-                          <p className="text-xs text-muted-foreground">Design</p>
-                          {result.design_activations?.filter((a: any) => ['Moon', 'Mercury'].includes(a.planet)).map((a: any) => (
-                            <p key={a.planet}>{a.planetLabel}: <strong>{a.gate}.{a.line}</strong> ({a.longitude?.toFixed(2)}°)</p>
-                          ))}
+                      {/* Moon and Mercury debug */}
+                      <div className="md:col-span-2 pt-2 border-t border-amber-100">
+                        <h4 className="font-bold text-amber-800 mb-2">Lua e Mercúrio (Verificação)</h4>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <p className="text-xs text-muted-foreground">Personality</p>
+                            {result.personality_activations?.filter((a: any) => ['Moon', 'Mercury'].includes(a.planet)).map((a: any) => (
+                              <p key={a.planet}>{a.planetLabel}: <strong>{a.gate}.{a.line}</strong> ({a.longitude?.toFixed(2)}°)</p>
+                            ))}
+                          </div>
+                          <div>
+                            <p className="text-xs text-muted-foreground">Design</p>
+                            {result.design_activations?.filter((a: any) => ['Moon', 'Mercury'].includes(a.planet)).map((a: any) => (
+                              <p key={a.planet}>{a.planetLabel}: <strong>{a.gate}.{a.line}</strong> ({a.longitude?.toFixed(2)}°)</p>
+                            ))}
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                </CardContent>
-              </CollapsibleContent>
-            </Card>
-          </Collapsible>
+                  </CardContent>
+                </CollapsibleContent>
+              </Card>
+            </Collapsible>
+          )}
 
           {/* Botões de Ação */}
           <div className="flex justify-center gap-4 flex-wrap">
@@ -437,23 +441,26 @@ const DesenhoHumanoResults = () => {
             >
               Voltar ao Dashboard
             </Button>
-            <Button
-              onClick={handleRecalculate}
-              disabled={recalculating || !result.birth_lat || !result.birth_lon}
-              className="bg-amber-600 hover:bg-amber-700 text-white"
-            >
-              {recalculating ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Recalculando...
-                </>
-              ) : (
-                <>
-                  <RefreshCw className="mr-2 h-4 w-4" />
-                  Recalcular Mapa
-                </>
-              )}
-            </Button>
+            {/* Botão Recalcular - APENAS ADMIN */}
+            {isAdmin && (
+              <Button
+                onClick={handleRecalculate}
+                disabled={recalculating || !result.birth_lat || !result.birth_lon}
+                className="bg-amber-600 hover:bg-amber-700 text-white"
+              >
+                {recalculating ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Recalculando...
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="mr-2 h-4 w-4" />
+                    Recalcular Mapa
+                  </>
+                )}
+              </Button>
+            )}
           </div>
         </div>
       </main>
