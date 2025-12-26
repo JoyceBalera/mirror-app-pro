@@ -18,165 +18,217 @@ const DEFINED_COLOR = "#D4A574"; // Tan para centros definidos
 const STROKE_COLOR = "#333333";
 const CHANNEL_UNDEFINED_COLOR = "#E5E5E5";
 
-// Posições precisas dos centros no SVG
+// Posições dos centros no layout tradicional do Human Design
+// Layout baseado em proporções anatômicas corretas
 const CENTER_POSITIONS: Record<string, { x: number; y: number }> = {
-  head: { x: 250, y: 55 },
-  ajna: { x: 250, y: 120 },
-  throat: { x: 250, y: 195 },
-  g: { x: 250, y: 310 },
-  heart: { x: 165, y: 280 },
-  spleen: { x: 100, y: 370 },
-  sacral: { x: 250, y: 420 },
-  solar: { x: 340, y: 370 },
-  root: { x: 250, y: 520 },
+  head: { x: 200, y: 40 },      // Topo - triângulo apontando para cima
+  ajna: { x: 200, y: 100 },     // Abaixo da cabeça - triângulo apontando para baixo
+  throat: { x: 200, y: 170 },   // Garganta - quadrado
+  g: { x: 200, y: 270 },        // Centro G/Identidade - losango
+  heart: { x: 130, y: 230 },    // Coração/Ego - à esquerda, acima do G
+  spleen: { x: 90, y: 340 },    // Baço - à esquerda
+  sacral: { x: 200, y: 370 },   // Sacral - abaixo do G
+  solar: { x: 310, y: 340 },    // Plexo Solar - à direita
+  root: { x: 200, y: 460 },     // Raiz - base
 };
 
-// Gates por posição em cada centro (para exibir os números)
+// Gates por posição em cada centro - ajustados para o novo layout
 const GATE_POSITIONS: Record<string, { gate: number; x: number; y: number }[]> = {
   head: [
-    { gate: 64, x: 230, y: 30 },
-    { gate: 61, x: 250, y: 30 },
-    { gate: 63, x: 270, y: 30 },
+    { gate: 64, x: 185, y: 18 },
+    { gate: 61, x: 200, y: 18 },
+    { gate: 63, x: 215, y: 18 },
   ],
   ajna: [
-    { gate: 47, x: 218, y: 100 },
-    { gate: 24, x: 238, y: 100 },
-    { gate: 4, x: 258, y: 100 },
-    { gate: 17, x: 218, y: 138 },
-    { gate: 43, x: 250, y: 148 },
-    { gate: 11, x: 282, y: 138 },
+    { gate: 47, x: 175, y: 82 },
+    { gate: 24, x: 200, y: 82 },
+    { gate: 4, x: 225, y: 82 },
+    { gate: 17, x: 175, y: 115 },
+    { gate: 43, x: 200, y: 120 },
+    { gate: 11, x: 225, y: 115 },
   ],
   throat: [
-    { gate: 62, x: 198, y: 175 },
-    { gate: 23, x: 230, y: 172 },
-    { gate: 56, x: 270, y: 172 },
-    { gate: 35, x: 295, y: 183 },
-    { gate: 12, x: 300, y: 205 },
-    { gate: 16, x: 198, y: 195 },
-    { gate: 20, x: 215, y: 215 },
-    { gate: 8, x: 250, y: 210 },
-    { gate: 33, x: 285, y: 215 },
-    { gate: 31, x: 240, y: 225 },
-    { gate: 45, x: 196, y: 220 },
+    { gate: 62, x: 150, y: 155 },
+    { gate: 23, x: 175, y: 152 },
+    { gate: 56, x: 225, y: 152 },
+    { gate: 35, x: 250, y: 155 },
+    { gate: 16, x: 148, y: 175 },
+    { gate: 20, x: 165, y: 185 },
+    { gate: 8, x: 200, y: 182 },
+    { gate: 31, x: 188, y: 195 },
+    { gate: 33, x: 235, y: 185 },
+    { gate: 12, x: 252, y: 175 },
+    { gate: 45, x: 150, y: 192 },
   ],
   g: [
-    { gate: 7, x: 235, y: 285 },
-    { gate: 1, x: 265, y: 285 },
-    { gate: 13, x: 275, y: 305 },
-    { gate: 25, x: 280, y: 325 },
-    { gate: 46, x: 260, y: 340 },
-    { gate: 2, x: 240, y: 340 },
-    { gate: 15, x: 220, y: 325 },
-    { gate: 10, x: 225, y: 305 },
+    { gate: 7, x: 188, y: 250 },
+    { gate: 1, x: 212, y: 250 },
+    { gate: 13, x: 225, y: 265 },
+    { gate: 25, x: 228, y: 282 },
+    { gate: 46, x: 212, y: 295 },
+    { gate: 2, x: 188, y: 295 },
+    { gate: 15, x: 172, y: 282 },
+    { gate: 10, x: 175, y: 265 },
   ],
   heart: [
-    { gate: 21, x: 152, y: 260 },
-    { gate: 51, x: 175, y: 260 },
-    { gate: 26, x: 155, y: 290 },
-    { gate: 40, x: 175, y: 295 },
+    { gate: 21, x: 115, y: 212 },
+    { gate: 51, x: 140, y: 212 },
+    { gate: 26, x: 118, y: 240 },
+    { gate: 40, x: 142, y: 245 },
   ],
   spleen: [
-    { gate: 48, x: 78, y: 345 },
-    { gate: 57, x: 98, y: 345 },
-    { gate: 44, x: 118, y: 355 },
-    { gate: 50, x: 82, y: 375 },
-    { gate: 32, x: 85, y: 395 },
-    { gate: 28, x: 105, y: 390 },
-    { gate: 18, x: 118, y: 380 },
+    { gate: 48, x: 68, y: 318 },
+    { gate: 57, x: 88, y: 318 },
+    { gate: 44, x: 108, y: 325 },
+    { gate: 50, x: 72, y: 345 },
+    { gate: 32, x: 75, y: 365 },
+    { gate: 28, x: 95, y: 358 },
+    { gate: 18, x: 108, y: 350 },
   ],
   sacral: [
-    { gate: 5, x: 225, y: 400 },
-    { gate: 14, x: 245, y: 395 },
-    { gate: 29, x: 265, y: 400 },
-    { gate: 59, x: 285, y: 410 },
-    { gate: 9, x: 225, y: 430 },
-    { gate: 3, x: 245, y: 435 },
-    { gate: 42, x: 265, y: 430 },
-    { gate: 27, x: 210, y: 415 },
-    { gate: 34, x: 208, y: 395 },
+    { gate: 5, x: 175, y: 352 },
+    { gate: 14, x: 195, y: 348 },
+    { gate: 29, x: 215, y: 352 },
+    { gate: 59, x: 235, y: 358 },
+    { gate: 9, x: 175, y: 382 },
+    { gate: 3, x: 195, y: 388 },
+    { gate: 42, x: 215, y: 382 },
+    { gate: 27, x: 160, y: 368 },
+    { gate: 34, x: 158, y: 350 },
   ],
   solar: [
-    { gate: 36, x: 318, y: 350 },
-    { gate: 22, x: 340, y: 345 },
-    { gate: 37, x: 360, y: 355 },
-    { gate: 6, x: 320, y: 375 },
-    { gate: 49, x: 340, y: 385 },
-    { gate: 55, x: 362, y: 378 },
-    { gate: 30, x: 365, y: 395 },
+    { gate: 36, x: 292, y: 318 },
+    { gate: 22, x: 312, y: 318 },
+    { gate: 37, x: 332, y: 325 },
+    { gate: 6, x: 295, y: 348 },
+    { gate: 49, x: 312, y: 358 },
+    { gate: 55, x: 332, y: 350 },
+    { gate: 30, x: 335, y: 365 },
   ],
   root: [
-    { gate: 53, x: 220, y: 498 },
-    { gate: 60, x: 240, y: 498 },
-    { gate: 52, x: 260, y: 498 },
-    { gate: 19, x: 295, y: 510 },
-    { gate: 39, x: 315, y: 525 },
-    { gate: 41, x: 330, y: 540 },
-    { gate: 58, x: 175, y: 540 },
-    { gate: 38, x: 188, y: 525 },
-    { gate: 54, x: 205, y: 510 },
+    { gate: 53, x: 175, y: 440 },
+    { gate: 60, x: 195, y: 440 },
+    { gate: 52, x: 215, y: 440 },
+    { gate: 19, x: 248, y: 455 },
+    { gate: 39, x: 268, y: 470 },
+    { gate: 41, x: 285, y: 485 },
+    { gate: 58, x: 130, y: 485 },
+    { gate: 38, x: 142, y: 470 },
+    { gate: 54, x: 158, y: 455 },
   ],
 };
 
-// Canais com paths de conexão
+// Canais com paths de conexão - ajustados para as novas posições
 const CHANNEL_PATHS: Record<string, { from: string; to: string; path: string }> = {
-  '64-47': { from: 'head', to: 'ajna', path: 'M235,70 L230,95' },
-  '61-24': { from: 'head', to: 'ajna', path: 'M250,70 L250,95' },
-  '63-4': { from: 'head', to: 'ajna', path: 'M265,70 L268,95' },
-  '17-62': { from: 'ajna', to: 'throat', path: 'M225,140 L205,165' },
-  '43-23': { from: 'ajna', to: 'throat', path: 'M250,145 L250,170' },
-  '11-56': { from: 'ajna', to: 'throat', path: 'M275,140 L285,165' },
-  '16-48': { from: 'throat', to: 'spleen', path: 'M200,200 C150,280 110,320 100,345' },
-  '20-57': { from: 'throat', to: 'spleen', path: 'M210,210 C140,280 100,320 95,345' },
-  '20-34': { from: 'throat', to: 'sacral', path: 'M215,220 L210,395' },
-  '20-10': { from: 'throat', to: 'g', path: 'M220,220 L225,285' },
-  '31-7': { from: 'throat', to: 'g', path: 'M240,225 L235,285' },
-  '8-1': { from: 'throat', to: 'g', path: 'M250,220 L250,285' },
-  '33-13': { from: 'throat', to: 'g', path: 'M280,220 L275,290' },
-  '45-21': { from: 'throat', to: 'heart', path: 'M198,218 L160,255' },
-  '12-22': { from: 'throat', to: 'solar', path: 'M295,210 L325,345' },
-  '35-36': { from: 'throat', to: 'solar', path: 'M290,190 L318,345' },
-  '26-44': { from: 'heart', to: 'spleen', path: 'M155,295 L120,355' },
-  '40-37': { from: 'heart', to: 'solar', path: 'M180,295 C220,330 280,340 340,360' },
-  '51-25': { from: 'heart', to: 'g', path: 'M175,265 L250,300' },
-  '10-34': { from: 'g', to: 'sacral', path: 'M225,330 L210,395' },
-  '10-57': { from: 'g', to: 'spleen', path: 'M220,320 C160,350 120,360 100,365' },
-  '15-5': { from: 'g', to: 'sacral', path: 'M230,340 L230,395' },
-  '46-29': { from: 'g', to: 'sacral', path: 'M250,345 L260,395' },
-  '2-14': { from: 'g', to: 'sacral', path: 'M245,345 L248,390' },
-  '57-20': { from: 'spleen', to: 'throat', path: 'M95,345 C100,320 140,280 210,210' },
-  '57-34': { from: 'spleen', to: 'sacral', path: 'M100,370 C150,390 180,400 210,405' },
-  '44-26': { from: 'spleen', to: 'heart', path: 'M120,355 L155,295' },
-  '50-27': { from: 'spleen', to: 'sacral', path: 'M90,385 C150,400 180,410 210,415' },
-  '32-54': { from: 'spleen', to: 'root', path: 'M90,400 L205,505' },
-  '28-38': { from: 'spleen', to: 'root', path: 'M105,395 L190,520' },
-  '18-58': { from: 'spleen', to: 'root', path: 'M115,390 L180,530' },
-  '48-16': { from: 'spleen', to: 'throat', path: 'M85,350 C100,320 150,280 200,200' },
-  '34-57': { from: 'sacral', to: 'spleen', path: 'M210,405 C180,400 150,390 100,370' },
-  '34-10': { from: 'sacral', to: 'g', path: 'M210,395 L225,330' },
-  '5-15': { from: 'sacral', to: 'g', path: 'M230,395 L230,340' },
-  '14-2': { from: 'sacral', to: 'g', path: 'M248,390 L245,345' },
-  '29-46': { from: 'sacral', to: 'g', path: 'M260,395 L250,345' },
-  '27-50': { from: 'sacral', to: 'spleen', path: 'M210,415 C180,410 150,400 90,385' },
-  '59-6': { from: 'sacral', to: 'solar', path: 'M285,415 L320,375' },
-  '42-53': { from: 'sacral', to: 'root', path: 'M260,445 L250,490' },
-  '3-60': { from: 'sacral', to: 'root', path: 'M250,445 L245,490' },
-  '9-52': { from: 'sacral', to: 'root', path: 'M240,445 L255,490' },
-  '6-59': { from: 'solar', to: 'sacral', path: 'M320,375 L285,415' },
-  '37-40': { from: 'solar', to: 'heart', path: 'M340,360 C280,340 220,330 180,295' },
-  '22-12': { from: 'solar', to: 'throat', path: 'M325,345 L295,210' },
-  '36-35': { from: 'solar', to: 'throat', path: 'M318,345 L290,190' },
-  '49-19': { from: 'solar', to: 'root', path: 'M350,390 L300,515' },
-  '55-39': { from: 'solar', to: 'root', path: 'M365,385 L320,530' },
-  '30-41': { from: 'solar', to: 'root', path: 'M368,400 L335,545' },
-  '53-42': { from: 'root', to: 'sacral', path: 'M250,490 L260,445' },
-  '60-3': { from: 'root', to: 'sacral', path: 'M245,490 L250,445' },
-  '52-9': { from: 'root', to: 'sacral', path: 'M255,490 L240,445' },
-  '54-32': { from: 'root', to: 'spleen', path: 'M205,505 L90,400' },
-  '38-28': { from: 'root', to: 'spleen', path: 'M190,520 L105,395' },
-  '58-18': { from: 'root', to: 'spleen', path: 'M180,530 L115,390' },
-  '19-49': { from: 'root', to: 'solar', path: 'M300,515 L350,390' },
-  '39-55': { from: 'root', to: 'solar', path: 'M320,530 L365,385' },
-  '41-30': { from: 'root', to: 'solar', path: 'M335,545 L368,400' },
+  // Head -> Ajna
+  '64-47': { from: 'head', to: 'ajna', path: 'M185,55 L178,75' },
+  '61-24': { from: 'head', to: 'ajna', path: 'M200,55 L200,75' },
+  '63-4': { from: 'head', to: 'ajna', path: 'M215,55 L222,75' },
+  
+  // Ajna -> Throat
+  '17-62': { from: 'ajna', to: 'throat', path: 'M178,120 L155,145' },
+  '43-23': { from: 'ajna', to: 'throat', path: 'M200,125 L200,145' },
+  '11-56': { from: 'ajna', to: 'throat', path: 'M222,120 L245,145' },
+  
+  // Throat -> Spleen
+  '16-48': { from: 'throat', to: 'spleen', path: 'M150,180 C120,240 95,280 78,315' },
+  '20-57': { from: 'throat', to: 'spleen', path: 'M160,190 C110,250 85,290 85,315' },
+  
+  // Throat -> G
+  '20-10': { from: 'throat', to: 'g', path: 'M168,195 L175,245' },
+  '31-7': { from: 'throat', to: 'g', path: 'M190,200 L188,245' },
+  '8-1': { from: 'throat', to: 'g', path: 'M200,195 L200,245' },
+  '33-13': { from: 'throat', to: 'g', path: 'M232,190 L225,250' },
+  
+  // Throat -> Sacral
+  '20-34': { from: 'throat', to: 'sacral', path: 'M165,195 L160,345' },
+  
+  // Throat -> Heart
+  '45-21': { from: 'throat', to: 'heart', path: 'M150,192 L122,210' },
+  
+  // Throat -> Solar
+  '12-22': { from: 'throat', to: 'solar', path: 'M250,180 L305,315' },
+  '35-36': { from: 'throat', to: 'solar', path: 'M248,160 L295,315' },
+  
+  // Heart -> Spleen
+  '26-44': { from: 'heart', to: 'spleen', path: 'M118,245 L105,320' },
+  
+  // Heart -> Solar
+  '40-37': { from: 'heart', to: 'solar', path: 'M145,248 C200,290 260,310 325,330' },
+  
+  // Heart -> G
+  '51-25': { from: 'heart', to: 'g', path: 'M145,218 L172,255' },
+  
+  // G -> Sacral
+  '10-34': { from: 'g', to: 'sacral', path: 'M175,290 L160,345' },
+  '15-5': { from: 'g', to: 'sacral', path: 'M178,295 L178,348' },
+  '2-14': { from: 'g', to: 'sacral', path: 'M192,300 L195,345' },
+  '46-29': { from: 'g', to: 'sacral', path: 'M210,300 L212,348' },
+  
+  // G -> Spleen
+  '10-57': { from: 'g', to: 'spleen', path: 'M172,280 C130,310 100,320 90,335' },
+  
+  // Spleen -> Throat (reverse paths)
+  '57-20': { from: 'spleen', to: 'throat', path: 'M85,315 C85,290 110,250 160,190' },
+  '48-16': { from: 'spleen', to: 'throat', path: 'M78,315 C95,280 120,240 150,180' },
+  
+  // Spleen -> Sacral
+  '57-34': { from: 'spleen', to: 'sacral', path: 'M95,340 C130,355 145,358 158,355' },
+  '50-27': { from: 'spleen', to: 'sacral', path: 'M82,355 C120,370 145,375 158,372' },
+  
+  // Spleen -> Heart
+  '44-26': { from: 'spleen', to: 'heart', path: 'M105,320 L118,245' },
+  
+  // Spleen -> Root
+  '32-54': { from: 'spleen', to: 'root', path: 'M80,370 L155,445' },
+  '28-38': { from: 'spleen', to: 'root', path: 'M95,365 L145,465' },
+  '18-58': { from: 'spleen', to: 'root', path: 'M105,358 L135,478' },
+  
+  // Sacral -> Spleen
+  '34-57': { from: 'sacral', to: 'spleen', path: 'M158,355 C145,358 130,355 95,340' },
+  '27-50': { from: 'sacral', to: 'spleen', path: 'M158,372 C145,375 120,370 82,355' },
+  
+  // Sacral -> G (reverse)
+  '34-10': { from: 'sacral', to: 'g', path: 'M160,345 L175,290' },
+  '5-15': { from: 'sacral', to: 'g', path: 'M178,348 L178,295' },
+  '14-2': { from: 'sacral', to: 'g', path: 'M195,345 L192,300' },
+  '29-46': { from: 'sacral', to: 'g', path: 'M212,348 L210,300' },
+  
+  // Sacral -> Solar
+  '59-6': { from: 'sacral', to: 'solar', path: 'M238,362 L292,352' },
+  '6-59': { from: 'solar', to: 'sacral', path: 'M292,352 L238,362' },
+  
+  // Sacral -> Root
+  '42-53': { from: 'sacral', to: 'root', path: 'M212,395 L200,435' },
+  '3-60': { from: 'sacral', to: 'root', path: 'M198,395 L198,435' },
+  '9-52': { from: 'sacral', to: 'root', path: 'M182,390 L205,435' },
+  
+  // Solar -> Heart
+  '37-40': { from: 'solar', to: 'heart', path: 'M325,330 C260,310 200,290 145,248' },
+  
+  // Solar -> Throat
+  '22-12': { from: 'solar', to: 'throat', path: 'M305,315 L250,180' },
+  '36-35': { from: 'solar', to: 'throat', path: 'M295,315 L248,160' },
+  
+  // Solar -> Root
+  '49-19': { from: 'solar', to: 'root', path: 'M315,365 L252,460' },
+  '55-39': { from: 'solar', to: 'root', path: 'M330,358 L272,475' },
+  '30-41': { from: 'solar', to: 'root', path: 'M338,372 L288,488' },
+  
+  // Root -> Sacral
+  '53-42': { from: 'root', to: 'sacral', path: 'M200,435 L212,395' },
+  '60-3': { from: 'root', to: 'sacral', path: 'M198,435 L198,395' },
+  '52-9': { from: 'root', to: 'sacral', path: 'M205,435 L182,390' },
+  
+  // Root -> Spleen
+  '54-32': { from: 'root', to: 'spleen', path: 'M155,445 L80,370' },
+  '38-28': { from: 'root', to: 'spleen', path: 'M145,465 L95,365' },
+  '58-18': { from: 'root', to: 'spleen', path: 'M135,478 L105,358' },
+  
+  // Root -> Solar
+  '19-49': { from: 'root', to: 'solar', path: 'M252,460 L315,365' },
+  '39-55': { from: 'root', to: 'solar', path: 'M272,475 L330,358' },
+  '41-30': { from: 'root', to: 'solar', path: 'M288,488 L338,372' },
 };
 
 const BodyGraph = ({ 
@@ -227,7 +279,6 @@ const BodyGraph = ({
     
     // Se ambos os gates são de tipos diferentes, é misto
     if (gate1Color.type !== gate2Color.type) {
-      // Um é personality e outro é design = canal misto
       const hasDesign = gate1Color.type === 'design' || gate2Color.type === 'design';
       const hasPersonality = gate1Color.type === 'personality' || gate2Color.type === 'personality';
       if (hasDesign && hasPersonality) return { color: 'mixed', type: 'complete' };
@@ -243,17 +294,25 @@ const BodyGraph = ({
     return activatedGates.includes(gate);
   };
 
+  // Silhueta humana estilizada tradicional
   const renderHumanSilhouette = () => (
-    <ellipse 
-      cx="250" 
-      cy="300" 
-      rx="170" 
-      ry="280" 
-      fill="#F5E6D3" 
-      opacity="0.4"
-      stroke="#E5D4C0"
-      strokeWidth="1"
-    />
+    <g className="silhouette" opacity="0.15">
+      {/* Cabeça */}
+      <circle cx="200" cy="35" r="25" fill="#8B7355" />
+      {/* Pescoço */}
+      <rect x="190" y="55" width="20" height="25" fill="#8B7355" rx="5" />
+      {/* Tronco */}
+      <path 
+        d="M140,80 Q120,150 130,250 L130,380 Q160,420 200,430 Q240,420 270,380 L270,250 Q280,150 260,80 Z" 
+        fill="#8B7355"
+      />
+      {/* Braços */}
+      <path d="M140,90 Q80,150 60,280 Q55,300 70,310 Q90,305 100,280 Q115,180 140,130" fill="#8B7355" />
+      <path d="M260,90 Q320,150 340,280 Q345,300 330,310 Q310,305 300,280 Q285,180 260,130" fill="#8B7355" />
+      {/* Pernas */}
+      <path d="M160,380 Q150,450 145,520 L165,520 Q170,450 175,400" fill="#8B7355" />
+      <path d="M240,380 Q250,450 255,520 L235,520 Q230,450 225,400" fill="#8B7355" />
+    </g>
   );
 
   const renderCenter = (centerId: string) => {
@@ -262,12 +321,13 @@ const BodyGraph = ({
     
     const fillColor = isDefined ? DEFINED_COLOR : UNDEFINED_COLOR;
     
-    // Formas específicas para cada centro
+    // Formas específicas para cada centro conforme padrão HD
     if (centerId === 'head') {
+      // Triângulo apontando para CIMA
       return (
         <g key={centerId}>
           <polygon
-            points={`${pos.x},${pos.y - 30} ${pos.x - 25},${pos.y + 15} ${pos.x + 25},${pos.y + 15}`}
+            points={`${pos.x},${pos.y - 25} ${pos.x - 22},${pos.y + 12} ${pos.x + 22},${pos.y + 12}`}
             fill={fillColor}
             stroke={STROKE_COLOR}
             strokeWidth={1.5}
@@ -277,10 +337,11 @@ const BodyGraph = ({
     }
     
     if (centerId === 'ajna') {
+      // Triângulo apontando para BAIXO
       return (
         <g key={centerId}>
           <polygon
-            points={`${pos.x - 28},${pos.y - 18} ${pos.x + 28},${pos.y - 18} ${pos.x},${pos.y + 25}`}
+            points={`${pos.x - 25},${pos.y - 15} ${pos.x + 25},${pos.y - 15} ${pos.x},${pos.y + 22}`}
             fill={fillColor}
             stroke={STROKE_COLOR}
             strokeWidth={1.5}
@@ -290,27 +351,29 @@ const BodyGraph = ({
     }
     
     if (centerId === 'throat') {
+      // Quadrado
       return (
         <g key={centerId}>
           <rect
-            x={pos.x - 55}
-            y={pos.y - 28}
-            width={110}
-            height={55}
+            x={pos.x - 50}
+            y={pos.y - 25}
+            width={100}
+            height={50}
             fill={fillColor}
             stroke={STROKE_COLOR}
             strokeWidth={1.5}
-            rx={4}
+            rx={3}
           />
         </g>
       );
     }
     
     if (centerId === 'g') {
+      // Losango (diamante)
       return (
         <g key={centerId}>
           <polygon
-            points={`${pos.x},${pos.y - 35} ${pos.x + 35},${pos.y} ${pos.x},${pos.y + 35} ${pos.x - 35},${pos.y}`}
+            points={`${pos.x},${pos.y - 32} ${pos.x + 32},${pos.y} ${pos.x},${pos.y + 32} ${pos.x - 32},${pos.y}`}
             fill={fillColor}
             stroke={STROKE_COLOR}
             strokeWidth={1.5}
@@ -320,10 +383,11 @@ const BodyGraph = ({
     }
     
     if (centerId === 'heart') {
+      // Triângulo pequeno apontando para baixo
       return (
         <g key={centerId}>
           <polygon
-            points={`${pos.x},${pos.y - 22} ${pos.x + 22},${pos.y + 12} ${pos.x - 22},${pos.y + 12}`}
+            points={`${pos.x - 18},${pos.y - 15} ${pos.x + 18},${pos.y - 15} ${pos.x},${pos.y + 18}`}
             fill={fillColor}
             stroke={STROKE_COLOR}
             strokeWidth={1.5}
@@ -333,10 +397,11 @@ const BodyGraph = ({
     }
     
     if (centerId === 'spleen') {
+      // Triângulo apontando para a DIREITA
       return (
         <g key={centerId}>
           <polygon
-            points={`${pos.x + 25},${pos.y - 25} ${pos.x + 25},${pos.y + 25} ${pos.x - 25},${pos.y}`}
+            points={`${pos.x - 18},${pos.y - 25} ${pos.x + 25},${pos.y} ${pos.x - 18},${pos.y + 25}`}
             fill={fillColor}
             stroke={STROKE_COLOR}
             strokeWidth={1.5}
@@ -346,10 +411,11 @@ const BodyGraph = ({
     }
     
     if (centerId === 'solar') {
+      // Triângulo apontando para a ESQUERDA
       return (
         <g key={centerId}>
           <polygon
-            points={`${pos.x - 25},${pos.y - 25} ${pos.x - 25},${pos.y + 25} ${pos.x + 25},${pos.y}`}
+            points={`${pos.x + 18},${pos.y - 25} ${pos.x - 25},${pos.y} ${pos.x + 18},${pos.y + 25}`}
             fill={fillColor}
             stroke={STROKE_COLOR}
             strokeWidth={1.5}
@@ -359,34 +425,36 @@ const BodyGraph = ({
     }
     
     if (centerId === 'sacral') {
+      // Quadrado
       return (
         <g key={centerId}>
           <rect
-            x={pos.x - 48}
-            y={pos.y - 30}
-            width={96}
-            height={50}
+            x={pos.x - 45}
+            y={pos.y - 25}
+            width={90}
+            height={45}
             fill={fillColor}
             stroke={STROKE_COLOR}
             strokeWidth={1.5}
-            rx={4}
+            rx={3}
           />
         </g>
       );
     }
     
     if (centerId === 'root') {
+      // Quadrado
       return (
         <g key={centerId}>
           <rect
-            x={pos.x - 55}
-            y={pos.y - 30}
-            width={110}
-            height={50}
+            x={pos.x - 50}
+            y={pos.y - 25}
+            width={100}
+            height={45}
             fill={fillColor}
             stroke={STROKE_COLOR}
             strokeWidth={1.5}
-            rx={4}
+            rx={3}
           />
         </g>
       );
@@ -410,7 +478,7 @@ const BodyGraph = ({
               <circle
                 cx={x}
                 cy={y}
-                r={10}
+                r={9}
                 fill={hasColor ? gateColorInfo.fill : DEFINED_COLOR}
                 stroke={STROKE_COLOR}
                 strokeWidth={0.5}
@@ -418,11 +486,11 @@ const BodyGraph = ({
             )}
             <text
               x={x}
-              y={y + 3.5}
+              y={y + 3}
               textAnchor="middle"
-              fontSize="8"
+              fontSize="7"
               fontWeight={isActive ? "bold" : "normal"}
-              fill={isActive && hasColor ? "#fff" : "#333"}
+              fill={isActive && hasColor ? "#fff" : "#555"}
             >
               {gate}
             </text>
@@ -450,9 +518,9 @@ const BodyGraph = ({
         );
       }
 
-      const strokeWidth = channelColorInfo.type === 'complete' ? 5 : 3;
+      const strokeWidth = channelColorInfo.type === 'complete' ? 4 : 2.5;
       
-      // Canal misto: renderiza duas linhas lado a lado
+      // Canal misto: renderiza padrão tracejado
       if (channelColorInfo.color === 'mixed') {
         return (
           <g key={channelId}>
@@ -462,7 +530,6 @@ const BodyGraph = ({
               stroke={DESIGN_COLOR}
               strokeWidth={strokeWidth}
               strokeLinecap="round"
-              strokeDasharray="8,4"
             />
             <path
               d={path}
@@ -470,8 +537,7 @@ const BodyGraph = ({
               stroke={PERSONALITY_COLOR}
               strokeWidth={strokeWidth / 2}
               strokeLinecap="round"
-              strokeDasharray="4,8"
-              strokeDashoffset="4"
+              strokeDasharray="6,6"
             />
           </g>
         );
@@ -492,33 +558,37 @@ const BodyGraph = ({
 
   // Legenda visual
   const renderLegend = () => (
-    <g className="legend" transform="translate(10, 560)">
+    <g className="legend" transform="translate(10, 510)">
       {/* Fundo da legenda */}
-      <rect x="0" y="0" width="480" height="35" fill="white" opacity="0.9" rx="4" />
+      <rect x="0" y="0" width="380" height="30" fill="white" opacity="0.95" rx="4" stroke="#ddd" strokeWidth="0.5" />
       
       {/* Design (Vermelho) */}
-      <circle cx="20" cy="17" r="6" fill={DESIGN_COLOR} />
-      <text x="32" y="21" fontSize="10" fill="#333">Design (Inconsciente)</text>
+      <circle cx="15" cy="15" r="5" fill={DESIGN_COLOR} />
+      <text x="25" y="18" fontSize="9" fill="#333">Design</text>
       
       {/* Personality (Preto) */}
-      <circle cx="160" cy="17" r="6" fill={PERSONALITY_COLOR} />
-      <text x="172" y="21" fontSize="10" fill="#333">Personality (Consciente)</text>
+      <circle cx="90" cy="15" r="5" fill={PERSONALITY_COLOR} />
+      <text x="100" y="18" fontSize="9" fill="#333">Personality</text>
       
       {/* Ambos */}
-      <circle cx="320" cy="17" r="6" fill={BOTH_COLOR} />
-      <text x="332" y="21" fontSize="10" fill="#333">Ambos</text>
+      <circle cx="185" cy="15" r="5" fill={BOTH_COLOR} />
+      <text x="195" y="18" fontSize="9" fill="#333">Ambos</text>
       
       {/* Centro Definido */}
-      <rect x="400" y="11" width="12" height="12" fill={DEFINED_COLOR} stroke={STROKE_COLOR} strokeWidth="0.5" rx="2" />
-      <text x="418" y="21" fontSize="10" fill="#333">Definido</text>
+      <rect x="255" y="10" width="10" height="10" fill={DEFINED_COLOR} stroke={STROKE_COLOR} strokeWidth="0.5" rx="1" />
+      <text x="270" y="18" fontSize="9" fill="#333">Definido</text>
+      
+      {/* Centro Indefinido */}
+      <rect x="330" y="10" width="10" height="10" fill={UNDEFINED_COLOR} stroke={STROKE_COLOR} strokeWidth="0.5" rx="1" />
+      <text x="345" y="18" fontSize="9" fill="#333">Aberto</text>
     </g>
   );
 
   return (
     <div className="relative">
       <svg 
-        viewBox="0 0 500 610" 
-        className="w-full max-w-[400px] mx-auto"
+        viewBox="0 0 400 550" 
+        className="w-full max-w-[380px] mx-auto"
         style={{ height: 'auto' }}
       >
         {/* Silhueta humana de fundo */}
