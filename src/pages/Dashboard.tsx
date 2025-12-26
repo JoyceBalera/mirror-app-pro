@@ -161,11 +161,7 @@ const Dashboard = () => {
 
   const handleStartDesenhoHumano = () => {
     console.log("🎯 Navegando para Desenho Humano test...");
-    // TODO: Implementar rota do Desenho Humano
-    toast({
-      title: "Em breve!",
-      description: "O teste de Desenho Humano estará disponível em breve.",
-    });
+    navigate("/desenho-humano/test");
   };
 
   const handleViewDesenhoHumanoReport = () => {

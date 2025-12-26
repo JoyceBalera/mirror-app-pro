@@ -1,0 +1,201 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+
+const DesenhoHumanoTest = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  
+  const [birthDate, setBirthDate] = useState("");
+  const [birthTime, setBirthTime] = useState("");
+  const [birthLocation, setBirthLocation] = useState("");
+  
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const validateForm = (): boolean => {
+    const newErrors: Record<string, string> = {};
+    
+    if (!birthDate) {
+      newErrors.birthDate = "Data de nascimento é obrigatória";
+    } else {
+      const selectedDate = new Date(birthDate);
+      const today = new Date();
+      if (selectedDate > today) {
+        newErrors.birthDate = "Data não pode ser no futuro";
+      }
+    }
+    
+    if (!birthTime) {
+      newErrors.birthTime = "Hora de nascimento é obrigatória";
+    }
+    
+    if (!birthLocation) {
+      newErrors.birthLocation = "Local de nascimento é obrigatório";
+    } else if (birthLocation.length < 5) {
+      newErrors.birthLocation = "Informe o local completo (mínimo 5 caracteres)";
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const isFormValid = birthDate && birthTime && birthLocation && birthLocation.length >= 5;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!validateForm()) return;
+    
+    setIsSubmitting(true);
+    
+    try {
+      // Simular processamento - integração futura
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      toast({
+        title: "Dados enviados!",
+        description: "Seu mapa energético está sendo gerado...",
+      });
+      
+      navigate("/dashboard");
+      
+    } catch (error: any) {
+      toast({
+        title: "Erro",
+        description: error.message || "Não foi possível processar seus dados.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-background">
+      {/* HEADER */}
+      <header className="w-full bg-[#7B192B] py-6 px-4">
+        <div className="container mx-auto text-center">
+          <h1 className="text-2xl md:text-3xl font-bold text-[#F7F3EF]">
+            Desenho Humano - Dados de Nascimento
+          </h1>
+          <p className="text-[#F7F3EF]/80 mt-2">
+            Preencha seus dados para gerar seu mapa energético
+          </p>
+        </div>
+      </header>
+
+      {/* CONTAINER PRINCIPAL */}
+      <main className="bg-[#F7F3EF] min-h-[calc(100vh-120px)] py-8 px-4">
+        <div className="max-w-[600px] mx-auto">
+          
+          {/* CARD DO FORMULÁRIO */}
+          <Card className="bg-white border-2 border-[#BFAFB2] rounded-lg">
+            <CardContent className="p-6">
+              <h2 className="text-xl font-semibold text-[#7B192B] mb-6">
+                DADOS NECESSÁRIOS
+              </h2>
+
+              <form onSubmit={handleSubmit} className="space-y-6">
+                
+                {/* Campo 1: Data de Nascimento */}
+                <div className="space-y-2">
+                  <Label htmlFor="birthDate" className="text-foreground">
+                    Data de Nascimento *
+                  </Label>
+                  <Input
+                    id="birthDate"
+                    type="date"
+                    value={birthDate}
+                    onChange={(e) => setBirthDate(e.target.value)}
+                    className={errors.birthDate ? "border-red-500" : ""}
+                    max={new Date().toISOString().split("T")[0]}
+                  />
+                  {errors.birthDate && (
+                    <p className="text-sm text-red-500">{errors.birthDate}</p>
+                  )}
+                </div>
+
+                {/* Campo 2: Hora de Nascimento */}
+                <div className="space-y-2">
+                  <Label htmlFor="birthTime" className="text-foreground">
+                    Hora de Nascimento *
+                  </Label>
+                  <Input
+                    id="birthTime"
+                    type="time"
+                    value={birthTime}
+                    onChange={(e) => setBirthTime(e.target.value)}
+                    className={errors.birthTime ? "border-red-500" : ""}
+                  />
+                  {errors.birthTime && (
+                    <p className="text-sm text-red-500">{errors.birthTime}</p>
+                  )}
+                  <p className="text-sm text-[#BFAFB2] italic">
+                    💡 Verifique sua certidão de nascimento
+                  </p>
+                </div>
+
+                {/* Campo 3: Local de Nascimento */}
+                <div className="space-y-2">
+                  <Label htmlFor="birthLocation" className="text-foreground">
+                    Local de Nascimento *
+                  </Label>
+                  <Input
+                    id="birthLocation"
+                    type="text"
+                    value={birthLocation}
+                    onChange={(e) => setBirthLocation(e.target.value)}
+                    placeholder="São Paulo, SP, Brasil"
+                    className={errors.birthLocation ? "border-red-500" : ""}
+                    minLength={5}
+                  />
+                  {errors.birthLocation && (
+                    <p className="text-sm text-red-500">{errors.birthLocation}</p>
+                  )}
+                  <p className="text-sm text-[#BFAFB2]">
+                    Cidade, Estado, País
+                  </p>
+                </div>
+
+                {/* BOTÕES */}
+                <div className="flex justify-between items-center mt-6 pt-4 border-t border-[#BFAFB2]">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="text-[#BFAFB2] hover:text-[#7B192B]"
+                    onClick={() => navigate("/dashboard")}
+                  >
+                    ← Voltar
+                  </Button>
+
+                  <Button
+                    type="submit"
+                    disabled={!isFormValid || isSubmitting}
+                    className="bg-[#7B192B] text-[#F7F3EF] hover:bg-[#7B192B]/90 disabled:opacity-50"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Gerando...
+                      </>
+                    ) : (
+                      "GERAR MEU MAPA ✨"
+                    )}
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+      </main>
+    </div>
+  );
+};
+
+export default DesenhoHumanoTest;
