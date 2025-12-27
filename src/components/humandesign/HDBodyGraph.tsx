@@ -102,19 +102,42 @@ const HDBodyGraph: React.FC<HDBodyGraphProps> = ({
     );
   };
 
-  // Render a channel line using length and rotate
-  const renderChannel = (channel: typeof CHANNELS[0]) => {
+  // Render ALL channels as background lines (gray skeleton)
+  const renderBackgroundChannels = () => {
+    return CHANNELS.map(channel => {
+      const gate1Data = getGateData(channel.gates[0]);
+      const gate2Data = getGateData(channel.gates[1]);
+      
+      if (!gate1Data?.channel) return null;
+      
+      const { x, y, length, rotate } = gate1Data.channel;
+      
+      return (
+        <line
+          key={`bg-${channel.id}`}
+          x1={x}
+          y1={y}
+          x2={x + length * Math.cos(rotate * Math.PI / 180)}
+          y2={y + length * Math.sin(rotate * Math.PI / 180)}
+          stroke="#d1d5db"
+          strokeWidth="4"
+          strokeLinecap="round"
+          opacity="0.5"
+        />
+      );
+    });
+  };
+
+  // Render active channel lines (colored, on top of background)
+  const renderActiveChannel = (channel: typeof CHANNELS[0]) => {
     const gate1Data = getGateData(channel.gates[0]);
-    const gate2Data = getGateData(channel.gates[1]);
     
-    if (!gate1Data?.channel || !gate2Data?.channel) return null;
+    if (!gate1Data?.channel) return null;
     
     const isComplete = completeChannels.some(c => c.id === channel.id);
     if (!isComplete) return null;
 
     const color = getChannelColor(channel.gates[0], channel.gates[1]);
-    
-    // Use gate1's channel data for the line
     const { x, y, length, rotate } = gate1Data.channel;
     
     return (
@@ -125,7 +148,7 @@ const HDBodyGraph: React.FC<HDBodyGraphProps> = ({
           x2={x + length * Math.cos(rotate * Math.PI / 180)}
           y2={y + length * Math.sin(rotate * Math.PI / 180)}
           stroke={color}
-          strokeWidth="8"
+          strokeWidth="6"
           strokeLinecap="round"
         />
       </g>
@@ -290,9 +313,14 @@ const HDBodyGraph: React.FC<HDBodyGraphProps> = ({
       {/* Human silhouette behind everything */}
       {renderHumanSilhouette()}
       
-      {/* Render channels first (behind centers) */}
-      <g className="channels">
-        {CHANNELS.map(channel => renderChannel(channel))}
+      {/* Background channels - all 36 lines in gray */}
+      <g className="background-channels">
+        {renderBackgroundChannels()}
+      </g>
+      
+      {/* Active channels - colored, on top */}
+      <g className="active-channels">
+        {CHANNELS.map(channel => renderActiveChannel(channel))}
       </g>
       
       {/* Render centers */}
