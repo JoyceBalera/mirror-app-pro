@@ -17,6 +17,7 @@ export interface HDReportData {
   design_activations: any[];
   variables: AdvancedVariables;
   ai_analysis_full: string;
+  bodygraph_image?: string; // Base64 PNG do bodygraph
 }
 
 // Cores da paleta Luciana
@@ -203,7 +204,7 @@ export async function generateHDReport(data: HDReportData): Promise<void> {
   doc.setFontSize(12);
   doc.setFont('helvetica', 'bold');
   doc.text('SEU BODYGRAPH VISUAL', margin + 5, yPosition + 7);
-  yPosition += 25;
+  yPosition += 20;
 
   // Calcular dados dos centros
   const definedCenters = Object.entries(data.centers || {})
@@ -214,32 +215,44 @@ export async function generateHDReport(data: HDReportData): Promise<void> {
     .map(([centerId]) => centerId);
   const activeChannels = (data.channels || []).filter((ch: any) => ch.isComplete);
 
-  // Box informativo sobre o Bodygraph
-  doc.setFillColor(...COLORS.offWhite);
-  doc.roundedRect(margin, yPosition, contentWidth, 55, 3, 3, 'F');
-  yPosition += 12;
+  // Adicionar imagem do Bodygraph se disponível
+  if (data.bodygraph_image) {
+    try {
+      const imgWidth = 100; // Largura proporcional
+      const imgHeight = 188; // Altura mantendo proporção (620/330 * 100)
+      const imgX = (pageWidth - imgWidth) / 2;
+      doc.addImage(data.bodygraph_image, 'PNG', imgX, yPosition, imgWidth, imgHeight);
+      yPosition += imgHeight + 10;
+    } catch (error) {
+      console.error('Erro ao adicionar imagem do Bodygraph:', error);
+      // Fallback: texto informativo
+      doc.setFillColor(...COLORS.offWhite);
+      doc.roundedRect(margin, yPosition, contentWidth, 30, 3, 3, 'F');
+      yPosition += 15;
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(...COLORS.darkText);
+      doc.text('Seu Bodygraph completo está disponível na plataforma online.', margin + 10, yPosition);
+      yPosition += 25;
+    }
+  } else {
+    // Fallback: texto informativo
+    doc.setFillColor(...COLORS.offWhite);
+    doc.roundedRect(margin, yPosition, contentWidth, 30, 3, 3, 'F');
+    yPosition += 15;
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...COLORS.darkText);
+    doc.text('Seu Bodygraph completo está disponível na plataforma online.', margin + 10, yPosition);
+    yPosition += 25;
+  }
 
-  doc.setFontSize(11);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...COLORS.carmim);
-  doc.text('Seu Bodygraph completo está disponível na plataforma online.', margin + 10, yPosition);
-  yPosition += 10;
-
+  // Resumo dos centros
   doc.setFontSize(10);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(...COLORS.darkText);
-  doc.text('Acesse sua conta para visualizar o desenho interativo dos seus centros,', margin + 10, yPosition);
-  yPosition += 6;
-  doc.text('canais e gates ativados com cores e legendas detalhadas.', margin + 10, yPosition);
-  yPosition += 12;
-
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...COLORS.gold);
-  doc.text(`Você possui ${definedCenters.length} centro(s) definido(s) e ${openCenters.length} centro(s) aberto(s).`, margin + 10, yPosition);
-  yPosition += 6;
-  doc.text(`Total de ${activeChannels.length} canal(is) ativo(s).`, margin + 10, yPosition);
-
-  yPosition += 25;
+  doc.text(`${definedCenters.length} centro(s) definido(s) | ${openCenters.length} centro(s) aberto(s) | ${activeChannels.length} canal(is) ativo(s)`, pageWidth / 2, yPosition, { align: 'center' });
+  yPosition += 15;
 
   // =================== CENTROS ENERGÉTICOS ===================
   doc.setFillColor(...COLORS.carmim);
