@@ -174,6 +174,26 @@ const HDBodyGraph: React.FC<HDBodyGraphProps> = ({
     );
   };
 
+  // Render human silhouette (behind everything)
+  const renderHumanSilhouette = () => (
+    <path
+      d="M165,30 
+         C182,30 195,45 195,65 C195,85 182,100 165,100 C148,100 135,85 135,65 C135,45 148,30 165,30
+         M165,100 L165,130
+         M165,130 C140,135 115,155 100,190 C85,225 75,265 70,300
+         M165,130 C190,135 215,155 230,190 C245,225 255,265 260,300
+         M165,130 L165,400
+         M165,400 C155,430 140,480 125,530 L115,560
+         M165,400 C175,430 190,480 205,530 L215,560"
+      stroke="#d1d5db"
+      strokeWidth="1.5"
+      fill="none"
+      opacity="0.35"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  );
+
   // Render legend
   const renderLegend = () => (
     <g transform="translate(10, 560)">
@@ -219,10 +239,13 @@ const HDBodyGraph: React.FC<HDBodyGraphProps> = ({
         </linearGradient>
       </defs>
 
-      {/* 1. Open gates channels (gray background) */}
+      {/* 1. Human silhouette (behind everything) */}
+      {renderHumanSilhouette()}
+
+      {/* 2. Open gates channels (gray background) */}
       {openGates.map((gate) => generateChannel(gate))}
       
-      {/* 2. Defined gates channels (colored) */}
+      {/* 3. Defined gates channels (colored) */}
       {definedGates.map((gate) => generateChannel(gate, gateMap[gate]))}
       
       {/* 3. Centers */}
