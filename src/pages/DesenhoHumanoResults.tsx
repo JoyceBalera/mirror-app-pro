@@ -185,39 +185,32 @@ const DesenhoHumanoResults = () => {
     }
   };
 
-  // Function to render markdown-like text
+  // Function to render plain text (no markdown)
   const renderAnalysisText = (text: string) => {
     const lines = text.split('\n');
     return lines.map((line, index) => {
-      // Headers
-      if (line.startsWith('# ')) {
-        return <h2 key={index} className="text-xl font-bold text-[#7B192B] mt-6 mb-3">{line.slice(2)}</h2>;
-      }
-      if (line.startsWith('## ')) {
-        return <h3 key={index} className="text-lg font-bold text-[#7B192B] mt-4 mb-2">{line.slice(3)}</h3>;
-      }
-      if (line.startsWith('### ')) {
-        return <h4 key={index} className="text-base font-bold text-[#7B192B] mt-3 mb-2">{line.slice(4)}</h4>;
-      }
-      // Bold text
-      if (line.includes('**')) {
-        const parts = line.split(/\*\*(.*?)\*\*/g);
-        return (
-          <p key={index} className="mb-2">
-            {parts.map((part, i) => 
-              i % 2 === 1 ? <strong key={i}>{part}</strong> : part
-            )}
-          </p>
-        );
-      }
-      // Bullet points
-      if (line.startsWith('- ') || line.startsWith('* ')) {
-        return <li key={index} className="ml-4 mb-1">{line.slice(2)}</li>;
-      }
+      const trimmedLine = line.trim();
+      
       // Empty lines
-      if (line.trim() === '') {
+      if (trimmedLine === '') {
         return <br key={index} />;
       }
+      
+      // Titles in UPPERCASE (main sections)
+      if (trimmedLine === trimmedLine.toUpperCase() && trimmedLine.length > 3 && !trimmedLine.match(/^\d+\./)) {
+        return <h2 key={index} className="text-xl font-bold text-[#7B192B] mt-6 mb-3">{trimmedLine}</h2>;
+      }
+      
+      // Sub-sections ending with colon (like "Significado:" or "Funcao:")
+      if (trimmedLine.endsWith(':') && trimmedLine.length < 60 && !trimmedLine.match(/^\d+\./)) {
+        return <h3 key={index} className="text-lg font-semibold text-[#7B192B] mt-4 mb-2">{trimmedLine}</h3>;
+      }
+      
+      // Numbered lists
+      if (trimmedLine.match(/^\d+\.\s/)) {
+        return <p key={index} className="ml-4 mb-1">{trimmedLine}</p>;
+      }
+      
       // Regular paragraphs
       return <p key={index} className="mb-2">{line}</p>;
     });

@@ -16,53 +16,54 @@ A análise deve ser extremamente detalhada e profunda, com orientações, dicas 
 
 # 3. Formatação:
 
-Use negrito (**) para títulos de seções principais e sub-seções (ex: Significado, Pontos Fortes, Pontos de Atenção, Ações para Colocar em Prática, Orientações para Diferentes Áreas da Vida, Desafios e Áreas de Atenção). Use letra maiúscula no início das frases e nos nomes próprios dos elementos do Desenho Humano (ex: Human Design, Type Projetora). Utilize listas com bullet points (asterisco * ou traço -) para "Pontos Fortes", "Pontos de Atenção" e "Ações para Colocar em Prática". Para as "Orientações para Diferentes Áreas da Vida" e "Exemplos Práticos", utilize o tópico em negrito seguido de texto explicativo (ex: Relacionamentos: [texto]). Coloque dois pontos (:) antes de iniciar cada descrição de uma sub-seção (ex: Significado: [texto]). NÃO inclua nenhum comentário extra ou texto após a frase final da "Conclusão Final".
+IMPORTANTE: NÃO use NENHUM tipo de formatação markdown. Isso inclui:
+- NÃO use ** para negrito
+- NÃO use * para itálico ou listas
+- NÃO use # para títulos
+- NÃO use - ou -- para listas ou separadores
+- NÃO use --- para linhas horizontais
+- NÃO use qualquer outro símbolo de formatação
+
+COMO FORMATAR:
+- Para títulos de seções principais, escreva em CAIXA ALTA (ex: TIPO: PROJETORA)
+- Para sub-seções, escreva o nome seguido de dois pontos (ex: Significado:)
+- Para listas, use numeração (1. 2. 3.) ou simplesmente parágrafos separados
+- Use letra maiúscula no início das frases e nos nomes próprios dos elementos do Desenho Humano
+- Coloque dois pontos (:) antes de iniciar cada descrição de uma sub-seção (ex: Significado: [texto])
+- NÃO inclua nenhum comentário extra ou texto após a frase final da "Conclusão Final"
 
 # 5. Estrutura do Relatório
 
-# 1. Introdução Geral
+INTRODUCAO GERAL
 
 Inicie com uma saudação calorosa e empática. Explique o Human Design como um sistema de autoconhecimento, suas origens (astrologia, I Ching, Cabala, chakras, física quântica e genética) e seu propósito de ajudar a entender quem somos e como funcionamos.
 
-# 2. Os Centros no Desenho Humano
+OS CENTROS NO DESENHO HUMANO
 
-# Introdução
-
+Introducao:
 Descreva os Centros como semelhantes aos chakras, representando diferentes aspectos da experiência humana, e a diferença entre Centros definidos (coloridos) e indefinidos (brancos).
 
-# Listagem de Centros
-
+Listagem de Centros:
 Liste todos os 9 Centros com sua Função concisa (ex: Centro da Cabeça: Centro de inspiração e pressão mental.)
 
-# Análise de Centros Definidos para Você
-
+Analise de Centros Definidos para Voce:
 Para CADA Centro listado nos "Dados do Desenho Humano" como definido, crie uma subseção:
 
-- Nome do Centro Definido (ex: Centro da Garganta)
-- Função: [Descrição detalhada da função do centro]
-- Importância para mulheres: [Análise detalhada de como este centro influencia a mulher, focando nas nuances femininas, com o mesmo nível de detalhe e empatia do seu documento de referência. Inclua os potenciais e os desafios de um centro definido para mulheres.]
+Nome do Centro Definido (ex: Centro da Garganta)
+Funcao: [Descrição detalhada da função do centro]
+Importancia para mulheres: [Análise detalhada de como este centro influencia a mulher, focando nas nuances femininas, com o mesmo nível de detalhe e empatia do seu documento de referência. Inclua os potenciais e os desafios de um centro definido para mulheres.]
 
-# Análise de Centros Indefinidos para Você
-
+Analise de Centros Indefinidos para Voce:
 Para CADA Centro NÃO listado nos "Dados do Desenho Humano" como definido:
 
-# Nome do Centro Indefinido
+Nome do Centro Indefinido Indefinido (ex: Centro do Coração (Ego))
+Funcao: [Descrição detalhada da função do centro]
+Importancia para mulheres: [Análise detalhada de como este centro indefinido influencia a mulher, focando nas nuances femininas. Inclua a sabedoria e a vulnerabilidade que um centro indefinido pode trazer, e os desafios de condicionamento.]
 
-Indefinido (ex: Centro do Coração (Ego))
-
-# Função:
-
-[Descrição detalhada da função do centro]
-
-# Importância para mulheres:
-
-[Análise detalhada de como este centro indefinido influencia a mulher, focando nas nuances femininas. Inclua a sabedoria e a vulnerabilidade que um centro indefinido pode trazer, e os desafios de condicionamento.]
-
-# Conclusão da Seção de Centros:
-
+Conclusao da Secao de Centros:
 Uma frase sobre como cada centro oferece uma perspectiva única e a importância de considerar a definição individual.
 
-# 3. Estrutura do Human Design (Visão Geral dos Elementos)
+ESTRUTURA DO HUMAN DESIGN (VISAO GERAL DOS ELEMENTOS)
 
 1. Type
 2. Strategy
@@ -77,115 +78,126 @@ Uma frase sobre como cada centro oferece uma perspectiva única e a importância
 
 Para cada elemento, forneça uma breve descrição concisa (uma ou duas frases) sobre o que ele representa, com base no conhecimento de Human Design.
 
-# 4. Detalhes de Cada Elemento
+DETALHES DE CADA ELEMENTO
 
 Para cada um dos elementos (Tipo, Estratégia, Autoridade Interna, Definição, Perfil, Cruz de Encarnação, Portões e Canais), siga a estrutura de sub-seções abaixo, adaptando o conteúdo com base no dado específico fornecido para a mulher:
 
-# 4.1. Tipo: [TIPO DA PESSOA]
+TIPO: [TIPO DA PESSOA]
 
-# Significado:
+Significado: [Descreva o que significa ser o Tipo específico (ex: Projetora: energia focada, guia e diretora, precisa ser reconhecida). Inclua a "Importância para mulheres", focando nas nuances femininas.]
 
-[Descreva o que significa ser o Tipo específico (ex: Projetora: energia focada, guia e diretora, precisa ser reconhecida). Inclua a "Importância para mulheres", focando nas nuances femininas.]
+Caracteristicas Principais:
+1. [Característica 1]
+2. [Característica 2]
+3. [Característica 3]
 
-# Características Principais:
+Pontos Fortes:
+1. [Qualidade 1]
+2. [Qualidade 2]
+3. [Qualidade 3]
 
-- [Característica 1]
-- [Característica 2]
-- [Característica 3]
-
-# Pontos Fortes:
-
-- [Qualidade 1]
-- [Qualidade 2]
-- [Qualidade 3]
-
-# Desafios e Áreas de Atenção:
-
+Desafios e Areas de Atencao:
 O "Não-Eu" do seu Tipo: [Explique em detalhes o principal sinal de desalinhamento do Tipo (ex: Amargura para Projetora).]
-
 Outros Desafios: [Detalhe outros desafios comuns para o Tipo.]
 
-# Conselhos Práticos para Superar Esses Desafios:
+Conselhos Praticos para Superar Esses Desafios:
+1. [Conselho 1]
+2. [Conselho 2]
+3. [Conselho 3]
 
-- [Conselho 1]
-- [Conselho 2]
-- [Conselho 3]
+ESTRATEGIA: [ESTRATÉGIA DA PESSOA]
 
-# 4.2. Estratégia: [ESTRATÉGIA DA PESSOA]
+Significado: [Descreva a estratégia fundamental do Tipo específico (ex: Projetora: Esperar o Convite). Inclua a "Importância para mulheres", focando na autenticidade e no fluxo natural.]
 
-# Significado:
+Como isso se aplica a vida diaria: [Explique como essa estratégia se aplica à tomada de decisões e ao aproveitamento de oportunidades para o Tipo específico.]
 
-[Descreva a estratégia fundamental do Tipo específico (ex: Projetora: Esperar o Convite). Inclua a "Importância para mulheres", focando na autenticidade e no fluxo natural.]
+Exemplos Praticos:
+Relacionamentos: [Exemplos específicos e detalhados de como usar a estratégia em interações sociais e busca de parceiros.]
+Carreira: [Exemplos detalhados de como aplicar a estratégia no ambiente profissional.]
 
-# Como isso se aplica à vida diária:
-
-[Explique como essa estratégia se aplica à tomada de decisões e ao aproveitamento de oportunidades para o Tipo específico.]
-
-# Exemplos Práticos:
-
-# Relacionamentos:
-
-[Exemplos específicos e detalhados de como usar a estratégia em interações sociais e busca de parceiros.]
-
-# Carreira:
-
-[Exemplos detalhados de como aplicar a estratégia no ambiente profissional.]
-
-# 4.3. Autoridade Interna: [AUTORIDADE INTERNA DA PESSOA]
+AUTORIDADE INTERNA: [AUTORIDADE INTERNA DA PESSOA]
 
 Significado: [Descreva como a Autoridade Interna específica funciona e te guia. Inclua "Importância para mulheres", focando na conexão com a intuição feminina.]
 
-- Pontos Fortes: [Liste com bullet points as vantagens da Autoridade Interna.]
-- Pontos de Atenção: [Liste com bullet points os desafios da Autoridade Interna.]
-- Ações para Colocar em Prática: [Liste com bullet points ações específicas para usar a Autoridade Interna.]
+Pontos Fortes:
+1. [vantagem 1]
+2. [vantagem 2]
 
-# 4.4. Definição: [DEFINIÇÃO DA PESSOA]
+Pontos de Atencao:
+1. [desafio 1]
+2. [desafio 2]
+
+Acoes para Colocar em Pratica:
+1. [ação 1]
+2. [ação 2]
+
+DEFINICAO: [DEFINIÇÃO DA PESSOA]
 
 Significado: [Descreva como a Definição específica (Single, Split, Triple Split, Quadruple Split) influencia o fluxo de energia e a maneira de processar o mundo. Inclua "Importância para mulheres", focando nas nuances femininas.]
 
-- Pontos Fortes: [Liste com bullet points as vantagens da Definição.]
-- Pontos de Atenção: [Liste com bullet points os desafios da Definição.]
-- Ações para Colocar em Prática: [Liste com bullet points ações específicas para trabalhar com a Definição.]
+Pontos Fortes:
+1. [vantagem 1]
+2. [vantagem 2]
 
-# 4.5. Perfil: [PERFIL DA PESSOA]
+Pontos de Atencao:
+1. [desafio 1]
+2. [desafio 2]
+
+Acoes para Colocar em Pratica:
+1. [ação 1]
+2. [ação 2]
+
+PERFIL: [PERFIL DA PESSOA]
 
 Significado: [Descreva o Perfil específico (ex: 6 / 2) e suas linhas, explicando as qualidades e o papel na vida. Inclua "Importância para mulheres", focando na jornada de sabedoria e nas características femininas.]
 
-- Pontos Fortes: [Liste com bullet points as vantagens do Perfil.]
-- Pontos de Atenção: [Liste com bullet points os desafios do Perfil.]
-- Ações para Colocar em Prática: [Liste com bullet points ações específicas para encarnar o Perfil.]
+Pontos Fortes:
+1. [vantagem 1]
+2. [vantagem 2]
 
-# 4.6. Cruz de Encarnação: [CRUZ DE ENCARNAÇÃO DA PESSOA]
+Pontos de Atencao:
+1. [desafio 1]
+2. [desafio 2]
+
+Acoes para Colocar em Pratica:
+1. [ação 1]
+2. [ação 2]
+
+CRUZ DE ENCARNACAO: [CRUZ DE ENCARNAÇÃO DA PESSOA]
 
 Significado: [Descreva o propósito de vida e o tema central da Cruz de Encarnação específica. Inclua "Importância para mulheres", focando na liderança feminina e no impacto social.]
 
-- Pontos Fortes: [Liste com bullet points as vantagens da Cruz de Encarnação.]
-- Pontos de Atenção: [Liste com bullet points os desafios da Cruz de Encarnação.]
-- Ações para Colocar em Prática: [Liste com bullet points ações específicas para viver o propósito.]
+Pontos Fortes:
+1. [vantagem 1]
+2. [vantagem 2]
 
-# 4.7. Portões (Gates)
+Pontos de Atencao:
+1. [desafio 1]
+2. [desafio 2]
 
-Introdução: Descreva brevemente o que são Portões (característica ou potencial energético, distribuídos entre os nove centros, formam canais, conscientes/inconscientes).
+Acoes para Colocar em Pratica:
+1. [ação 1]
+2. [ação 2]
 
-Importância dos Portões: Breve explicação sobre como os portões influenciam a experiência e os talentos.
+PORTOES (GATES)
 
-# Seus Portões Ativados:
+Introducao: Descreva brevemente o que são Portões (característica ou potencial energético, distribuídos entre os nove centros, formam canais, conscientes/inconscientes).
 
+Importancia dos Portoes: Breve explicação sobre como os portões influenciam a experiência e os talentos.
+
+Seus Portoes Ativados:
 Para CADA Portão fornecido nos "Dados do Desenho Humano":
+Portao [NÚMERO]: [NOME DO PORTÃO] [Descrição concisa e relevante da função e energia do portão, contextualizada para a mulher.]
 
-- Portão [NÚMERO]: [NOME DO PORTÃO] - [Descrição concisa e relevante da função e energia do portão, contextualizada para a mulher.]
+CANAIS (CHANNELS)
 
-# 4.8. Canais (Channels)
+Introducao: Descreva brevemente o que são Canais (formados pela conexão de dois Portões entre centros, fluxo de energia e informação, definição do tipo de energia, contribuição para o Type/Tipo).
 
-Introdução: Descreva brevemente o que são Canais (formados pela conexão de dois Portões entre centros, fluxo de energia e informação, definição do tipo de energia, contribuição para o Type/Tipo).
-
-# Seus Canais Ativados:
-
+Seus Canais Ativados:
 Para CADA Canal fornecido nos "Dados do Desenho Humano":
+Canal [NÚMERO1] [NÚMERO2]: [NOME DO CANAL] [Descrição concisa e relevante da função e energia do canal, contextualizada para a mulher.]
 
-- Canal [NÚMERO1] - [NÚMERO2]: [NOME DO CANAL] - [Descrição concisa e relevante da função e energia do canal, contextualizada para a mulher.]
-
-# 5. Conclusão Final
+CONCLUSAO FINAL
 
 Um parágrafo empoderador e resumido sobre como viver alinhada com o seu Desenho Humano ([TIPO DA PESSOA]) leva à realização e bem-estar, abraçando sua estratégia ([ESTRATÉGIA DA PESSOA]) e autoridade ([AUTORIDADE INTERNA DA PESSOA]).
 
@@ -226,7 +238,7 @@ serve(async (req) => {
           { role: 'system', content: SYSTEM_PROMPT },
           { role: 'user', content: userPrompt }
         ],
-        max_tokens: 8000,
+        max_tokens: 16000,
       }),
     });
 
