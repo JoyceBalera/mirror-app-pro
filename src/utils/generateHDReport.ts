@@ -42,6 +42,31 @@ const CENTER_NAMES: Record<string, string> = {
   root: 'Raiz',
 };
 
+// Função aprimorada para limpar markdown
+const cleanMarkdown = (text: string): string => {
+  return text
+    // Remove títulos markdown (# ## ### etc)
+    .replace(/^#{1,6}\s+/gm, '')
+    // Remove negrito e itálico
+    .replace(/\*\*(.+?)\*\*/g, '$1')
+    .replace(/\*(.+?)\*/g, '$1')
+    // Remove separadores (--- ou --)
+    .replace(/^[\s]*[-]{2,}[\s]*$/gm, '')
+    // Remove linhas só com bullets/pontos
+    .replace(/^[\s]*[•]{1,3}[\s]*$/gm, '')
+    // Converte listas markdown em bullets
+    .replace(/^[\s]*[-*+]\s+/gm, '• ')
+    // Remove links markdown [texto](url)
+    .replace(/\[(.+?)\]\(.+?\)/g, '$1')
+    // Remove código inline
+    .replace(/`(.+?)`/g, '$1')
+    // Remove blocos de código
+    .replace(/```[\s\S]*?```/g, '')
+    // Remove múltiplas linhas vazias
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+};
+
 export async function generateHDReport(data: HDReportData): Promise<void> {
   const doc = new jsPDF({
     orientation: 'portrait',
@@ -85,20 +110,6 @@ export async function generateHDReport(data: HDReportData): Promise<void> {
     });
 
     return lines.length * lineHeight;
-  };
-
-  // Helper: Add centered text
-  const addCenteredText = (
-    text: string,
-    fontSize: number,
-    isBold: boolean = false,
-    color: [number, number, number] = COLORS.darkText
-  ) => {
-    doc.setFontSize(fontSize);
-    doc.setFont('helvetica', isBold ? 'bold' : 'normal');
-    doc.setTextColor(...color);
-    doc.text(text, pageWidth / 2, yPosition, { align: 'center' });
-    yPosition += fontSize * 0.45;
   };
 
   // =================== PÁGINA 1 - CAPA ===================
@@ -182,7 +193,7 @@ export async function generateHDReport(data: HDReportData): Promise<void> {
     doc.text(item.value, xPos, yPosition + 5);
   });
 
-  // =================== PÁGINA 2 - CENTROS ===================
+  // =================== PÁGINA 2 - BODYGRAPH ===================
   doc.addPage();
   yPosition = 25;
 
@@ -191,15 +202,53 @@ export async function generateHDReport(data: HDReportData): Promise<void> {
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(12);
   doc.setFont('helvetica', 'bold');
-  doc.text('SEUS CENTROS ENERGÉTICOS', margin + 5, yPosition + 7);
-  yPosition += 20;
+  doc.text('SEU BODYGRAPH VISUAL', margin + 5, yPosition + 7);
+  yPosition += 25;
 
+  // Calcular dados dos centros
   const definedCenters = Object.entries(data.centers || {})
     .filter(([_, isDefined]) => isDefined)
     .map(([centerId]) => centerId);
   const openCenters = Object.entries(data.centers || {})
     .filter(([_, isDefined]) => !isDefined)
     .map(([centerId]) => centerId);
+  const activeChannels = (data.channels || []).filter((ch: any) => ch.isComplete);
+
+  // Box informativo sobre o Bodygraph
+  doc.setFillColor(...COLORS.offWhite);
+  doc.roundedRect(margin, yPosition, contentWidth, 55, 3, 3, 'F');
+  yPosition += 12;
+
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...COLORS.carmim);
+  doc.text('Seu Bodygraph completo está disponível na plataforma online.', margin + 10, yPosition);
+  yPosition += 10;
+
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(...COLORS.darkText);
+  doc.text('Acesse sua conta para visualizar o desenho interativo dos seus centros,', margin + 10, yPosition);
+  yPosition += 6;
+  doc.text('canais e gates ativados com cores e legendas detalhadas.', margin + 10, yPosition);
+  yPosition += 12;
+
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...COLORS.gold);
+  doc.text(`Você possui ${definedCenters.length} centro(s) definido(s) e ${openCenters.length} centro(s) aberto(s).`, margin + 10, yPosition);
+  yPosition += 6;
+  doc.text(`Total de ${activeChannels.length} canal(is) ativo(s).`, margin + 10, yPosition);
+
+  yPosition += 25;
+
+  // =================== CENTROS ENERGÉTICOS ===================
+  doc.setFillColor(...COLORS.carmim);
+  doc.rect(margin, yPosition, contentWidth, 10, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(12);
+  doc.setFont('helvetica', 'bold');
+  doc.text('SEUS CENTROS ENERGÉTICOS', margin + 5, yPosition + 7);
+  yPosition += 20;
 
   // Centros Definidos
   doc.setFontSize(11);
@@ -250,6 +299,7 @@ export async function generateHDReport(data: HDReportData): Promise<void> {
   yPosition += 15;
 
   // =================== CANAIS ATIVOS ===================
+  checkAddPage(30);
   doc.setFillColor(...COLORS.carmim);
   doc.rect(margin, yPosition, contentWidth, 10, 'F');
   doc.setTextColor(255, 255, 255);
@@ -257,8 +307,6 @@ export async function generateHDReport(data: HDReportData): Promise<void> {
   doc.setFont('helvetica', 'bold');
   doc.text('SEUS CANAIS DE PODER', margin + 5, yPosition + 7);
   yPosition += 20;
-
-  const activeChannels = (data.channels || []).filter((ch: any) => ch.isComplete);
 
   if (activeChannels.length > 0) {
     doc.setFontSize(10);
@@ -347,100 +395,67 @@ export async function generateHDReport(data: HDReportData): Promise<void> {
     doc.text('ANÁLISE PERSONALIZADA COMPLETA', margin + 5, yPosition + 7);
     yPosition += 20;
 
-    // Processar markdown para texto formatado
-    const processMarkdown = (text: string) => {
-      // Separar por seções (##)
-      const sections = text.split(/^##\s+/gm);
-
-      sections.forEach((section, index) => {
-        if (index === 0 && !section.trim()) return;
-
-        const lines = section.split('\n');
-        const title = lines[0]?.trim();
-        const content = lines.slice(1).join('\n').trim();
-
-        // Título da seção
-        if (title) {
+    // Processar análise completa sem limite de páginas
+    const processAnalysis = (text: string) => {
+      // Limpar markdown primeiro
+      const cleanedText = cleanMarkdown(text);
+      
+      // Dividir por parágrafos
+      const paragraphs = cleanedText.split('\n\n').filter(p => p.trim());
+      
+      paragraphs.forEach((paragraph) => {
+        const trimmed = paragraph.trim();
+        if (!trimmed) return;
+        
+        // Detectar se é título (linha curta que parece título)
+        const isTitle = trimmed.length < 80 && 
+                       (trimmed.match(/^[0-9]+\./) || // Começa com número
+                        trimmed.match(/^[A-ZÁÉÍÓÚÀÂÊÔÃÕÇ\s\d\.:]+$/) || // Todo em maiúscula
+                        trimmed.endsWith(':') && trimmed.length < 50); // Termina com :
+        
+        if (isTitle) {
           checkAddPage(15);
           doc.setFontSize(13);
           doc.setFont('helvetica', 'bold');
           doc.setTextColor(...COLORS.carmim);
-          doc.text(title.replace(/\*\*/g, ''), margin, yPosition);
-          yPosition += 8;
-        }
-
-        // Conteúdo
-        if (content) {
-          const paragraphs = content.split('\n\n');
-
-          paragraphs.forEach((para) => {
-            if (!para.trim()) return;
-
-            checkAddPage(15);
-
-            // Detectar subseções (###)
-            if (para.startsWith('###')) {
-              const subTitle = para.replace(/^###\s*/, '').replace(/\*\*/g, '').trim();
-              doc.setFontSize(11);
-              doc.setFont('helvetica', 'bold');
-              doc.setTextColor(...COLORS.gold);
-              doc.text(subTitle, margin, yPosition);
-              yPosition += 7;
-              return;
-            }
-
-            // Detectar listas
-            if (para.includes('\n-') || para.includes('\n*') || para.startsWith('-') || para.startsWith('*')) {
-              const items = para.split('\n').filter(Boolean);
-              items.forEach((item) => {
-                checkAddPage(6);
-                const cleanItem = item
-                  .replace(/^[-*]\s*/, '• ')
-                  .replace(/\*\*(.+?)\*\*/g, '$1')
-                  .replace(/\*(.+?)\*/g, '$1');
-
-                doc.setFontSize(10);
-                doc.setFont('helvetica', 'normal');
-                doc.setTextColor(...COLORS.darkText);
-
-                const itemLines = doc.splitTextToSize(cleanItem, contentWidth - 5);
-                itemLines.forEach((line: string) => {
-                  checkAddPage(5);
-                  doc.text(line, margin + 3, yPosition);
-                  yPosition += 5;
-                });
-              });
-              yPosition += 3;
-            } else {
-              // Parágrafo normal
-              const cleanPara = para
-                .replace(/\*\*(.+?)\*\*/g, '$1')
-                .replace(/\*(.+?)\*/g, '$1')
-                .replace(/---/g, '')
-                .trim();
-
-              if (cleanPara) {
-                doc.setFontSize(10);
-                doc.setFont('helvetica', 'normal');
-                doc.setTextColor(...COLORS.darkText);
-
-                const paraLines = doc.splitTextToSize(cleanPara, contentWidth);
-                paraLines.forEach((line: string) => {
-                  checkAddPage(5);
-                  doc.text(line, margin, yPosition);
-                  yPosition += 5;
-                });
-                yPosition += 4;
-              }
-            }
+          doc.text(trimmed, margin, yPosition);
+          yPosition += 10;
+        } else if (trimmed.includes('•') || trimmed.match(/^[0-9]+\./m)) {
+          // É uma lista
+          const lines = trimmed.split('\n').filter(Boolean);
+          lines.forEach((line) => {
+            checkAddPage(8);
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(...COLORS.darkText);
+            
+            const itemLines = doc.splitTextToSize(line, contentWidth - 5);
+            itemLines.forEach((itemLine: string) => {
+              checkAddPage(5);
+              doc.text(itemLine, margin + 5, yPosition);
+              yPosition += 5;
+            });
           });
+          yPosition += 3;
+        } else {
+          // Parágrafo normal
+          checkAddPage(15);
+          doc.setFontSize(10);
+          doc.setFont('helvetica', 'normal');
+          doc.setTextColor(...COLORS.darkText);
+          
+          const paraLines = doc.splitTextToSize(trimmed, contentWidth);
+          paraLines.forEach((line: string) => {
+            checkAddPage(5);
+            doc.text(line, margin, yPosition);
+            yPosition += 5;
+          });
+          yPosition += 5;
         }
-
-        yPosition += 5;
       });
     };
 
-    processMarkdown(data.ai_analysis_full);
+    processAnalysis(data.ai_analysis_full);
   }
 
   // =================== RODAPÉ EM TODAS AS PÁGINAS ===================
@@ -460,9 +475,10 @@ export async function generateHDReport(data: HDReportData): Promise<void> {
       align: 'center',
     });
 
-    // Marca d'água
-    doc.setFontSize(8);
-    doc.text('Gerado por Methodology as a Service', pageWidth / 2, pageHeight - 7, {
+    // Crédito - Corrigido para Luciana Belenton
+    doc.setFontSize(9);
+    doc.setTextColor(...COLORS.carmim);
+    doc.text('Criado por Luciana Belenton', pageWidth / 2, pageHeight - 7, {
       align: 'center',
     });
   }
