@@ -174,24 +174,73 @@ const HDBodyGraph: React.FC<HDBodyGraphProps> = ({
     );
   };
 
-  // Render human silhouette (behind everything)
+  // Render human silhouette - filled meditation pose aligned with centers
   const renderHumanSilhouette = () => (
-    <path
-      d="M165,30 
-         C182,30 195,45 195,65 C195,85 182,100 165,100 C148,100 135,85 135,65 C135,45 148,30 165,30
-         M165,100 L165,130
-         M165,130 C140,135 115,155 100,190 C85,225 75,265 70,300
-         M165,130 C190,135 215,155 230,190 C245,225 255,265 260,300
-         M165,130 L165,400
-         M165,400 C155,430 140,480 125,530 L115,560
-         M165,400 C175,430 190,480 205,530 L215,560"
-      stroke="#d1d5db"
-      strokeWidth="1.5"
-      fill="none"
-      opacity="0.35"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
+    <g opacity="0.35">
+      {/* Head - aligned with Head center (~165, 40) */}
+      <ellipse cx="165" cy="35" rx="28" ry="32" fill="#d4c8b8" />
+      
+      {/* Neck */}
+      <rect x="155" y="65" width="20" height="25" fill="#d4c8b8" />
+      
+      {/* Torso - covers Throat, G, Heart, Spleen, Solar Plexus, Sacral */}
+      <path
+        d="M165,90 
+           C200,90 220,110 225,140
+           C230,170 225,250 225,320
+           C225,380 210,420 200,450
+           L165,460
+           L130,450
+           C120,420 105,380 105,320
+           C105,250 100,170 105,140
+           C110,110 130,90 165,90"
+        fill="#d4c8b8"
+      />
+      
+      {/* Left arm - curved outward from shoulder, aligned with Spleen side */}
+      <path
+        d="M105,130
+           C70,150 40,200 25,280
+           C15,340 20,400 40,450
+           C55,485 80,500 110,490
+           C130,480 140,450 135,420
+           C130,390 120,350 115,320"
+        fill="#d4c8b8"
+      />
+      
+      {/* Right arm - curved outward from shoulder, aligned with ESP side */}
+      <path
+        d="M225,130
+           C260,150 290,200 305,280
+           C315,340 310,400 290,450
+           C275,485 250,500 220,490
+           C200,480 190,450 195,420
+           C200,390 210,350 215,320"
+        fill="#d4c8b8"
+      />
+      
+      {/* Left leg - meditation pose, crossed */}
+      <path
+        d="M130,450
+           C115,470 95,490 75,510
+           C55,530 50,545 60,555
+           C80,570 140,560 165,545"
+        fill="#d4c8b8"
+      />
+      
+      {/* Right leg - meditation pose, crossed */}
+      <path
+        d="M200,450
+           C215,470 235,490 255,510
+           C275,530 280,545 270,555
+           C250,570 190,560 165,545"
+        fill="#d4c8b8"
+      />
+      
+      {/* Hands resting on knees */}
+      <ellipse cx="50" cy="470" rx="18" ry="22" fill="#d4c8b8" />
+      <ellipse cx="280" cy="470" rx="18" ry="22" fill="#d4c8b8" />
+    </g>
   );
 
   // Render legend
