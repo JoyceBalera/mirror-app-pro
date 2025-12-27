@@ -75,6 +75,7 @@ ESTRUTURA DO HUMAN DESIGN (VISAO GERAL DOS ELEMENTOS)
 8. Not-Self Theme
 9. Gates
 10. Channels
+11. Variaveis Avancadas (Digestion, Environment, Motivation, Perspective)
 
 Para cada elemento, forneça uma breve descrição concisa (uma ou duas frases) sobre o que ele representa, com base no conhecimento de Human Design.
 
@@ -179,6 +180,42 @@ Acoes para Colocar em Pratica:
 1. [ação 1]
 2. [ação 2]
 
+VARIAVEIS AVANCADAS
+
+Esta seção explora as variáveis avançadas do seu Desenho Humano, que oferecem insights sobre como você processa a vida de forma mais profunda.
+
+DIGESTAO: [DIGESTAO DA PESSOA]
+
+Significado: [Descreva como a digestão específica (Appetite, Taste, Thirst, Touch, Sound, Light) influencia a forma como a pessoa deve se alimentar e processar nutrientes. Se for Low (cores 1-3), é mais focada/específica. Se for High (cores 4-6), é mais aberta/receptiva.]
+
+Como Aplicar no Dia a Dia:
+1. [Dica prática 1 sobre alimentação]
+2. [Dica prática 2 sobre ambiente de refeições]
+
+AMBIENTE: [AMBIENTE DA PESSOA]
+
+Significado: [Descreva o ambiente ideal (Caves, Markets, Kitchens, Mountains, Valleys, Shores) onde a pessoa funciona melhor e como isso afeta seu bem-estar. Se for Active (tons 1-3), a pessoa vai até o ambiente. Se for Passive (tons 4-6), o ambiente vem até ela.]
+
+Como Aplicar no Dia a Dia:
+1. [Dica prática 1 sobre ambiente de trabalho]
+2. [Dica prática 2 sobre ambiente de vida]
+
+MOTIVACAO: [MOTIVACAO DA PESSOA]
+
+Significado: [Descreva a motivação primária (Fear, Hope, Desire, Need, Guilt, Innocence) que move a pessoa em direção às decisões e ações. Se for Personal (tons 1-3), a motivação é mais interna. Se for Transpersonal (tons 4-6), é mais coletiva/externa.]
+
+Como Aplicar no Dia a Dia:
+1. [Dica prática 1 sobre reconhecer sua motivação]
+2. [Dica prática 2 sobre alinhar ações com motivação]
+
+PERSPECTIVA: [PERSPECTIVA DA PESSOA]
+
+Significado: [Descreva a perspectiva primária (Survival, Possibility, Power, Wanting, Probability, Personal) através da qual a pessoa vê o mundo. Se for Left (tons 1-3), é mais mental/estratégica. Se for Right (tons 4-6), é mais sensorial/receptiva.]
+
+Como Aplicar no Dia a Dia:
+1. [Dica prática 1 sobre honrar sua perspectiva]
+2. [Dica prática 2 sobre tomada de decisão]
+
 PORTOES (GATES)
 
 Introducao: Descreva brevemente o que são Portões (característica ou potencial energético, distribuídos entre os nove centros, formam canais, conscientes/inconscientes).
@@ -199,7 +236,7 @@ Canal [NÚMERO1] [NÚMERO2]: [NOME DO CANAL] [Descrição concisa e relevante da
 
 CONCLUSAO FINAL
 
-Um parágrafo empoderador e resumido sobre como viver alinhada com o seu Desenho Humano ([TIPO DA PESSOA]) leva à realização e bem-estar, abraçando sua estratégia ([ESTRATÉGIA DA PESSOA]) e autoridade ([AUTORIDADE INTERNA DA PESSOA]).
+Um parágrafo empoderador e resumido sobre como viver alinhada com o seu Desenho Humano ([TIPO DA PESSOA]) leva à realização e bem-estar, abraçando sua estratégia ([ESTRATÉGIA DA PESSOA]) e autoridade ([AUTORIDADE INTERNA DA PESSOA]). Mencione como as variáveis avançadas (digestão, ambiente, motivação e perspectiva) oferecem chaves adicionais para viver em alinhamento com sua natureza única.
 
 Conclua com uma frase de carinho: "Com carinho, Luciana Belenton."`;
 
@@ -334,6 +371,21 @@ function buildUserPrompt(data: any): string {
     .map((ch: any) => `${ch.id}: ${ch.name}`)
     .join(', ') || 'Nenhum canal completo';
 
+  // Get advanced variables
+  const advVars = data.advancedVariables || {};
+  const digestion = advVars.digestion 
+    ? `${advVars.digestion.primary} (${advVars.digestion.level || ''}) - ${advVars.digestion.subcategory || ''}`
+    : 'Não disponível';
+  const environment = advVars.environment 
+    ? `${advVars.environment.primary} - ${advVars.environment.subcategory || ''}`
+    : 'Não disponível';
+  const motivation = advVars.motivation 
+    ? `${advVars.motivation.primary} - ${advVars.motivation.subcategory || ''}`
+    : 'Não disponível';
+  const perspective = advVars.perspective 
+    ? `${advVars.perspective.primary} - ${advVars.perspective.subcategory || ''}`
+    : 'Não disponível';
+
   return `# 4. Dados do Desenho Humano da Mulher:
 
 - Nome da Pessoa: ${data.userName || 'você'}
@@ -347,5 +399,11 @@ function buildUserPrompt(data: any): string {
 - Portões Ativados (Gates): ${gates}
 - Canais Ativados (Channels): ${channels}
 
-Por favor, gere uma análise completa e detalhada seguindo a estrutura do relatório definida nas instruções.`;
+VARIAVEIS AVANCADAS:
+- Digestão (Digestion): ${digestion}
+- Ambiente (Environment): ${environment}
+- Motivação (Motivation): ${motivation}
+- Perspectiva (Perspective): ${perspective}
+
+Por favor, gere uma análise completa e detalhada seguindo a estrutura do relatório definida nas instruções, incluindo a seção de Variáveis Avançadas.`;
 }
