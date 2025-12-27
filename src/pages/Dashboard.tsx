@@ -164,13 +164,41 @@ const Dashboard = () => {
     navigate("/desenho-humano/test");
   };
 
-  const handleViewDesenhoHumanoReport = () => {
+  const handleViewDesenhoHumanoReport = async () => {
     console.log("📄 Navegando para relatório Desenho Humano...");
-    // TODO: Implementar página de resultados do DH
-    toast({
-      title: "Em breve!",
-      description: "O relatório estará disponível em breve.",
-    });
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Buscar o resultado mais recente do Desenho Humano
+      const { data: hdResult, error } = await supabase
+        .from("human_design_results")
+        .select("id")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (error || !hdResult) {
+        console.error("❌ Erro ao buscar resultado HD:", error);
+        toast({
+          title: "Erro",
+          description: "Não foi possível encontrar seu resultado.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      navigate(`/desenho-humano/results/${hdResult.id}`);
+    } catch (error) {
+      console.error("❌ Erro ao navegar para resultado:", error);
+      toast({
+        title: "Erro",
+        description: "Ocorreu um erro ao buscar seu resultado.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleViewIntegratedReport = () => {
