@@ -7,7 +7,7 @@ import { Loader2, ArrowLeft, Brain, User, Zap, Target, RefreshCw, ChevronDown, C
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useUserRole } from "@/hooks/useUserRole";
-import BodyGraph from "@/components/humandesign/BodyGraph";
+import HDBodyGraph from "@/components/humandesign/HDBodyGraph";
 import PlanetaryColumn from "@/components/humandesign/PlanetaryColumn";
 import AnalysisSections from "@/components/humandesign/AnalysisSections";
 import { calculateHumanDesignChart } from "@/utils/humanDesignCalculator";
@@ -431,7 +431,7 @@ const DesenhoHumanoResults = () => {
 
                 {/* BodyGraph (Centro) */}
                 <div className="flex justify-center">
-                  <BodyGraph
+                  <HDBodyGraph
                     definedCenters={definedCenters}
                     activeChannels={result.channels || []}
                     activatedGates={result.activated_gates || []}
