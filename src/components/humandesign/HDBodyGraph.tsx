@@ -208,8 +208,8 @@ const HDBodyGraph: React.FC<HDBodyGraphProps> = ({
       viewBox="0 0 330 620" 
       fill="none" 
       xmlns="http://www.w3.org/2000/svg"
-      className="w-full max-w-[350px] h-auto"
-      style={{ userSelect: 'none' }}
+      className="bodygraph-svg w-full max-w-[350px] h-auto"
+      style={{ userSelect: 'none', backgroundColor: '#FFFFFF' }}
     >
       <defs>
         {/* Legend gradient */}

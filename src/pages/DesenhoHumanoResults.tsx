@@ -204,12 +204,64 @@ const DesenhoHumanoResults = () => {
     }
   };
 
+  // Function to capture Bodygraph SVG as PNG
+  const captureBodyGraphAsImage = async (): Promise<string | null> => {
+    try {
+      const svgElement = document.querySelector('.bodygraph-svg') as SVGElement;
+      if (!svgElement) {
+        console.warn('Bodygraph SVG não encontrado');
+        return null;
+      }
+
+      // Serializar SVG para string
+      const serializer = new XMLSerializer();
+      const svgString = serializer.serializeToString(svgElement);
+
+      // Criar blob e URL
+      const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(svgBlob);
+
+      // Carregar em imagem e desenhar no canvas
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const scale = 2; // 2x para melhor qualidade
+          canvas.width = 330 * scale;
+          canvas.height = 620 * scale;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.scale(scale, scale);
+            ctx.drawImage(img, 0, 0, 330, 620);
+          }
+          const dataUrl = canvas.toDataURL('image/png');
+          URL.revokeObjectURL(url);
+          resolve(dataUrl);
+        };
+        img.onerror = () => {
+          console.error('Erro ao carregar SVG como imagem');
+          URL.revokeObjectURL(url);
+          resolve(null);
+        };
+        img.src = url;
+      });
+    } catch (error) {
+      console.error('Erro ao capturar Bodygraph:', error);
+      return null;
+    }
+  };
+
   // Function to download PDF report
   const handleDownloadPDF = async () => {
     if (!result || !variables) return;
     
     setGeneratingPDF(true);
     try {
+      // Capturar imagem do Bodygraph
+      const bodygraphImage = await captureBodyGraphAsImage();
+      
       await generateHDReport({
         birth_date: result.birth_date,
         birth_time: result.birth_time,
@@ -226,6 +278,7 @@ const DesenhoHumanoResults = () => {
         design_activations: result.design_activations || [],
         variables: variables,
         ai_analysis_full: aiAnalysis?.analysis_text || '',
+        bodygraph_image: bodygraphImage || undefined,
       });
       
       toast({
