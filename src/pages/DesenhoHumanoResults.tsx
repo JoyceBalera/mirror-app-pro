@@ -15,6 +15,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { extractAdvancedVariables, type AdvancedVariables } from "@/utils/humanDesignVariables";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import ReactMarkdown from 'react-markdown';
 interface HumanDesignResult {
   id: string;
   user_id: string;
@@ -203,35 +204,17 @@ const DesenhoHumanoResults = () => {
     }
   };
 
-  // Function to render plain text (no markdown)
-  const renderAnalysisText = (text: string) => {
-    const lines = text.split('\n');
-    return lines.map((line, index) => {
-      const trimmedLine = line.trim();
-      
-      // Empty lines
-      if (trimmedLine === '') {
-        return <br key={index} />;
-      }
-      
-      // Titles in UPPERCASE (main sections)
-      if (trimmedLine === trimmedLine.toUpperCase() && trimmedLine.length > 3 && !trimmedLine.match(/^\d+\./)) {
-        return <h2 key={index} className="text-xl font-bold text-[#7B192B] mt-6 mb-3">{trimmedLine}</h2>;
-      }
-      
-      // Sub-sections ending with colon (like "Significado:" or "Funcao:")
-      if (trimmedLine.endsWith(':') && trimmedLine.length < 60 && !trimmedLine.match(/^\d+\./)) {
-        return <h3 key={index} className="text-lg font-semibold text-[#7B192B] mt-4 mb-2">{trimmedLine}</h3>;
-      }
-      
-      // Numbered lists
-      if (trimmedLine.match(/^\d+\.\s/)) {
-        return <p key={index} className="ml-4 mb-1">{trimmedLine}</p>;
-      }
-      
-      // Regular paragraphs
-      return <p key={index} className="mb-2">{line}</p>;
-    });
+  // Markdown components for ReactMarkdown
+  const markdownComponents = {
+    h1: ({ children, ...props }: any) => <h1 className="text-2xl font-bold text-[#7B192B] mt-6 mb-3" {...props}>{children}</h1>,
+    h2: ({ children, ...props }: any) => <h2 className="text-xl font-bold text-[#7B192B] mt-5 mb-2" {...props}>{children}</h2>,
+    h3: ({ children, ...props }: any) => <h3 className="text-lg font-semibold text-[#7B192B] mt-4 mb-2" {...props}>{children}</h3>,
+    strong: ({ children, ...props }: any) => <strong className="font-bold text-[#7B192B]" {...props}>{children}</strong>,
+    ul: ({ children, ...props }: any) => <ul className="list-disc list-inside ml-4 space-y-1 my-2" {...props}>{children}</ul>,
+    ol: ({ children, ...props }: any) => <ol className="list-decimal list-inside ml-4 space-y-1 my-2" {...props}>{children}</ol>,
+    li: ({ children, ...props }: any) => <li className="mb-1" {...props}>{children}</li>,
+    p: ({ children, ...props }: any) => <p className="mb-3 leading-relaxed" {...props}>{children}</p>,
+    hr: ({ ...props }: any) => <hr className="my-4 border-[#BFAFB2]" {...props} />,
   };
 
   // Função para recalcular o mapa com o novo algoritmo
@@ -737,7 +720,9 @@ const DesenhoHumanoResults = () => {
                     {aiAnalysis ? (
                       <ScrollArea className="max-h-[600px] pr-4">
                         <div className="prose prose-sm max-w-none text-foreground">
-                          {renderAnalysisText(aiAnalysis.analysis_text)}
+                          <ReactMarkdown components={markdownComponents}>
+                            {aiAnalysis.analysis_text}
+                          </ReactMarkdown>
                         </div>
                         <div className="mt-6 pt-4 border-t border-[#BFAFB2] flex items-center justify-between text-sm text-muted-foreground">
                           <span>Gerada em: {new Date(aiAnalysis.generated_at).toLocaleDateString('pt-BR', { 

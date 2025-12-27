@@ -16,6 +16,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { SCORING, getTraitPercentage, getFacetPercentage } from "@/constants/scoring";
+import ReactMarkdown from 'react-markdown';
 
 interface ResultsProps {
   traitScores: TraitScore[];
@@ -416,10 +417,24 @@ export const Results = ({ traitScores, onRestart, sessionId, userName }: Results
           <Card className="p-6 bg-gradient-to-br from-primary/5 to-secondary/5 border-primary/20">
             <div className="flex items-start gap-3 mb-4">
               <Sparkles className="w-6 h-6 text-primary flex-shrink-0 mt-1" />
-              <div>
+              <div className="flex-1">
                 <h3 className="text-xl font-bold mb-2">Análise Personalizada por IA</h3>
-                <div className="prose prose-sm max-w-none text-foreground/90 whitespace-pre-wrap">
-                  {aiAnalysis}
+                <div className="prose prose-sm max-w-none text-foreground/90">
+                  <ReactMarkdown
+                    components={{
+                      h1: ({ children, ...props }) => <h1 className="text-xl font-bold text-primary mt-4 mb-2" {...props}>{children}</h1>,
+                      h2: ({ children, ...props }) => <h2 className="text-lg font-bold text-primary mt-3 mb-2" {...props}>{children}</h2>,
+                      h3: ({ children, ...props }) => <h3 className="text-base font-semibold text-primary mt-3 mb-1" {...props}>{children}</h3>,
+                      strong: ({ children, ...props }) => <strong className="font-bold" {...props}>{children}</strong>,
+                      ul: ({ children, ...props }) => <ul className="list-disc list-inside ml-4 space-y-1 my-2" {...props}>{children}</ul>,
+                      ol: ({ children, ...props }) => <ol className="list-decimal list-inside ml-4 space-y-1 my-2" {...props}>{children}</ol>,
+                      li: ({ children, ...props }) => <li className="mb-1" {...props}>{children}</li>,
+                      p: ({ children, ...props }) => <p className="mb-2 leading-relaxed" {...props}>{children}</p>,
+                      hr: ({ ...props }) => <hr className="my-3 border-muted" {...props} />,
+                    }}
+                  >
+                    {aiAnalysis}
+                  </ReactMarkdown>
                 </div>
               </div>
             </div>
