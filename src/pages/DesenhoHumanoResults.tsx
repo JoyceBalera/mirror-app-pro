@@ -12,10 +12,8 @@ import PlanetaryColumn from "@/components/humandesign/PlanetaryColumn";
 import AnalysisSections from "@/components/humandesign/AnalysisSections";
 import { calculateHumanDesignChart } from "@/utils/humanDesignCalculator";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { extractAdvancedVariables, type AdvancedVariables } from "@/utils/humanDesignVariables";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import ReactMarkdown from 'react-markdown';
 import { generateHDReport } from "@/utils/generateHDReport";
 interface HumanDesignResult {
   id: string;
@@ -204,19 +202,6 @@ const DesenhoHumanoResults = () => {
     } finally {
       setGeneratingAnalysis(false);
     }
-  };
-
-  // Markdown components for ReactMarkdown
-  const markdownComponents = {
-    h1: ({ children, ...props }: any) => <h1 className="text-2xl font-bold text-[#7B192B] mt-6 mb-3" {...props}>{children}</h1>,
-    h2: ({ children, ...props }: any) => <h2 className="text-xl font-bold text-[#7B192B] mt-5 mb-2" {...props}>{children}</h2>,
-    h3: ({ children, ...props }: any) => <h3 className="text-lg font-semibold text-[#7B192B] mt-4 mb-2" {...props}>{children}</h3>,
-    strong: ({ children, ...props }: any) => <strong className="font-bold text-[#7B192B]" {...props}>{children}</strong>,
-    ul: ({ children, ...props }: any) => <ul className="list-disc list-inside ml-4 space-y-1 my-2" {...props}>{children}</ul>,
-    ol: ({ children, ...props }: any) => <ol className="list-decimal list-inside ml-4 space-y-1 my-2" {...props}>{children}</ol>,
-    li: ({ children, ...props }: any) => <li className="mb-1" {...props}>{children}</li>,
-    p: ({ children, ...props }: any) => <p className="mb-3 leading-relaxed" {...props}>{children}</p>,
-    hr: ({ ...props }: any) => <hr className="my-4 border-[#BFAFB2]" {...props} />,
   };
 
   // Function to download PDF report
@@ -761,19 +746,32 @@ const DesenhoHumanoResults = () => {
                   <div className="p-6">
                     {aiAnalysis ? (
                       <div>
+                        {/* Resumo Geral */}
+                        <div className="mb-6 p-6 bg-[#F7F3EF] rounded-lg border border-[#BFAFB2]">
+                          <h4 className="font-bold text-[#7B192B] text-lg mb-3">Resumo da sua Análise</h4>
+                          <p className="text-foreground leading-relaxed mb-4">
+                            A análise completa do seu Desenho Humano foi gerada com sucesso. Ela inclui uma interpretação profunda 
+                            do seu tipo energético <strong>{result.energy_type}</strong>, sua estratégia de <strong>{result.strategy}</strong>, 
+                            autoridade <strong>{result.authority}</strong>, perfil <strong>{result.profile}</strong> e muito mais.
+                          </p>
+                          <p className="text-muted-foreground text-sm">
+                            Para acessar a análise completa com todos os detalhes, baixe o relatório em PDF abaixo.
+                          </p>
+                        </div>
+
                         {/* Botão de Download PDF */}
-                        <div className="mb-6 p-4 bg-gradient-to-r from-[#F7F3EF] to-[#BFAFB2]/20 rounded-lg border border-[#BFAFB2]">
+                        <div className="p-4 bg-gradient-to-r from-[#7B192B] to-[#A02846] rounded-lg">
                           <div className="flex items-center justify-between flex-wrap gap-4">
-                            <div>
-                              <h4 className="font-semibold text-[#7B192B]">Baixar Relatório Completo</h4>
-                              <p className="text-sm text-muted-foreground">
-                                PDF com análise completa, variáveis avançadas e todas as informações do seu mapa
+                            <div className="text-white">
+                              <h4 className="font-semibold">Baixar Relatório Completo em PDF</h4>
+                              <p className="text-sm text-white/80">
+                                Análise completa, variáveis avançadas e todas as informações do seu mapa
                               </p>
                             </div>
                             <Button
                               onClick={handleDownloadPDF}
                               disabled={generatingPDF}
-                              className="bg-[#7B192B] hover:bg-[#5a1220] text-white"
+                              className="bg-white hover:bg-[#F7F3EF] text-[#7B192B] font-semibold"
                             >
                               {generatingPDF ? (
                                 <>
@@ -790,41 +788,34 @@ const DesenhoHumanoResults = () => {
                           </div>
                         </div>
 
-                        <ScrollArea className="max-h-[600px] pr-4">
-                          <div className="prose prose-sm max-w-none text-foreground">
-                            <ReactMarkdown components={markdownComponents}>
-                              {aiAnalysis.analysis_text}
-                            </ReactMarkdown>
-                          </div>
-                          <div className="mt-6 pt-4 border-t border-[#BFAFB2] flex items-center justify-between text-sm text-muted-foreground">
-                            <span>Gerada em: {new Date(aiAnalysis.generated_at).toLocaleDateString('pt-BR', { 
-                              day: '2-digit', 
-                              month: '2-digit', 
-                              year: 'numeric',
-                              hour: '2-digit',
-                              minute: '2-digit'
-                            })}</span>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={handleGenerateAnalysis}
-                              disabled={generatingAnalysis}
-                              className="border-[#7B192B] text-[#7B192B]"
-                            >
-                              {generatingAnalysis ? (
-                                <>
-                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                  Regenerando...
-                                </>
-                              ) : (
-                                <>
-                                  <RefreshCw className="mr-2 h-4 w-4" />
-                                  Regenerar Análise
-                                </>
-                              )}
-                            </Button>
-                          </div>
-                        </ScrollArea>
+                        <div className="mt-6 pt-4 border-t border-[#BFAFB2] flex items-center justify-between text-sm text-muted-foreground">
+                          <span>Gerada em: {new Date(aiAnalysis.generated_at).toLocaleDateString('pt-BR', { 
+                            day: '2-digit', 
+                            month: '2-digit', 
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}</span>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleGenerateAnalysis}
+                            disabled={generatingAnalysis}
+                            className="border-[#7B192B] text-[#7B192B]"
+                          >
+                            {generatingAnalysis ? (
+                              <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Regenerando...
+                              </>
+                            ) : (
+                              <>
+                                <RefreshCw className="mr-2 h-4 w-4" />
+                                Regenerar Análise
+                              </>
+                            )}
+                          </Button>
+                        </div>
                       </div>
                     ) : (
                       <div className="text-center py-8">
