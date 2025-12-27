@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, ArrowLeft, Brain, User, Zap, Target, RefreshCw, ChevronDown, ChevronUp, Bug, Sparkles, Utensils, MapPin, Heart, Eye, Hand, Compass } from "lucide-react";
+import { Loader2, ArrowLeft, Brain, User, Zap, Target, RefreshCw, ChevronDown, ChevronUp, Bug, Sparkles, Utensils, MapPin, Heart, Eye, Hand, Compass, Info } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -14,6 +14,7 @@ import { calculateHumanDesignChart } from "@/utils/humanDesignCalculator";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { extractAdvancedVariables, type AdvancedVariables } from "@/utils/humanDesignVariables";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 interface HumanDesignResult {
   id: string;
   user_id: string;
@@ -435,125 +436,205 @@ const DesenhoHumanoResults = () => {
 
           {/* Variáveis Avançadas */}
           {variables && (
-            <Card className="bg-white border-2 border-[#BFAFB2]">
-              <CardContent className="p-6">
-                <h3 className="font-bold text-[#7B192B] text-lg mb-4 flex items-center gap-2">
-                  <Compass className="h-5 w-5" />
-                  Variáveis Avançadas
-                </h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {variables.digestion && (
-                    <div className="p-4 bg-[#F7F3EF] rounded-lg border border-[#BFAFB2]/50">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Utensils className="h-4 w-4 text-[#7B192B]" />
-                        <p className="text-xs text-muted-foreground font-medium">Digestão</p>
+            <TooltipProvider>
+              <Card className="bg-white border-2 border-[#BFAFB2]">
+                <CardContent className="p-6">
+                  <h3 className="font-bold text-[#7B192B] text-lg mb-4 flex items-center gap-2">
+                    <Compass className="h-5 w-5" />
+                    Variáveis Avançadas
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {variables.digestion && (
+                      <div className="p-4 bg-[#F7F3EF] rounded-lg border border-[#BFAFB2]/50">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <Utensils className="h-4 w-4 text-[#7B192B]" />
+                            <p className="text-xs text-muted-foreground font-medium">Digestão</p>
+                          </div>
+                          {variables.digestion.tips && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Info className="h-4 w-4 text-[#7B192B]/60 cursor-help hover:text-[#7B192B] transition-colors" />
+                              </TooltipTrigger>
+                              <TooltipContent side="top" className="max-w-xs text-sm">
+                                <p className="font-medium mb-1">💡 Dica prática:</p>
+                                <p>{variables.digestion.tips}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          )}
+                        </div>
+                        <p className="font-semibold text-[#7B192B]">
+                          {variables.digestion.primary} ({variables.digestion.level})
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {variables.digestion.description}
+                        </p>
+                        {variables.digestion.subcategory && (
+                          <Badge variant="secondary" className="mt-2 text-xs">
+                            {variables.digestion.subcategory}
+                          </Badge>
+                        )}
                       </div>
-                      <p className="font-semibold text-[#7B192B]">
-                        {variables.digestion.primary} ({variables.digestion.level})
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {variables.digestion.description}
-                      </p>
-                      {variables.digestion.subcategory && (
-                        <Badge variant="secondary" className="mt-2 text-xs">
-                          {variables.digestion.subcategory}
-                        </Badge>
-                      )}
-                    </div>
-                  )}
+                    )}
 
-                  {variables.environment && (
-                    <div className="p-4 bg-[#F7F3EF] rounded-lg border border-[#BFAFB2]/50">
-                      <div className="flex items-center gap-2 mb-2">
-                        <MapPin className="h-4 w-4 text-[#7B192B]" />
-                        <p className="text-xs text-muted-foreground font-medium">Ambiente</p>
+                    {variables.environment && (
+                      <div className="p-4 bg-[#F7F3EF] rounded-lg border border-[#BFAFB2]/50">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <MapPin className="h-4 w-4 text-[#7B192B]" />
+                            <p className="text-xs text-muted-foreground font-medium">Ambiente</p>
+                          </div>
+                          {variables.environment.tips && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Info className="h-4 w-4 text-[#7B192B]/60 cursor-help hover:text-[#7B192B] transition-colors" />
+                              </TooltipTrigger>
+                              <TooltipContent side="top" className="max-w-xs text-sm">
+                                <p className="font-medium mb-1">💡 Dica prática:</p>
+                                <p>{variables.environment.tips}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          )}
+                        </div>
+                        <p className="font-semibold text-[#7B192B]">
+                          {variables.environment.primary}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {variables.environment.description}
+                        </p>
+                        {variables.environment.subcategory && (
+                          <Badge variant="secondary" className="mt-2 text-xs">
+                            {variables.environment.subcategory}
+                          </Badge>
+                        )}
                       </div>
-                      <p className="font-semibold text-[#7B192B]">
-                        {variables.environment.primary}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {variables.environment.description}
-                      </p>
-                      {variables.environment.subcategory && (
-                        <Badge variant="secondary" className="mt-2 text-xs">
-                          {variables.environment.subcategory}
-                        </Badge>
-                      )}
-                    </div>
-                  )}
+                    )}
 
-                  {variables.motivation && (
-                    <div className="p-4 bg-[#F7F3EF] rounded-lg border border-[#BFAFB2]/50">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Heart className="h-4 w-4 text-[#7B192B]" />
-                        <p className="text-xs text-muted-foreground font-medium">Motivação</p>
+                    {variables.motivation && (
+                      <div className="p-4 bg-[#F7F3EF] rounded-lg border border-[#BFAFB2]/50">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <Heart className="h-4 w-4 text-[#7B192B]" />
+                            <p className="text-xs text-muted-foreground font-medium">Motivação</p>
+                          </div>
+                          {variables.motivation.tips && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Info className="h-4 w-4 text-[#7B192B]/60 cursor-help hover:text-[#7B192B] transition-colors" />
+                              </TooltipTrigger>
+                              <TooltipContent side="top" className="max-w-xs text-sm">
+                                <p className="font-medium mb-1">💡 Dica prática:</p>
+                                <p>{variables.motivation.tips}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          )}
+                        </div>
+                        <p className="font-semibold text-[#7B192B]">
+                          {variables.motivation.primary}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {variables.motivation.description}
+                        </p>
+                        {variables.motivation.subcategory && (
+                          <Badge variant="secondary" className="mt-2 text-xs">
+                            {variables.motivation.subcategory}
+                          </Badge>
+                        )}
                       </div>
-                      <p className="font-semibold text-[#7B192B]">
-                        {variables.motivation.primary}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {variables.motivation.description}
-                      </p>
-                      {variables.motivation.subcategory && (
-                        <Badge variant="secondary" className="mt-2 text-xs">
-                          {variables.motivation.subcategory}
-                        </Badge>
-                      )}
-                    </div>
-                  )}
+                    )}
 
-                  {variables.perspective && (
-                    <div className="p-4 bg-[#F7F3EF] rounded-lg border border-[#BFAFB2]/50">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Eye className="h-4 w-4 text-[#7B192B]" />
-                        <p className="text-xs text-muted-foreground font-medium">Perspectiva</p>
+                    {variables.perspective && (
+                      <div className="p-4 bg-[#F7F3EF] rounded-lg border border-[#BFAFB2]/50">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <Eye className="h-4 w-4 text-[#7B192B]" />
+                            <p className="text-xs text-muted-foreground font-medium">Perspectiva</p>
+                          </div>
+                          {variables.perspective.tips && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Info className="h-4 w-4 text-[#7B192B]/60 cursor-help hover:text-[#7B192B] transition-colors" />
+                              </TooltipTrigger>
+                              <TooltipContent side="top" className="max-w-xs text-sm">
+                                <p className="font-medium mb-1">💡 Dica prática:</p>
+                                <p>{variables.perspective.tips}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          )}
+                        </div>
+                        <p className="font-semibold text-[#7B192B]">
+                          {variables.perspective.primary}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {variables.perspective.description}
+                        </p>
+                        {variables.perspective.subcategory && (
+                          <Badge variant="secondary" className="mt-2 text-xs">
+                            {variables.perspective.subcategory}
+                          </Badge>
+                        )}
                       </div>
-                      <p className="font-semibold text-[#7B192B]">
-                        {variables.perspective.primary}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {variables.perspective.description}
-                      </p>
-                      {variables.perspective.subcategory && (
-                        <Badge variant="secondary" className="mt-2 text-xs">
-                          {variables.perspective.subcategory}
-                        </Badge>
-                      )}
-                    </div>
-                  )}
+                    )}
 
-                  {variables.sense && (
-                    <div className="p-4 bg-[#F7F3EF] rounded-lg border border-[#BFAFB2]/50">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Hand className="h-4 w-4 text-[#7B192B]" />
-                        <p className="text-xs text-muted-foreground font-medium">Sentido</p>
+                    {variables.sense && (
+                      <div className="p-4 bg-[#F7F3EF] rounded-lg border border-[#BFAFB2]/50">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <Hand className="h-4 w-4 text-[#7B192B]" />
+                            <p className="text-xs text-muted-foreground font-medium">Sentido</p>
+                          </div>
+                          {variables.sense.tips && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Info className="h-4 w-4 text-[#7B192B]/60 cursor-help hover:text-[#7B192B] transition-colors" />
+                              </TooltipTrigger>
+                              <TooltipContent side="top" className="max-w-xs text-sm">
+                                <p className="font-medium mb-1">💡 Dica prática:</p>
+                                <p>{variables.sense.tips}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          )}
+                        </div>
+                        <p className="font-semibold text-[#7B192B]">
+                          {variables.sense.primary}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {variables.sense.description}
+                        </p>
                       </div>
-                      <p className="font-semibold text-[#7B192B]">
-                        {variables.sense.primary}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {variables.sense.description}
-                      </p>
-                    </div>
-                  )}
+                    )}
 
-                  {variables.designSense && (
-                    <div className="p-4 bg-[#F7F3EF] rounded-lg border border-[#BFAFB2]/50">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Hand className="h-4 w-4 text-[#7B192B]" />
-                        <p className="text-xs text-muted-foreground font-medium">Sentido do Design</p>
+                    {variables.designSense && (
+                      <div className="p-4 bg-[#F7F3EF] rounded-lg border border-[#BFAFB2]/50">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <Hand className="h-4 w-4 text-[#7B192B]" />
+                            <p className="text-xs text-muted-foreground font-medium">Sentido do Design</p>
+                          </div>
+                          {variables.designSense.tips && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Info className="h-4 w-4 text-[#7B192B]/60 cursor-help hover:text-[#7B192B] transition-colors" />
+                              </TooltipTrigger>
+                              <TooltipContent side="top" className="max-w-xs text-sm">
+                                <p className="font-medium mb-1">💡 Dica prática:</p>
+                                <p>{variables.designSense.tips}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          )}
+                        </div>
+                        <p className="font-semibold text-[#7B192B]">
+                          {variables.designSense.primary}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {variables.designSense.description}
+                        </p>
                       </div>
-                      <p className="font-semibold text-[#7B192B]">
-                        {variables.designSense.primary}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {variables.designSense.description}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </TooltipProvider>
           )}
 
           {/* BodyGraph + Colunas Planetárias */}
