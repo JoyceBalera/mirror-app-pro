@@ -46,6 +46,41 @@ export type Database = {
           },
         ]
       }
+      human_design_analyses: {
+        Row: {
+          analysis_text: string
+          created_at: string
+          generated_at: string
+          id: string
+          model_used: string | null
+          result_id: string
+        }
+        Insert: {
+          analysis_text: string
+          created_at?: string
+          generated_at?: string
+          id?: string
+          model_used?: string | null
+          result_id: string
+        }
+        Update: {
+          analysis_text?: string
+          created_at?: string
+          generated_at?: string
+          id?: string
+          model_used?: string | null
+          result_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "human_design_analyses_result_id_fkey"
+            columns: ["result_id"]
+            isOneToOne: false
+            referencedRelation: "human_design_results"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       human_design_results: {
         Row: {
           activated_gates: number[]

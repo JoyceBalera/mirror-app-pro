@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, ArrowLeft, Brain, User, Zap, Target, RefreshCw, ChevronDown, ChevronUp, Bug } from "lucide-react";
+import { Loader2, ArrowLeft, Brain, User, Zap, Target, RefreshCw, ChevronDown, ChevronUp, Bug, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -12,6 +12,7 @@ import PlanetaryColumn from "@/components/humandesign/PlanetaryColumn";
 import AnalysisSections from "@/components/humandesign/AnalysisSections";
 import { calculateHumanDesignChart } from "@/utils/humanDesignCalculator";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface HumanDesignResult {
   id: string;
@@ -36,6 +37,13 @@ interface HumanDesignResult {
   created_at: string;
 }
 
+interface AIAnalysis {
+  id: string;
+  result_id: string;
+  analysis_text: string;
+  generated_at: string;
+}
+
 const DesenhoHumanoResults = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
@@ -46,6 +54,11 @@ const DesenhoHumanoResults = () => {
   const [loading, setLoading] = useState(true);
   const [recalculating, setRecalculating] = useState(false);
   const [debugOpen, setDebugOpen] = useState(false);
+  
+  // AI Analysis state
+  const [aiAnalysis, setAiAnalysis] = useState<AIAnalysis | null>(null);
+  const [generatingAnalysis, setGeneratingAnalysis] = useState(false);
+  const [analysisOpen, setAnalysisOpen] = useState(true);
 
   useEffect(() => {
     const fetchResult = async () => {
@@ -74,6 +87,17 @@ const DesenhoHumanoResults = () => {
         }
 
         setResult(data as HumanDesignResult);
+
+        // Fetch existing AI analysis
+        const { data: analysisData } = await supabase
+          .from('human_design_analyses')
+          .select('*')
+          .eq('result_id', id)
+          .maybeSingle();
+
+        if (analysisData) {
+          setAiAnalysis(analysisData as AIAnalysis);
+        }
       } catch (error: any) {
         console.error("Erro ao carregar resultado:", error);
         toast({
@@ -89,6 +113,115 @@ const DesenhoHumanoResults = () => {
 
     fetchResult();
   }, [id, navigate, toast]);
+
+  // Function to generate AI analysis
+  const handleGenerateAnalysis = async () => {
+    if (!result) return;
+
+    setGeneratingAnalysis(true);
+    try {
+      const definedCenters = Object.entries(result.centers || {})
+        .filter(([_, isDefined]) => isDefined)
+        .map(([centerId]) => centerId);
+
+      const humanDesignData = {
+        userName: 'você', // Could be fetched from profile if needed
+        definedCenters,
+        energyType: result.energy_type,
+        strategy: result.strategy,
+        authority: result.authority,
+        definition: result.definition,
+        profile: result.profile,
+        incarnationCross: result.incarnation_cross,
+        activatedGates: result.activated_gates,
+        channels: result.channels,
+      };
+
+      const { data, error } = await supabase.functions.invoke('analyze-human-design', {
+        body: { 
+          resultId: result.id, 
+          humanDesignData 
+        }
+      });
+
+      if (error) throw error;
+
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      // Fetch the saved analysis
+      const { data: analysisData } = await supabase
+        .from('human_design_analyses')
+        .select('*')
+        .eq('result_id', result.id)
+        .maybeSingle();
+
+      if (analysisData) {
+        setAiAnalysis(analysisData as AIAnalysis);
+      } else if (data.analysis) {
+        // If not saved but returned, use directly
+        setAiAnalysis({
+          id: 'temp',
+          result_id: result.id,
+          analysis_text: data.analysis,
+          generated_at: new Date().toISOString(),
+        });
+      }
+
+      toast({
+        title: "Análise gerada!",
+        description: "Sua análise personalizada de Desenho Humano está pronta.",
+      });
+    } catch (error: any) {
+      console.error("Erro ao gerar análise:", error);
+      toast({
+        title: "Erro ao gerar análise",
+        description: error.message || "Não foi possível gerar a análise. Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setGeneratingAnalysis(false);
+    }
+  };
+
+  // Function to render markdown-like text
+  const renderAnalysisText = (text: string) => {
+    const lines = text.split('\n');
+    return lines.map((line, index) => {
+      // Headers
+      if (line.startsWith('# ')) {
+        return <h2 key={index} className="text-xl font-bold text-[#7B192B] mt-6 mb-3">{line.slice(2)}</h2>;
+      }
+      if (line.startsWith('## ')) {
+        return <h3 key={index} className="text-lg font-bold text-[#7B192B] mt-4 mb-2">{line.slice(3)}</h3>;
+      }
+      if (line.startsWith('### ')) {
+        return <h4 key={index} className="text-base font-bold text-[#7B192B] mt-3 mb-2">{line.slice(4)}</h4>;
+      }
+      // Bold text
+      if (line.includes('**')) {
+        const parts = line.split(/\*\*(.*?)\*\*/g);
+        return (
+          <p key={index} className="mb-2">
+            {parts.map((part, i) => 
+              i % 2 === 1 ? <strong key={i}>{part}</strong> : part
+            )}
+          </p>
+        );
+      }
+      // Bullet points
+      if (line.startsWith('- ') || line.startsWith('* ')) {
+        return <li key={index} className="ml-4 mb-1">{line.slice(2)}</li>;
+      }
+      // Empty lines
+      if (line.trim() === '') {
+        return <br key={index} />;
+      }
+      // Regular paragraphs
+      return <p key={index} className="mb-2">{line}</p>;
+    });
+  };
 
   // Função para recalcular o mapa com o novo algoritmo
   const handleRecalculate = async () => {
@@ -361,6 +494,100 @@ const DesenhoHumanoResults = () => {
             definition={result.definition}
             strategy={result.strategy}
           />
+
+          {/* Análise de IA por Luciana Belenton */}
+          <Card className="bg-white border-2 border-[#7B192B] overflow-hidden">
+            <CardContent className="p-0">
+              <Collapsible open={analysisOpen} onOpenChange={setAnalysisOpen}>
+                <CollapsibleTrigger asChild>
+                  <div className="p-4 cursor-pointer hover:bg-[#F7F3EF] transition-colors bg-gradient-to-r from-[#7B192B] to-[#A02846]">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 text-white">
+                        <Sparkles className="h-5 w-5" />
+                        <span className="font-bold text-lg">Análise Personalizada por IA</span>
+                        {aiAnalysis && (
+                          <Badge variant="secondary" className="bg-white/20 text-white">
+                            Gerada
+                          </Badge>
+                        )}
+                      </div>
+                      {analysisOpen ? <ChevronUp className="h-5 w-5 text-white" /> : <ChevronDown className="h-5 w-5 text-white" />}
+                    </div>
+                    <p className="text-white/80 text-sm mt-1">
+                      Uma análise profunda e empática do seu Desenho Humano
+                    </p>
+                  </div>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <div className="p-6">
+                    {aiAnalysis ? (
+                      <ScrollArea className="max-h-[600px] pr-4">
+                        <div className="prose prose-sm max-w-none text-foreground">
+                          {renderAnalysisText(aiAnalysis.analysis_text)}
+                        </div>
+                        <div className="mt-6 pt-4 border-t border-[#BFAFB2] flex items-center justify-between text-sm text-muted-foreground">
+                          <span>Gerada em: {new Date(aiAnalysis.generated_at).toLocaleDateString('pt-BR', { 
+                            day: '2-digit', 
+                            month: '2-digit', 
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}</span>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleGenerateAnalysis}
+                            disabled={generatingAnalysis}
+                            className="border-[#7B192B] text-[#7B192B]"
+                          >
+                            {generatingAnalysis ? (
+                              <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Regenerando...
+                              </>
+                            ) : (
+                              <>
+                                <RefreshCw className="mr-2 h-4 w-4" />
+                                Regenerar Análise
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                      </ScrollArea>
+                    ) : (
+                      <div className="text-center py-8">
+                        <Sparkles className="h-12 w-12 mx-auto text-[#7B192B] mb-4" />
+                        <h3 className="text-lg font-semibold text-[#7B192B] mb-2">
+                          Sua Análise Personalizada
+                        </h3>
+                        <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                          Descubra uma análise profunda e empática do seu Desenho Humano, 
+                          com orientações especialmente elaboradas para mulheres.
+                        </p>
+                        <Button
+                          onClick={handleGenerateAnalysis}
+                          disabled={generatingAnalysis}
+                          className="bg-[#7B192B] hover:bg-[#5a1220] text-white"
+                        >
+                          {generatingAnalysis ? (
+                            <>
+                              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                              Gerando análise... (pode levar alguns minutos)
+                            </>
+                          ) : (
+                            <>
+                              <Sparkles className="mr-2 h-5 w-5" />
+                              Gerar Análise com IA
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+            </CardContent>
+          </Card>
 
           {/* Dados de Nascimento */}
           <Card className="bg-white border-2 border-[#BFAFB2]">
