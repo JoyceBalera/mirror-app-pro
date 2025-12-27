@@ -174,29 +174,6 @@ const HDBodyGraph: React.FC<HDBodyGraphProps> = ({
     );
   };
 
-  // Render human silhouette - stylized standing figure
-  const renderHumanSilhouette = () => (
-    <g opacity="0.08" fill="#BFAFB2">
-      {/* Cabeça oval */}
-      <ellipse cx="165" cy="45" rx="28" ry="35" />
-      
-      {/* Pescoço */}
-      <rect x="153" y="75" width="24" height="20" rx="3" />
-      
-      {/* Tronco superior (ombros largos) */}
-      <path d="M 105,95 Q 95,110 100,140 L 100,240 Q 105,250 120,255 L 120,260 Q 125,265 135,265 L 195,265 Q 205,265 210,260 L 210,255 Q 225,250 230,240 L 230,140 Q 235,110 225,95 L 205,95 Q 200,100 195,105 L 165,105 L 135,105 Q 130,100 125,95 Z" />
-      
-      {/* Quadril */}
-      <path d="M 120,265 L 210,265 L 205,360 Q 200,370 190,375 L 190,380 L 140,380 L 140,375 Q 130,370 125,360 Z" />
-      
-      {/* Perna esquerda */}
-      <path d="M 140,380 L 130,380 Q 125,390 123,410 L 120,480 Q 118,510 120,540 L 130,540 Q 133,510 135,480 L 138,410 Q 140,390 140,380 Z" />
-      
-      {/* Perna direita */}
-      <path d="M 190,380 L 200,380 Q 205,390 207,410 L 210,480 Q 212,510 210,540 L 200,540 Q 197,510 195,480 L 192,410 Q 190,390 190,380 Z" />
-    </g>
-  );
-
   // Render legend
   const renderLegend = () => (
     <g transform="translate(10, 560)">
@@ -242,10 +219,7 @@ const HDBodyGraph: React.FC<HDBodyGraphProps> = ({
         </linearGradient>
       </defs>
 
-      {/* 1. Human silhouette (behind everything) */}
-      {renderHumanSilhouette()}
-
-      {/* 2. Open gates channels (gray background) */}
+      {/* Open gates channels (gray background) */}
       {openGates.map((gate) => generateChannel(gate))}
       
       {/* 3. Defined gates channels (colored) */}
