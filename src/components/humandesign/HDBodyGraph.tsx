@@ -184,6 +184,67 @@ const HDBodyGraph: React.FC<HDBodyGraphProps> = ({
     );
   };
 
+  // Render human silhouette behind the body graph
+  const renderHumanSilhouette = () => (
+    <g className="human-silhouette" opacity="0.15">
+      {/* Head */}
+      <ellipse cx="166" cy="25" rx="35" ry="30" fill="#8B7355" />
+      
+      {/* Neck */}
+      <rect x="151" y="50" width="30" height="25" fill="#8B7355" />
+      
+      {/* Shoulders and upper body */}
+      <path
+        d="M166 75 
+           C 166 75, 100 85, 60 120
+           C 40 140, 30 180, 35 250
+           L 35 350
+           C 35 360, 40 370, 50 375
+           L 75 385
+           C 85 388, 90 395, 90 405
+           L 90 545
+           C 90 555, 85 560, 75 560
+           L 55 565
+           C 50 567, 48 575, 50 580
+           L 70 595
+           C 80 600, 90 595, 95 590
+           L 115 575
+           C 120 570, 130 570, 135 575
+           L 135 540
+           C 135 520, 140 500, 150 490
+           L 166 480"
+        fill="#8B7355"
+      />
+      <path
+        d="M166 75 
+           C 166 75, 232 85, 272 120
+           C 292 140, 302 180, 297 250
+           L 297 350
+           C 297 360, 292 370, 282 375
+           L 257 385
+           C 247 388, 242 395, 242 405
+           L 242 545
+           C 242 555, 247 560, 257 560
+           L 277 565
+           C 282 567, 284 575, 282 580
+           L 262 595
+           C 252 600, 242 595, 237 590
+           L 217 575
+           C 212 570, 202 570, 197 575
+           L 197 540
+           C 197 520, 192 500, 182 490
+           L 166 480"
+        fill="#8B7355"
+      />
+      
+      {/* Torso center fill */}
+      <ellipse cx="166" cy="180" rx="65" ry="45" fill="#8B7355" />
+      <ellipse cx="166" cy="290" rx="55" ry="50" fill="#8B7355" />
+      <ellipse cx="166" cy="400" rx="45" ry="55" fill="#8B7355" />
+      <ellipse cx="166" cy="480" rx="35" ry="30" fill="#8B7355" />
+    </g>
+  );
+
   // Render legend
   const renderLegend = () => (
     <g transform="translate(10, 560)">
@@ -234,6 +295,9 @@ const HDBodyGraph: React.FC<HDBodyGraphProps> = ({
       
       {/* Background */}
       <rect width="332" height="620" fill="transparent" />
+      
+      {/* Human silhouette behind everything */}
+      {renderHumanSilhouette()}
       
       {/* Render channels first (behind centers) */}
       <g className="channels">
