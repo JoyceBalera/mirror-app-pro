@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, ArrowLeft, Brain, User, Zap, Target, RefreshCw, ChevronDown, ChevronUp, Bug, Sparkles, Utensils, MapPin, Heart, Eye, Hand, Compass, Info } from "lucide-react";
+import { Loader2, ArrowLeft, Brain, User, Zap, Target, RefreshCw, ChevronDown, ChevronUp, Bug, Sparkles, Utensils, MapPin, Heart, Eye, Hand, Compass, Info, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -16,6 +16,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { extractAdvancedVariables, type AdvancedVariables } from "@/utils/humanDesignVariables";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import ReactMarkdown from 'react-markdown';
+import { generateHDReport } from "@/utils/generateHDReport";
 interface HumanDesignResult {
   id: string;
   user_id: string;
@@ -61,6 +62,7 @@ const DesenhoHumanoResults = () => {
   const [aiAnalysis, setAiAnalysis] = useState<AIAnalysis | null>(null);
   const [generatingAnalysis, setGeneratingAnalysis] = useState(false);
   const [analysisOpen, setAnalysisOpen] = useState(true);
+  const [generatingPDF, setGeneratingPDF] = useState(false);
 
   useEffect(() => {
     const fetchResult = async () => {
@@ -215,6 +217,46 @@ const DesenhoHumanoResults = () => {
     li: ({ children, ...props }: any) => <li className="mb-1" {...props}>{children}</li>,
     p: ({ children, ...props }: any) => <p className="mb-3 leading-relaxed" {...props}>{children}</p>,
     hr: ({ ...props }: any) => <hr className="my-4 border-[#BFAFB2]" {...props} />,
+  };
+
+  // Function to download PDF report
+  const handleDownloadPDF = async () => {
+    if (!result || !variables) return;
+    
+    setGeneratingPDF(true);
+    try {
+      await generateHDReport({
+        birth_date: result.birth_date,
+        birth_time: result.birth_time,
+        birth_location: result.birth_location,
+        energy_type: result.energy_type,
+        strategy: result.strategy,
+        authority: result.authority,
+        profile: result.profile,
+        definition: result.definition,
+        incarnation_cross: result.incarnation_cross,
+        centers: result.centers || {},
+        channels: result.channels || [],
+        personality_activations: result.personality_activations || [],
+        design_activations: result.design_activations || [],
+        variables: variables,
+        ai_analysis_full: aiAnalysis?.analysis_text || '',
+      });
+      
+      toast({
+        title: "PDF gerado!",
+        description: "O download do relatório começará em instantes.",
+      });
+    } catch (error: any) {
+      console.error("Erro ao gerar PDF:", error);
+      toast({
+        title: "Erro ao gerar PDF",
+        description: "Não foi possível gerar o relatório. Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setGeneratingPDF(false);
+    }
   };
 
   // Função para recalcular o mapa com o novo algoritmo
@@ -718,41 +760,72 @@ const DesenhoHumanoResults = () => {
                 <CollapsibleContent>
                   <div className="p-6">
                     {aiAnalysis ? (
-                      <ScrollArea className="max-h-[600px] pr-4">
-                        <div className="prose prose-sm max-w-none text-foreground">
-                          <ReactMarkdown components={markdownComponents}>
-                            {aiAnalysis.analysis_text}
-                          </ReactMarkdown>
+                      <div>
+                        {/* Botão de Download PDF */}
+                        <div className="mb-6 p-4 bg-gradient-to-r from-[#F7F3EF] to-[#BFAFB2]/20 rounded-lg border border-[#BFAFB2]">
+                          <div className="flex items-center justify-between flex-wrap gap-4">
+                            <div>
+                              <h4 className="font-semibold text-[#7B192B]">Baixar Relatório Completo</h4>
+                              <p className="text-sm text-muted-foreground">
+                                PDF com análise completa, variáveis avançadas e todas as informações do seu mapa
+                              </p>
+                            </div>
+                            <Button
+                              onClick={handleDownloadPDF}
+                              disabled={generatingPDF}
+                              className="bg-[#7B192B] hover:bg-[#5a1220] text-white"
+                            >
+                              {generatingPDF ? (
+                                <>
+                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                  Gerando PDF...
+                                </>
+                              ) : (
+                                <>
+                                  <Download className="mr-2 h-4 w-4" />
+                                  Baixar PDF
+                                </>
+                              )}
+                            </Button>
+                          </div>
                         </div>
-                        <div className="mt-6 pt-4 border-t border-[#BFAFB2] flex items-center justify-between text-sm text-muted-foreground">
-                          <span>Gerada em: {new Date(aiAnalysis.generated_at).toLocaleDateString('pt-BR', { 
-                            day: '2-digit', 
-                            month: '2-digit', 
-                            year: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}</span>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={handleGenerateAnalysis}
-                            disabled={generatingAnalysis}
-                            className="border-[#7B192B] text-[#7B192B]"
-                          >
-                            {generatingAnalysis ? (
-                              <>
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Regenerando...
-                              </>
-                            ) : (
-                              <>
-                                <RefreshCw className="mr-2 h-4 w-4" />
-                                Regenerar Análise
-                              </>
-                            )}
-                          </Button>
-                        </div>
-                      </ScrollArea>
+
+                        <ScrollArea className="max-h-[600px] pr-4">
+                          <div className="prose prose-sm max-w-none text-foreground">
+                            <ReactMarkdown components={markdownComponents}>
+                              {aiAnalysis.analysis_text}
+                            </ReactMarkdown>
+                          </div>
+                          <div className="mt-6 pt-4 border-t border-[#BFAFB2] flex items-center justify-between text-sm text-muted-foreground">
+                            <span>Gerada em: {new Date(aiAnalysis.generated_at).toLocaleDateString('pt-BR', { 
+                              day: '2-digit', 
+                              month: '2-digit', 
+                              year: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}</span>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={handleGenerateAnalysis}
+                              disabled={generatingAnalysis}
+                              className="border-[#7B192B] text-[#7B192B]"
+                            >
+                              {generatingAnalysis ? (
+                                <>
+                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                  Regenerando...
+                                </>
+                              ) : (
+                                <>
+                                  <RefreshCw className="mr-2 h-4 w-4" />
+                                  Regenerar Análise
+                                </>
+                              )}
+                            </Button>
+                          </div>
+                        </ScrollArea>
+                      </div>
                     ) : (
                       <div className="text-center py-8">
                         <Sparkles className="h-12 w-12 mx-auto text-[#7B192B] mb-4" />
