@@ -4,12 +4,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, Download, Home, LogOut, Sparkles, Loader2, RefreshCw } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { ArrowLeft, Download, Home, LogOut, Sparkles, Loader2, RefreshCw, Eye } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { SCORING, TRAIT_LABELS, getTraitPercentage } from "@/constants/scoring";
 import { generateTestResultPDF } from "@/utils/pdfGenerator";
+import { generateHDReport, type HDReportData } from "@/utils/generateHDReport";
 
 interface TestResult {
   id: string;
@@ -28,15 +30,47 @@ interface TestResult {
   }>;
 }
 
+interface HDResult {
+  id: string;
+  session_id: string;
+  user_id: string;
+  energy_type: string;
+  strategy: string | null;
+  authority: string | null;
+  profile: string | null;
+  definition: string | null;
+  incarnation_cross: string | null;
+  centers: any;
+  channels: any;
+  personality_activations?: any;
+  design_activations?: any;
+  variables?: any;
+  birth_date: string;
+  birth_time: string;
+  birth_location: string;
+  created_at: string;
+  human_design_sessions: {
+    completed_at: string | null;
+  };
+  human_design_analyses?: Array<{
+    analysis_text: string;
+    model_used: string;
+    generated_at: string;
+  }>;
+}
+
 const UserDetails = () => {
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [user, setUser] = useState<any>(null);
   const [results, setResults] = useState<TestResult[]>([]);
+  const [hdResults, setHdResults] = useState<HDResult[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedAnalysis, setExpandedAnalysis] = useState<string | null>(null);
+  const [expandedHDAnalysis, setExpandedHDAnalysis] = useState<string | null>(null);
   const [generatingAnalysis, setGeneratingAnalysis] = useState<string | null>(null);
+  const [generatingHDAnalysis, setGeneratingHDAnalysis] = useState<string | null>(null);
   const [recalculating, setRecalculating] = useState<string | null>(null);
 
   useEffect(() => {
@@ -57,7 +91,7 @@ const UserDetails = () => {
       if (profileError) throw profileError;
       setUser(profile);
 
-      // Fetch test results with sessions
+      // Fetch Big Five test results with sessions
       const { data: testResults, error: resultsError } = await supabase
         .from('test_results')
         .select(`
@@ -69,7 +103,7 @@ const UserDetails = () => {
 
       if (resultsError) throw resultsError;
 
-      // Fetch AI analyses for each result
+      // Fetch AI analyses for each Big Five result
       if (testResults && testResults.length > 0) {
         const resultsWithAnalyses = await Promise.all(
           testResults.map(async (result) => {
@@ -85,6 +119,36 @@ const UserDetails = () => {
         setResults(resultsWithAnalyses);
       } else {
         setResults([]);
+      }
+
+      // Fetch Human Design results with sessions
+      const { data: hdResultsData, error: hdError } = await supabase
+        .from('human_design_results')
+        .select(`
+          *,
+          human_design_sessions!inner(completed_at, user_id)
+        `)
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (hdError) throw hdError;
+
+      // Fetch HD analyses for each result
+      if (hdResultsData && hdResultsData.length > 0) {
+        const hdResultsWithAnalyses = await Promise.all(
+          hdResultsData.map(async (result) => {
+            const { data: analyses } = await supabase
+              .from('human_design_analyses')
+              .select('analysis_text, model_used, generated_at')
+              .eq('result_id', result.id)
+              .order('generated_at', { ascending: false });
+            
+            return { ...result, human_design_analyses: analyses || [] };
+          })
+        );
+        setHdResults(hdResultsWithAnalyses);
+      } else {
+        setHdResults([]);
       }
     } catch (error: any) {
       toast({
@@ -121,7 +185,6 @@ const UserDetails = () => {
   const handleGenerateAnalysis = async (sessionId: string, traitScores: any, facetScores: any, classifications: any) => {
     setGeneratingAnalysis(sessionId);
     try {
-      // Formatar os dados dos traços
       const formattedTraitScores = Object.entries(traitScores).map(([key, score]) => ({
         name: getTraitLabel(key),
         score: score as number,
@@ -140,7 +203,6 @@ const UserDetails = () => {
       if (error) throw error;
       if (data.error) throw new Error(data.error);
 
-      // Salvar análise no banco
       await supabase.from('ai_analyses').insert({
         session_id: sessionId,
         analysis_text: data.analysis,
@@ -152,7 +214,6 @@ const UserDetails = () => {
         description: "A análise foi gerada e salva com sucesso.",
       });
 
-      // Recarregar os dados
       fetchUserData();
     } catch (error: any) {
       console.error("Erro ao gerar análise:", error);
@@ -163,6 +224,86 @@ const UserDetails = () => {
       });
     } finally {
       setGeneratingAnalysis(null);
+    }
+  };
+
+  const handleGenerateHDAnalysis = async (resultId: string, hdResult: HDResult) => {
+    setGeneratingHDAnalysis(resultId);
+    try {
+      const { data, error } = await supabase.functions.invoke("analyze-human-design", {
+        body: {
+          energy_type: hdResult.energy_type,
+          strategy: hdResult.strategy,
+          authority: hdResult.authority,
+          profile: hdResult.profile,
+          definition: hdResult.definition,
+          incarnation_cross: hdResult.incarnation_cross,
+          centers: hdResult.centers,
+          channels: hdResult.channels,
+          variables: hdResult.variables,
+        },
+      });
+
+      if (error) throw error;
+      if (data.error) throw new Error(data.error);
+
+      await supabase.from('human_design_analyses').insert({
+        result_id: resultId,
+        analysis_text: data.analysis,
+        model_used: 'gemini-2.5-flash',
+      });
+
+      toast({
+        title: "Análise gerada!",
+        description: "A análise de Desenho Humano foi gerada e salva com sucesso.",
+      });
+
+      fetchUserData();
+    } catch (error: any) {
+      console.error("Erro ao gerar análise HD:", error);
+      toast({
+        title: "Erro ao gerar análise",
+        description: error.message || "Não foi possível gerar a análise.",
+        variant: "destructive",
+      });
+    } finally {
+      setGeneratingHDAnalysis(null);
+    }
+  };
+
+  const handleDownloadHDPDF = async (hdResult: HDResult) => {
+    try {
+      const reportData: HDReportData = {
+        birth_date: hdResult.birth_date,
+        birth_time: hdResult.birth_time,
+        birth_location: hdResult.birth_location,
+        energy_type: hdResult.energy_type,
+        strategy: hdResult.strategy,
+        authority: hdResult.authority,
+        profile: hdResult.profile,
+        definition: hdResult.definition,
+        incarnation_cross: hdResult.incarnation_cross,
+        centers: hdResult.centers || {},
+        channels: hdResult.channels || [],
+        personality_activations: hdResult.personality_activations || [],
+        design_activations: hdResult.design_activations || [],
+        variables: hdResult.variables || {},
+        ai_analysis_full: hdResult.human_design_analyses?.[0]?.analysis_text || '',
+      };
+
+      await generateHDReport(reportData);
+
+      toast({
+        title: "PDF gerado!",
+        description: "O relatório de Desenho Humano foi baixado com sucesso.",
+      });
+    } catch (error: any) {
+      console.error("Erro ao gerar PDF:", error);
+      toast({
+        title: "Erro ao gerar PDF",
+        description: error.message || "Não foi possível gerar o PDF.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -181,7 +322,6 @@ const UserDetails = () => {
         description: `${data.answers_count} respostas processadas com sucesso.`,
       });
 
-      // Recarregar os dados
       fetchUserData();
     } catch (error: any) {
       console.error("Erro ao recalcular:", error);
@@ -198,6 +338,15 @@ const UserDetails = () => {
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate("/auth");
+  };
+
+  const getCenterName = (centerId: string): string => {
+    const names: Record<string, string> = {
+      head: 'Cabeça', ajna: 'Ajna', throat: 'Garganta',
+      g: 'G (Identidade)', heart: 'Coração', sacral: 'Sacral',
+      spleen: 'Baço', solar: 'Plexo Solar', root: 'Raiz',
+    };
+    return names[centerId] || centerId;
   };
 
   if (loading) {
@@ -252,17 +401,18 @@ const UserDetails = () => {
           </div>
         </Card>
 
-        {/* Test Results */}
-        <h2 className="text-xl font-semibold mb-4">
+        {/* Big Five Results */}
+        <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+          <Badge variant="secondary" className="bg-blue-100 text-blue-700">Big Five</Badge>
           Histórico de Testes ({results.length})
         </h2>
 
         {results.length === 0 ? (
-          <Card className="p-8 text-center">
-            <p className="text-muted-foreground">Este usuário ainda não realizou nenhum teste</p>
+          <Card className="p-8 text-center mb-8">
+            <p className="text-muted-foreground">Este usuário ainda não realizou nenhum teste Big Five</p>
           </Card>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-6 mb-8">
             {results.map((result, index) => (
               <Card key={result.id} className="p-6">
                 <div className="flex items-center justify-between mb-4">
@@ -379,6 +529,154 @@ const UserDetails = () => {
                         className="gap-2"
                       >
                         {generatingAnalysis === result.session_id ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            Gerando Análise...
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="w-4 h-4" />
+                            Gerar Análise com IA
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </Card>
+            ))}
+          </div>
+        )}
+
+        {/* Human Design Results */}
+        <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+          <Badge variant="secondary" className="bg-purple-100 text-purple-700">Desenho Humano</Badge>
+          Histórico de Análises ({hdResults.length})
+        </h2>
+
+        {hdResults.length === 0 ? (
+          <Card className="p-8 text-center">
+            <p className="text-muted-foreground">Este usuário ainda não realizou nenhuma análise de Desenho Humano</p>
+          </Card>
+        ) : (
+          <div className="space-y-6">
+            {hdResults.map((hdResult, index) => (
+              <Card key={hdResult.id} className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold">
+                    Análise #{hdResults.length - index}
+                  </h3>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      onClick={() => handleDownloadHDPDF(hdResult)}
+                      variant="outline"
+                      size="sm"
+                      className="gap-2"
+                    >
+                      <Download className="w-4 h-4" />
+                      PDF
+                    </Button>
+                    <Button
+                      onClick={() => navigate(`/desenho-humano/results/${hdResult.session_id}`)}
+                      variant="outline"
+                      size="sm"
+                      className="gap-2"
+                    >
+                      <Eye className="w-4 h-4" />
+                      Ver Online
+                    </Button>
+                    <p className="text-sm text-muted-foreground">
+                      {hdResult.human_design_sessions.completed_at 
+                        ? format(new Date(hdResult.human_design_sessions.completed_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })
+                        : 'Em andamento'}
+                    </p>
+                  </div>
+                </div>
+
+                {/* HD Summary */}
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+                  <div>
+                    <p className="text-xs text-muted-foreground">Tipo Energético</p>
+                    <p className="font-semibold text-primary">{hdResult.energy_type}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Estratégia</p>
+                    <p className="font-medium">{hdResult.strategy || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Autoridade</p>
+                    <p className="font-medium">{hdResult.authority || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Perfil</p>
+                    <p className="font-medium">{hdResult.profile || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Definição</p>
+                    <p className="font-medium">{hdResult.definition || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Cruz de Encarnação</p>
+                    <p className="font-medium text-sm">{hdResult.incarnation_cross || 'N/A'}</p>
+                  </div>
+                </div>
+
+                {/* Centers */}
+                {hdResult.centers && (
+                  <div className="mb-4">
+                    <p className="text-xs text-muted-foreground mb-2">Centros:</p>
+                    <div className="flex flex-wrap gap-2">
+                      {Object.entries(hdResult.centers).map(([centerId, isDefined]) => (
+                        <Badge 
+                          key={centerId}
+                          variant="outline"
+                          className={isDefined ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}
+                        >
+                          {getCenterName(centerId)} {isDefined ? '●' : '○'}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* HD AI Analysis */}
+                <div className="border-t pt-4">
+                  {hdResult.human_design_analyses && hdResult.human_design_analyses.length > 0 ? (
+                    <>
+                      <Button
+                        variant="outline"
+                        onClick={() => setExpandedHDAnalysis(
+                          expandedHDAnalysis === hdResult.id ? null : hdResult.id
+                        )}
+                        className="w-full mb-4"
+                      >
+                        {expandedHDAnalysis === hdResult.id ? 'Ocultar' : 'Ver'} Análise Completa da IA
+                      </Button>
+
+                      {expandedHDAnalysis === hdResult.id && (
+                        <div className="bg-muted/50 p-4 rounded-lg">
+                          <p className="text-sm whitespace-pre-wrap">
+                            {hdResult.human_design_analyses[0].analysis_text}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-4">
+                            Modelo: {hdResult.human_design_analyses[0].model_used}
+                          </p>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="bg-muted/30 p-4 rounded-lg">
+                      <p className="text-sm text-muted-foreground mb-3">
+                        Nenhuma análise de IA foi gerada para este resultado ainda.
+                      </p>
+                      <Button
+                        onClick={() => handleGenerateHDAnalysis(hdResult.id, hdResult)}
+                        disabled={generatingHDAnalysis === hdResult.id}
+                        variant="outline"
+                        size="sm"
+                        className="gap-2"
+                      >
+                        {generatingHDAnalysis === hdResult.id ? (
                           <>
                             <Loader2 className="w-4 h-4 animate-spin" />
                             Gerando Análise...

@@ -23,6 +23,11 @@ interface Profile {
     completed_at: string | null;
     status: string;
   }>;
+  human_design_sessions?: Array<{
+    id: string;
+    completed_at: string | null;
+    status: string;
+  }>;
   test_access?: {
     has_big_five: boolean;
     has_desenho_humano: boolean;
@@ -70,31 +75,37 @@ const AdminDashboard = () => {
 
       if (error) throw error;
 
-      // Fetch user roles and test access
-      const usersWithRolesAndAccess = await Promise.all(
+      // Fetch user roles, test access, and human design sessions
+      const usersWithData = await Promise.all(
         (profiles || []).map(async (user) => {
-          const { data: roleData } = await supabase
-            .from("user_roles")
-            .select("role")
-            .eq("user_id", user.id)
-            .single();
-
-          const { data: accessData } = await supabase
-            .from("user_test_access")
-            .select("has_big_five, has_desenho_humano")
-            .eq("user_id", user.id)
-            .maybeSingle();
+          const [roleResult, accessResult, hdResult] = await Promise.all([
+            supabase
+              .from("user_roles")
+              .select("role")
+              .eq("user_id", user.id)
+              .single(),
+            supabase
+              .from("user_test_access")
+              .select("has_big_five, has_desenho_humano")
+              .eq("user_id", user.id)
+              .maybeSingle(),
+            supabase
+              .from("human_design_sessions")
+              .select("id, completed_at, status")
+              .eq("user_id", user.id)
+          ]);
 
           return {
             ...user,
-            role: roleData?.role || "user",
-            test_access: accessData || { has_big_five: false, has_desenho_humano: false },
+            role: roleResult.data?.role || "user",
+            test_access: accessResult.data || { has_big_five: false, has_desenho_humano: false },
+            human_design_sessions: hdResult.data || [],
           };
         })
       );
 
-      setUsers(usersWithRolesAndAccess);
-      setFilteredUsers(usersWithRolesAndAccess);
+      setUsers(usersWithData);
+      setFilteredUsers(usersWithData);
     } catch (error: any) {
       toast({
         title: "Erro",
@@ -117,14 +128,17 @@ const AdminDashboard = () => {
     }
 
     // Apply status filter
+    const hasTestedBigFive = (u: Profile) => u.test_sessions?.some(s => s.completed_at);
+    const hasTestedHD = (u: Profile) => u.human_design_sessions?.some(s => s.completed_at);
+
     if (filter === "tested") {
-      filtered = filtered.filter(user => 
-        user.test_sessions && user.test_sessions.some(s => s.completed_at)
-      );
+      filtered = filtered.filter(u => hasTestedBigFive(u) || hasTestedHD(u));
     } else if (filter === "pending") {
-      filtered = filtered.filter(user => 
-        !user.test_sessions || !user.test_sessions.some(s => s.completed_at)
-      );
+      filtered = filtered.filter(u => !hasTestedBigFive(u) && !hasTestedHD(u));
+    } else if (filter === "bigfive") {
+      filtered = filtered.filter(u => hasTestedBigFive(u));
+    } else if (filter === "humandesign") {
+      filtered = filtered.filter(u => hasTestedHD(u));
     }
 
     setFilteredUsers(filtered);
@@ -135,10 +149,14 @@ const AdminDashboard = () => {
     navigate("/auth");
   };
 
+  const hasTestedBigFive = (u: Profile) => u.test_sessions?.some(s => s.completed_at);
+  const hasTestedHD = (u: Profile) => u.human_design_sessions?.some(s => s.completed_at);
+
   const stats = {
     total: users.length,
-    tested: users.filter(u => u.test_sessions?.some(s => s.completed_at)).length,
-    pending: users.filter(u => !u.test_sessions?.some(s => s.completed_at)).length,
+    testedBigFive: users.filter(u => hasTestedBigFive(u)).length,
+    testedHD: users.filter(u => hasTestedHD(u)).length,
+    pending: users.filter(u => !hasTestedBigFive(u) && !hasTestedHD(u)).length,
   };
 
   if (loading) {
@@ -169,7 +187,7 @@ const AdminDashboard = () => {
 
       <main className="container mx-auto px-4 py-8">
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <Card className="p-6">
             <div className="flex items-center gap-4">
               <div className="p-3 rounded-full bg-primary/10">
@@ -184,12 +202,24 @@ const AdminDashboard = () => {
 
           <Card className="p-6">
             <div className="flex items-center gap-4">
-              <div className="p-3 rounded-full bg-green-100">
-                <CheckCircle className="w-6 h-6 text-green-600" />
+              <div className="p-3 rounded-full bg-blue-100">
+                <CheckCircle className="w-6 h-6 text-blue-600" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Testes Realizados</p>
-                <p className="text-3xl font-bold">{stats.tested}</p>
+                <p className="text-sm text-muted-foreground">Big Five</p>
+                <p className="text-3xl font-bold">{stats.testedBigFive}</p>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 rounded-full bg-purple-100">
+                <CheckCircle className="w-6 h-6 text-purple-600" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Desenho Humano</p>
+                <p className="text-3xl font-bold">{stats.testedHD}</p>
               </div>
             </div>
           </Card>
@@ -200,7 +230,7 @@ const AdminDashboard = () => {
                 <Clock className="w-6 h-6 text-orange-600" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Pendentes</p>
+                <p className="text-sm text-muted-foreground">Sem Testes</p>
                 <p className="text-3xl font-bold">{stats.pending}</p>
               </div>
             </div>
@@ -217,13 +247,15 @@ const AdminDashboard = () => {
               className="flex-1"
             />
             <Select value={filter} onValueChange={setFilter}>
-              <SelectTrigger className="w-full md:w-48">
+              <SelectTrigger className="w-full md:w-56">
                 <SelectValue placeholder="Filtrar por" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos</SelectItem>
-                <SelectItem value="tested">Testados</SelectItem>
-                <SelectItem value="pending">Não Testados</SelectItem>
+                <SelectItem value="tested">Com Algum Teste</SelectItem>
+                <SelectItem value="bigfive">Big Five Realizado</SelectItem>
+                <SelectItem value="humandesign">Desenho Humano Realizado</SelectItem>
+                <SelectItem value="pending">Sem Nenhum Teste</SelectItem>
               </SelectContent>
             </Select>
           </div>
