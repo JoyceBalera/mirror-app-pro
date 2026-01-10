@@ -262,22 +262,25 @@ const BigFiveResults = () => {
         <h2 className="text-xl font-semibold mb-6">Seus Traços de Personalidade</h2>
         
         <div className="space-y-6">
-          {Object.entries(result.trait_scores).map(([trait, score]) => (
-            <div key={trait}>
-              <div className="flex justify-between items-center mb-2">
-                <span className="font-medium">{getTraitLabel(trait)}</span>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">
-                    {score.toFixed(0)} / {SCORING.TRAIT_MAX}
-                  </span>
-                  <span className={`text-sm font-medium ${getClassificationColor(result.classifications[trait])}`}>
-                    ({getClassificationLabel(result.classifications[trait])})
-                  </span>
+          {Object.entries(result.trait_scores).map(([trait, scoreValue]) => {
+            const score = scoreValue as number;
+            return (
+              <div key={trait}>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="font-medium">{getTraitLabel(trait)}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">
+                      {score.toFixed(0)} / {SCORING.TRAIT_MAX}
+                    </span>
+                    <span className={`text-sm font-medium ${getClassificationColor(result.classifications[trait])}`}>
+                      ({getClassificationLabel(result.classifications[trait])})
+                    </span>
+                  </div>
                 </div>
+                <Progress value={getTraitPercentage(score)} className="h-3" />
               </div>
-              <Progress value={getTraitPercentage(score)} className="h-3" />
-            </div>
-          ))}
+            );
+          })}
         </div>
       </Card>
 
