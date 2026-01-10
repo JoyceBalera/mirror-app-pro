@@ -17,6 +17,11 @@ interface UserCardProps {
       completed_at: string | null;
       status: string;
     }>;
+    human_design_sessions?: Array<{
+      id: string;
+      completed_at: string | null;
+      status: string;
+    }>;
     test_access?: {
       has_big_five: boolean;
       has_desenho_humano: boolean;
@@ -27,9 +32,13 @@ interface UserCardProps {
 
 const UserCard = ({ user, onEdit }: UserCardProps) => {
   const navigate = useNavigate();
-  const hasTested = user.test_sessions && user.test_sessions.length > 0 && 
-    user.test_sessions.some(session => session.completed_at);
-  const lastTest = user.test_sessions?.find(session => session.completed_at);
+  
+  const hasTestedBigFive = user.test_sessions?.some(session => session.completed_at);
+  const hasTestedHD = user.human_design_sessions?.some(session => session.completed_at);
+  const hasTested = hasTestedBigFive || hasTestedHD;
+  
+  const lastBigFiveTest = user.test_sessions?.find(session => session.completed_at);
+  const lastHDTest = user.human_design_sessions?.find(session => session.completed_at);
 
   return (
     <Card className="p-6 hover:shadow-lg transition-shadow">
@@ -49,45 +58,59 @@ const UserCard = ({ user, onEdit }: UserCardProps) => {
             </h3>
             {user.email && <p className="text-sm text-muted-foreground mb-2">{user.email}</p>}
             
-            <div className="flex items-center gap-2 mb-2">
-              {hasTested ? (
-                <Badge variant="secondary" className="bg-green-100 text-green-700">
-                  Teste Realizado
+            {/* Status dos testes realizados */}
+            <div className="flex flex-wrap items-center gap-2 mb-2">
+              {hasTestedBigFive ? (
+                <Badge variant="secondary" className="bg-blue-100 text-blue-700">
+                  Big Five ✓
                 </Badge>
               ) : (
-                <Badge variant="secondary" className="bg-orange-100 text-orange-700">
-                  Pendente
+                <Badge variant="secondary" className="bg-gray-100 text-gray-500">
+                  Big Five Pendente
+                </Badge>
+              )}
+              {hasTestedHD ? (
+                <Badge variant="secondary" className="bg-purple-100 text-purple-700">
+                  Desenho Humano ✓
+                </Badge>
+              ) : (
+                <Badge variant="secondary" className="bg-gray-100 text-gray-500">
+                  Desenho Humano Pendente
                 </Badge>
               )}
             </div>
 
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-xs text-muted-foreground">Testes liberados:</span>
+            {/* Testes liberados */}
+            <div className="flex flex-wrap items-center gap-2 mb-2">
+              <span className="text-xs text-muted-foreground">Liberados:</span>
               {user.test_access?.has_big_five ? (
                 <Badge variant="outline" className="bg-primary/10 text-primary text-xs">
-                  Big Five ✓
+                  Big Five
                 </Badge>
-              ) : (
-                <Badge variant="outline" className="bg-muted text-muted-foreground text-xs">
-                  Big Five ✗
-                </Badge>
-              )}
+              ) : null}
               {user.test_access?.has_desenho_humano ? (
                 <Badge variant="outline" className="bg-primary/10 text-primary text-xs">
-                  Desenho Humano ✓
+                  Desenho Humano
                 </Badge>
-              ) : (
-                <Badge variant="outline" className="bg-muted text-muted-foreground text-xs">
-                  Desenho Humano ✗
-                </Badge>
+              ) : null}
+              {!user.test_access?.has_big_five && !user.test_access?.has_desenho_humano && (
+                <span className="text-xs text-muted-foreground">Nenhum</span>
               )}
             </div>
             
-            {lastTest && (
-              <p className="text-sm text-muted-foreground">
-                Último teste: {format(new Date(lastTest.completed_at!), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
-              </p>
-            )}
+            {/* Datas dos últimos testes */}
+            <div className="text-sm text-muted-foreground space-y-1">
+              {lastBigFiveTest && (
+                <p>
+                  Big Five: {format(new Date(lastBigFiveTest.completed_at!), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                </p>
+              )}
+              {lastHDTest && (
+                <p>
+                  Desenho Humano: {format(new Date(lastHDTest.completed_at!), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                </p>
+              )}
+            </div>
           </div>
         </div>
 
