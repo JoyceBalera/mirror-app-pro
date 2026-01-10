@@ -362,7 +362,7 @@ const UserDetails = () => {
       <header className="border-b bg-card">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Button onClick={() => navigate('/admin/dashboard')} variant="ghost" size="sm">
+            <Button onClick={() => navigate('/admin')} variant="ghost" size="sm">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Voltar
             </Button>

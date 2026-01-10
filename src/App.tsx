@@ -109,6 +109,13 @@ const App = () => {
                 </AdminLayout>
               </AuthGuard>
             } />
+            <Route path="/admin/usuarios" element={
+              <AuthGuard requiredRole="admin">
+                <AdminLayout>
+                  <AdminDashboard />
+                </AdminLayout>
+              </AuthGuard>
+            } />
             <Route path="/admin/usuarios/:userId" element={
               <AuthGuard requiredRole="admin">
                 <AdminLayout>
