@@ -26,6 +26,7 @@ import Historico from "./pages/app/Historico";
 // Admin pages
 import AdminDashboard from "./pages/admin/Dashboard";
 import UsuarioDetalhe from "./pages/admin/UsuarioDetalhe";
+import AmbienteTeste from "./pages/admin/AmbienteTeste";
 
 const queryClient = new QueryClient();
 
@@ -120,6 +121,13 @@ const App = () => {
               <AuthGuard requiredRole="admin">
                 <AdminLayout>
                   <UsuarioDetalhe />
+                </AdminLayout>
+              </AuthGuard>
+            } />
+            <Route path="/admin/ambiente-teste" element={
+              <AuthGuard requiredRole="admin">
+                <AdminLayout>
+                  <AmbienteTeste />
                 </AdminLayout>
               </AuthGuard>
             } />
