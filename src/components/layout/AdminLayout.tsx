@@ -8,7 +8,8 @@ import {
   LogOut, 
   Menu, 
   X,
-  ArrowLeft
+  ArrowLeft,
+  FlaskConical
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -29,6 +30,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
   const navItems = [
     { path: '/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
     { path: '/admin/usuarios', label: 'Usuários', icon: Users },
+    { path: '/admin/ambiente-teste', label: 'Ambiente de Teste', icon: FlaskConical },
   ];
 
   const isActive = (path: string, exact?: boolean) => {
