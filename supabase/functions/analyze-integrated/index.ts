@@ -18,13 +18,31 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY não configurada");
     }
 
-    // Format Big Five data
-    const formattedBigFive = bigFiveData.traitScores.map((trait: any) => {
-      const facetsInfo = trait.facets.map((f: any) => 
-        `${f.name.toLowerCase()}: ${f.classification.toLowerCase()}`
-      ).join(', ');
-      return `${trait.name}: ${Math.round(trait.score)}% (${facetsInfo})`;
-    }).join('; ') + '.';
+    // Format Big Five data - handle both array and object formats
+    let formattedBigFive = '';
+    if (Array.isArray(bigFiveData)) {
+      // Direct array format from admin test environment
+      formattedBigFive = bigFiveData.map((trait: any) => {
+        return `${trait.name}: ${Math.round(trait.score)}% (${trait.classification})`;
+      }).join('; ') + '.';
+    } else if (bigFiveData.traitScores && Array.isArray(bigFiveData.traitScores)) {
+      // Old format with traitScores array containing facets
+      formattedBigFive = bigFiveData.traitScores.map((trait: any) => {
+        const facetsInfo = trait.facets?.map((f: any) => 
+          `${f.name?.toLowerCase() || 'faceta'}: ${f.classification?.toLowerCase() || 'n/a'}`
+        ).join(', ') || '';
+        return `${trait.name}: ${Math.round(trait.score)}% (${facetsInfo || trait.classification})`;
+      }).join('; ') + '.';
+    } else if (Array.isArray(bigFiveData)) {
+      // Simple array format
+      formattedBigFive = bigFiveData.map((trait: any) => 
+        `${trait.name}: ${Math.round(trait.score)}% (${trait.classification})`
+      ).join('; ') + '.';
+    } else {
+      // Fallback: assume bigFiveData is the array directly
+      formattedBigFive = 'Dados Big Five não disponíveis no formato esperado.';
+      console.error('bigFiveData format not recognized:', JSON.stringify(bigFiveData).substring(0, 200));
+    }
 
     // Format Human Design data
     const hdData = humanDesignData;
