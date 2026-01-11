@@ -1,5 +1,4 @@
 import jsPDF from 'jspdf';
-import { TRAIT_LABELS } from '@/constants/scoring';
 
 export interface IntegratedReportData {
   // Big Five data - flexible format
@@ -23,34 +22,31 @@ export interface IntegratedReportData {
   bodygraph_image?: string;
 }
 
-// Cores da paleta Luciana (mesma do HD)
+// Cores da paleta Luciana (refinada)
 const COLORS = {
   carmim: [123, 25, 43] as [number, number, number],
+  carmimLight: [163, 65, 83] as [number, number, number],
   gold: [212, 175, 55] as [number, number, number],
+  goldLight: [232, 205, 115] as [number, number, number],
   offWhite: [247, 243, 239] as [number, number, number],
   dustyMauve: [191, 175, 178] as [number, number, number],
-  darkText: [51, 51, 51] as [number, number, number],
-  lightText: [120, 120, 120] as [number, number, number],
-  accent: [147, 51, 234] as [number, number, number], // Purple for integrated
-};
-
-// Nomes dos centros em português
-const CENTER_NAMES: Record<string, string> = {
-  head: 'Cabeça',
-  ajna: 'Ajna',
-  throat: 'Garganta',
-  g: 'G (Identidade)',
-  heart: 'Coração (Ego)',
-  sacral: 'Sacral',
-  spleen: 'Baço',
-  solar: 'Plexo Solar',
-  root: 'Raiz',
+  darkText: [45, 45, 45] as [number, number, number],
+  lightText: [100, 100, 100] as [number, number, number],
+  accent: [128, 45, 100] as [number, number, number], // Purple mais elegante
+  accentLight: [168, 85, 140] as [number, number, number],
+  white: [255, 255, 255] as [number, number, number],
+  bgLight: [252, 250, 248] as [number, number, number],
+  success: [76, 175, 80] as [number, number, number],
+  warning: [255, 152, 0] as [number, number, number],
 };
 
 const CLASSIFICATION_LABELS: Record<string, string> = {
   low: 'Baixo',
   medium: 'Médio',
   high: 'Alto',
+  Baixo: 'Baixo',
+  Médio: 'Médio', 
+  Alto: 'Alto',
 };
 
 // Função para limpar markdown
@@ -87,162 +83,251 @@ export async function generateIntegratedReport(data: IntegratedReportData): Prom
     if (yPosition + neededSpace > pageHeight - 25) {
       doc.addPage();
       yPosition = 25;
+      return true;
+    }
+    return false;
+  };
+
+  // Helper: Draw rounded rectangle with gradient effect
+  const drawGradientHeader = (y: number, height: number, color1: [number, number, number], color2: [number, number, number]) => {
+    const steps = 20;
+    const stepHeight = height / steps;
+    for (let i = 0; i < steps; i++) {
+      const r = color1[0] + ((color2[0] - color1[0]) * i) / steps;
+      const g = color1[1] + ((color2[1] - color1[1]) * i) / steps;
+      const b = color1[2] + ((color2[2] - color1[2]) * i) / steps;
+      doc.setFillColor(r, g, b);
+      doc.rect(0, y + i * stepHeight, pageWidth, stepHeight + 0.5, 'F');
     }
   };
 
-  // =================== PÁGINA 1 - CAPA ===================
-  // Fundo gradiente - carmim para accent
-  doc.setFillColor(...COLORS.carmim);
-  doc.rect(0, 0, pageWidth, 50, 'F');
-  doc.setFillColor(...COLORS.accent);
-  doc.rect(0, 50, pageWidth, 40, 'F');
+  // =================== PÁGINA 1 - CAPA ELEGANTE ===================
+  // Header gradient
+  drawGradientHeader(0, 70, COLORS.carmim, COLORS.accent);
+
+  // Decorative line
+  doc.setDrawColor(...COLORS.gold);
+  doc.setLineWidth(0.8);
+  doc.line(margin + 20, 55, pageWidth - margin - 20, 55);
 
   // Título principal
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(28);
+  doc.setTextColor(...COLORS.white);
+  doc.setFontSize(32);
   doc.setFont('helvetica', 'bold');
-  doc.text('RELATÓRIO', pageWidth / 2, 35, { align: 'center' });
-  doc.text('INTEGRADO', pageWidth / 2, 48, { align: 'center' });
+  doc.text('RELATÓRIO', pageWidth / 2, 30, { align: 'center' });
+  doc.text('INTEGRADO', pageWidth / 2, 45, { align: 'center' });
 
-  // Subtítulo
-  doc.setFontSize(14);
+  // Subtítulo na barra
+  doc.setFontSize(12);
   doc.setFont('helvetica', 'normal');
-  doc.text('Big Five + Desenho Humano', pageWidth / 2, 72, { align: 'center' });
+  doc.setTextColor(...COLORS.goldLight);
+  doc.text('Big Five + Desenho Humano', pageWidth / 2, 63, { align: 'center' });
+
+  yPosition = 85;
+
+  // Descrição introdutória
+  doc.setFillColor(...COLORS.bgLight);
+  doc.roundedRect(margin, yPosition, contentWidth, 20, 3, 3, 'F');
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'italic');
+  doc.setTextColor(...COLORS.lightText);
+  const introText = 'Este relatório apresenta uma visão integrada do seu perfil, cruzando os resultados do teste Big Five (Cinco Grandes Fatores) com o seu mapa de Desenho Humano.';
+  const introLines = doc.splitTextToSize(introText, contentWidth - 10);
+  doc.text(introLines, margin + 5, yPosition + 8);
   
-  doc.setFontSize(11);
-  doc.text('Uma visão única e completa do seu perfil', pageWidth / 2, 82, { align: 'center' });
+  yPosition += 30;
 
-  yPosition = 110;
-
-  // =================== RESUMO BIG FIVE ===================
+  // =================== SEÇÃO BIG FIVE ===================
+  // Header da seção
   doc.setFillColor(...COLORS.carmim);
-  doc.rect(margin, yPosition, contentWidth, 10, 'F');
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(12);
-  doc.setFont('helvetica', 'bold');
-  doc.text('PERFIL BIG FIVE', margin + 5, yPosition + 7);
-  yPosition += 18;
-
-  // Traços do Big Five
-  const traits = ['Neuroticismo', 'Extroversão', 'Abertura à Experiência', 'Amabilidade', 'Conscienciosidade'];
+  doc.roundedRect(margin, yPosition, contentWidth, 12, 2, 2, 'F');
   
-  traits.forEach((traitLabel, index) => {
-    const score = data.traitScores[traitLabel] || 0;
-    const classification = data.traitClassifications[traitLabel] || 'medium';
-    const classLabel = CLASSIFICATION_LABELS[classification] || classification;
-    
-    const xPos = margin;
-    
-    // Background bar
-    doc.setFillColor(...COLORS.offWhite);
-    doc.roundedRect(xPos, yPosition - 3, contentWidth, 12, 2, 2, 'F');
-    
-    // Progress bar
-    const barWidth = (score / 100) * (contentWidth - 50);
-    const barColor = classification === 'high' ? COLORS.gold : 
-                     classification === 'low' ? COLORS.dustyMauve : COLORS.carmim;
-    doc.setFillColor(...barColor);
-    doc.roundedRect(xPos + 2, yPosition - 1, Math.max(barWidth, 5), 8, 1, 1, 'F');
-    
-    // Label
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...COLORS.darkText);
-    doc.text(traitLabel, xPos + 5, yPosition + 4);
-    
-    // Score
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(...COLORS.lightText);
-    doc.text(`${Math.round(score)} - ${classLabel}`, xPos + contentWidth - 30, yPosition + 4);
-    
-    yPosition += 16;
-  });
-
-  yPosition += 5;
-
-  // =================== RESUMO DESENHO HUMANO ===================
-  doc.setFillColor(...COLORS.accent);
-  doc.rect(margin, yPosition, contentWidth, 10, 'F');
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(12);
+  // Ícone decorativo
+  doc.setFillColor(...COLORS.gold);
+  doc.circle(margin + 8, yPosition + 6, 4, 'F');
+  doc.setTextColor(...COLORS.carmim);
+  doc.setFontSize(8);
   doc.setFont('helvetica', 'bold');
-  doc.text('PERFIL DESENHO HUMANO', margin + 5, yPosition + 7);
-  yPosition += 18;
-
-  // Grid de informações HD
-  const hdItems = [
-    { label: 'Tipo Energético', value: data.energyType },
-    { label: 'Estratégia', value: data.strategy || 'N/A' },
-    { label: 'Autoridade', value: data.authority || 'N/A' },
-    { label: 'Perfil', value: data.profile || 'N/A' },
-    { label: 'Definição', value: data.definition || 'N/A' },
-    { label: 'Cruz', value: data.incarnationCross || 'N/A' },
-  ];
-
-  const colWidth = contentWidth / 2;
-  hdItems.forEach((item, index) => {
-    const col = index % 2;
-    const xPos = margin + col * colWidth;
-
-    if (col === 0 && index > 0) {
-      yPosition += 14;
-    }
-
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(...COLORS.lightText);
-    doc.text(item.label, xPos, yPosition);
-
-    doc.setFontSize(11);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...COLORS.accent);
-    
-    // Truncar texto longo
-    const maxTextWidth = colWidth - 10;
-    let displayValue = item.value;
-    while (doc.getTextWidth(displayValue) > maxTextWidth && displayValue.length > 10) {
-      displayValue = displayValue.slice(0, -4) + '...';
-    }
-    doc.text(displayValue, xPos, yPosition + 5);
-  });
-
+  doc.text('5', margin + 6, yPosition + 8);
+  
+  doc.setTextColor(...COLORS.white);
+  doc.setFontSize(13);
+  doc.setFont('helvetica', 'bold');
+  doc.text('PERFIL BIG FIVE', margin + 18, yPosition + 8);
   yPosition += 20;
 
+  // Traços do Big Five com design melhorado
+  const traits = [
+    { key: 'Neuroticismo', icon: '🧠' },
+    { key: 'Extroversão', icon: '🌟' },
+    { key: 'Abertura à Experiência', icon: '🎨' },
+    { key: 'Amabilidade', icon: '❤️' },
+    { key: 'Conscienciosidade', icon: '📋' }
+  ];
+  
+  traits.forEach((trait) => {
+    const score = data.traitScores[trait.key] || 0;
+    const classification = data.traitClassifications[trait.key] || 'medium';
+    const classLabel = CLASSIFICATION_LABELS[classification] || classification;
+    
+    // Card background
+    doc.setFillColor(...COLORS.offWhite);
+    doc.roundedRect(margin, yPosition, contentWidth, 14, 2, 2, 'F');
+    
+    // Progress bar background
+    const barX = margin + 75;
+    const barWidth = contentWidth - 120;
+    doc.setFillColor(...COLORS.dustyMauve);
+    doc.roundedRect(barX, yPosition + 4, barWidth, 6, 2, 2, 'F');
+    
+    // Progress bar fill
+    const fillWidth = (score / 100) * barWidth;
+    const barColor = classification === 'high' || classification === 'Alto' ? COLORS.success : 
+                     classification === 'low' || classification === 'Baixo' ? COLORS.warning : COLORS.carmim;
+    doc.setFillColor(...barColor);
+    doc.roundedRect(barX, yPosition + 4, Math.max(fillWidth, 3), 6, 2, 2, 'F');
+    
+    // Trait label
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...COLORS.darkText);
+    doc.text(trait.key, margin + 5, yPosition + 9);
+    
+    // Score and classification
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...barColor);
+    doc.text(`${Math.round(score)}`, barX + barWidth + 5, yPosition + 9);
+    
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...COLORS.lightText);
+    doc.text(classLabel, barX + barWidth + 18, yPosition + 9);
+    
+    yPosition += 17;
+  });
+
+  yPosition += 8;
+
+  // =================== SEÇÃO DESENHO HUMANO ===================
+  // Header da seção
+  doc.setFillColor(...COLORS.accent);
+  doc.roundedRect(margin, yPosition, contentWidth, 12, 2, 2, 'F');
+  
+  // Ícone decorativo
+  doc.setFillColor(...COLORS.gold);
+  doc.circle(margin + 8, yPosition + 6, 4, 'F');
+  doc.setTextColor(...COLORS.accent);
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'bold');
+  doc.text('HD', margin + 4.5, yPosition + 8);
+  
+  doc.setTextColor(...COLORS.white);
+  doc.setFontSize(13);
+  doc.setFont('helvetica', 'bold');
+  doc.text('PERFIL DESENHO HUMANO', margin + 18, yPosition + 8);
+  yPosition += 18;
+
+  // Grid 2x3 de informações HD com cards
+  const hdItems = [
+    { label: 'Tipo Energético', value: data.energyType, highlight: true },
+    { label: 'Estratégia', value: data.strategy || 'N/A', highlight: false },
+    { label: 'Autoridade', value: data.authority || 'N/A', highlight: false },
+    { label: 'Perfil', value: data.profile || 'N/A', highlight: false },
+    { label: 'Definição', value: data.definition || 'N/A', highlight: false },
+    { label: 'Cruz de Encarnação', value: data.incarnationCross || 'N/A', highlight: false },
+  ];
+
+  const cardWidth = (contentWidth - 8) / 2;
+  const cardHeight = 18;
+  
+  hdItems.forEach((item, index) => {
+    const col = index % 2;
+    const row = Math.floor(index / 2);
+    const xPos = margin + col * (cardWidth + 8);
+    const yPos = yPosition + row * (cardHeight + 4);
+
+    // Card background
+    if (item.highlight) {
+      doc.setFillColor(...COLORS.carmim);
+      doc.roundedRect(xPos, yPos, cardWidth, cardHeight, 2, 2, 'F');
+      doc.setTextColor(...COLORS.goldLight);
+    } else {
+      doc.setFillColor(...COLORS.offWhite);
+      doc.roundedRect(xPos, yPos, cardWidth, cardHeight, 2, 2, 'F');
+      doc.setTextColor(...COLORS.lightText);
+    }
+    
+    // Label
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    doc.text(item.label, xPos + 4, yPos + 6);
+
+    // Value
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    if (item.highlight) {
+      doc.setTextColor(...COLORS.white);
+    } else {
+      doc.setTextColor(...COLORS.accent);
+    }
+    
+    // Truncar texto longo
+    let displayValue = item.value;
+    const maxWidth = cardWidth - 8;
+    while (doc.getTextWidth(displayValue) > maxWidth && displayValue.length > 10) {
+      displayValue = displayValue.slice(0, -4) + '...';
+    }
+    doc.text(displayValue, xPos + 4, yPos + 14);
+  });
+
+  yPosition += (cardHeight + 4) * 3 + 8;
+
+  // Centros - Layout horizontal com badges
+  doc.setFillColor(...COLORS.bgLight);
+  doc.roundedRect(margin, yPosition, contentWidth, 28, 3, 3, 'F');
+  
   const definedCenters = data.definedCenters || [];
   const openCenters = data.openCenters || [];
 
+  // Centros Definidos
   doc.setFontSize(9);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...COLORS.gold);
-  doc.text(`Centros Definidos (${definedCenters.length}):`, margin, yPosition);
+  doc.text(`● Definidos (${definedCenters.length}):`, margin + 4, yPosition + 8);
+  
+  doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(...COLORS.darkText);
-  doc.text(definedCenters.join(', ') || 'Nenhum', margin + 45, yPosition);
+  const definedText = definedCenters.length > 0 ? definedCenters.join(', ') : 'Nenhum';
+  const definedLines = doc.splitTextToSize(definedText, contentWidth - 50);
+  doc.text(definedLines, margin + 42, yPosition + 8);
   
-  yPosition += 7;
-  
+  // Centros Abertos
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...COLORS.dustyMauve);
-  doc.text(`Centros Abertos (${openCenters.length}):`, margin, yPosition);
+  doc.text(`○ Abertos (${openCenters.length}):`, margin + 4, yPosition + 20);
+  
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(...COLORS.darkText);
-  doc.text(openCenters.join(', ') || 'Nenhum', margin + 45, yPosition);
+  const openText = openCenters.length > 0 ? openCenters.join(', ') : 'Nenhum';
+  const openLines = doc.splitTextToSize(openText, contentWidth - 50);
+  doc.text(openLines, margin + 42, yPosition + 20);
 
   // =================== PÁGINA 2+ - ANÁLISE INTEGRADA ===================
   if (data.ai_analysis) {
     doc.addPage();
-    yPosition = 25;
+    yPosition = 15;
 
-    doc.setFillColor(...COLORS.carmim);
-    doc.rect(margin, yPosition, contentWidth / 2 - 2, 10, 'F');
-    doc.setFillColor(...COLORS.accent);
-    doc.rect(margin + contentWidth / 2 + 2, yPosition, contentWidth / 2 - 2, 10, 'F');
+    // Header elegante
+    drawGradientHeader(0, 25, COLORS.carmim, COLORS.accent);
     
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(12);
+    doc.setTextColor(...COLORS.white);
+    doc.setFontSize(16);
     doc.setFont('helvetica', 'bold');
-    doc.text('ANÁLISE INTEGRADA COMPLETA', pageWidth / 2, yPosition + 7, { align: 'center' });
-    yPosition += 20;
+    doc.text('ANÁLISE INTEGRADA', pageWidth / 2, 16, { align: 'center' });
+    
+    yPosition = 35;
 
     // Processar análise
     const processAnalysis = (text: string) => {
@@ -253,36 +338,49 @@ export async function generateIntegratedReport(data: IntegratedReportData): Prom
         const trimmed = paragraph.trim();
         if (!trimmed) return;
         
-        // Detectar se é título
-        const isTitle = trimmed.length < 80 && 
-                       (trimmed.match(/^[0-9]+\./) || 
-                        trimmed.match(/^[A-ZÁÉÍÓÚÀÂÊÔÃÕÇ\s\d\.:]+$/) || 
-                        (trimmed.endsWith(':') && trimmed.length < 50));
+        // Detectar se é título (maiúsculas, curto, ou termina com :)
+        const isTitle = trimmed.length < 100 && 
+                       (trimmed.match(/^[0-9]+\.?\s*[A-ZÁÉÍÓÚÀÂÊÔÃÕÇ]/) || 
+                        trimmed.match(/^[A-ZÁÉÍÓÚÀÂÊÔÃÕÇ\s\d\.\-:]+$/) || 
+                        (trimmed.endsWith(':') && trimmed.length < 60) ||
+                        trimmed.match(/^[A-Z][A-ZÁÉÍÓÚÀÂÊÔÃÕÇ\s]+$/));
         
         if (isTitle) {
-          checkAddPage(15);
-          doc.setFontSize(13);
+          checkAddPage(20);
+          
+          // Linha decorativa antes do título
+          doc.setDrawColor(...COLORS.gold);
+          doc.setLineWidth(0.5);
+          doc.line(margin, yPosition, margin + 30, yPosition);
+          yPosition += 5;
+          
+          doc.setFontSize(12);
           doc.setFont('helvetica', 'bold');
           doc.setTextColor(...COLORS.carmim);
-          doc.text(trimmed, margin, yPosition);
-          yPosition += 10;
+          
+          const titleLines = doc.splitTextToSize(trimmed, contentWidth);
+          titleLines.forEach((line: string) => {
+            doc.text(line, margin, yPosition);
+            yPosition += 6;
+          });
+          yPosition += 4;
         } else if (trimmed.includes('•') || trimmed.match(/^[0-9]+\./m)) {
           // Lista
           const lines = trimmed.split('\n').filter(Boolean);
           lines.forEach((line) => {
-            checkAddPage(8);
+            checkAddPage(10);
             doc.setFontSize(10);
             doc.setFont('helvetica', 'normal');
             doc.setTextColor(...COLORS.darkText);
             
-            const itemLines = doc.splitTextToSize(line, contentWidth - 5);
-            itemLines.forEach((itemLine: string) => {
-              checkAddPage(5);
-              doc.text(itemLine, margin + 5, yPosition);
+            const itemLines = doc.splitTextToSize(line, contentWidth - 8);
+            itemLines.forEach((itemLine: string, idx: number) => {
+              checkAddPage(6);
+              doc.text(itemLine, margin + (idx === 0 ? 0 : 4), yPosition);
               yPosition += 5;
             });
           });
-          yPosition += 3;
+          yPosition += 4;
         } else {
           // Parágrafo normal
           checkAddPage(15);
@@ -292,11 +390,11 @@ export async function generateIntegratedReport(data: IntegratedReportData): Prom
           
           const paraLines = doc.splitTextToSize(trimmed, contentWidth);
           paraLines.forEach((line: string) => {
-            checkAddPage(5);
+            checkAddPage(6);
             doc.text(line, margin, yPosition);
             yPosition += 5;
           });
-          yPosition += 5;
+          yPosition += 6;
         }
       });
     };
@@ -309,24 +407,26 @@ export async function generateIntegratedReport(data: IntegratedReportData): Prom
   for (let i = 1; i <= totalPages; i++) {
     doc.setPage(i);
 
-    // Linha separadora
-    doc.setDrawColor(...COLORS.dustyMauve);
-    doc.line(margin, pageHeight - 18, pageWidth - margin, pageHeight - 18);
+    // Fundo do rodapé
+    doc.setFillColor(...COLORS.bgLight);
+    doc.rect(0, pageHeight - 20, pageWidth, 20, 'F');
+    
+    // Linha decorativa
+    doc.setDrawColor(...COLORS.gold);
+    doc.setLineWidth(0.5);
+    doc.line(margin, pageHeight - 20, pageWidth - margin, pageHeight - 20);
 
     // Número da página
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(...COLORS.lightText);
-    doc.text(`Página ${i} de ${totalPages}`, pageWidth / 2, pageHeight - 12, {
-      align: 'center',
-    });
+    doc.text(`${i} / ${totalPages}`, pageWidth / 2, pageHeight - 12, { align: 'center' });
 
     // Crédito
     doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold');
     doc.setTextColor(...COLORS.carmim);
-    doc.text('Criado por Luciana Belenton', pageWidth / 2, pageHeight - 7, {
-      align: 'center',
-    });
+    doc.text('Criado por Luciana Belenton', pageWidth / 2, pageHeight - 6, { align: 'center' });
   }
 
   // =================== SALVAR PDF ===================
