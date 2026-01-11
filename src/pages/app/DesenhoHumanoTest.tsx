@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,8 +13,12 @@ import { calculateHumanDesignChart } from "@/utils/humanDesignCalculator";
 
 const DesenhoHumanoTest = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const { hasActiveSession, activeSessionType, refetch } = useActiveSession();
+  
+  // Check if coming from admin test environment
+  const isDemo = searchParams.get('demo') === 'true';
   
   const [birthDate, setBirthDate] = useState("");
   const [birthTime, setBirthTime] = useState("");
@@ -24,6 +28,17 @@ const DesenhoHumanoTest = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
   const [sessionId, setSessionId] = useState<string | null>(null);
+
+  // Pre-fill form from query params (admin test environment)
+  useEffect(() => {
+    const dateParam = searchParams.get('date');
+    const timeParam = searchParams.get('time');
+    const locationParam = searchParams.get('location');
+    
+    if (dateParam) setBirthDate(dateParam);
+    if (timeParam) setBirthTime(timeParam);
+    if (locationParam) setBirthLocation(locationParam);
+  }, [searchParams]);
 
   // Check if there's an existing HD session in progress
   useEffect(() => {
@@ -247,6 +262,12 @@ const DesenhoHumanoTest = () => {
           {/* Form Card */}
           <Card className="border-2">
             <CardContent className="p-6">
+              {isDemo && (
+                <div className="bg-amber-100 border border-amber-300 text-amber-800 px-4 py-2 rounded-lg text-sm mb-4 flex items-center gap-2">
+                  🧪 <span className="font-medium">Modo Demo</span> - Dados pré-preenchidos do ambiente de teste
+                </div>
+              )}
+
               <h2 className="text-xl font-semibold text-primary mb-6">
                 DADOS NECESSÁRIOS
               </h2>
