@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
-import { Loader2, FlaskConical, Brain, Sparkles, Eye, Zap, Target, User } from "lucide-react";
+import { Loader2, FlaskConical, Brain, Sparkles, Eye, Zap, Target, User, Layers, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { questionsLuciana } from "@/data/bigFiveQuestionsLuciana";
@@ -15,6 +15,7 @@ import { calculateScore, getTraitClassification, getFacetClassification } from "
 import DemoResultBadge from "@/components/admin/DemoResultBadge";
 import HDBodyGraph from "@/components/humandesign/HDBodyGraph";
 import { SCORING, TRAIT_LABELS, getTraitPercentage } from "@/constants/scoring";
+import ReactMarkdown from "react-markdown";
 
 const AmbienteTeste = () => {
   const navigate = useNavigate();
@@ -28,6 +29,11 @@ const AmbienteTeste = () => {
   // Human Design state
   const [selectedProfile, setSelectedProfile] = useState<string>("einstein");
   const [showHDPreview, setShowHDPreview] = useState(false);
+  
+  // Integrated Analysis state
+  const [showIntegratedPreview, setShowIntegratedPreview] = useState(false);
+  const [generatingIntegrated, setGeneratingIntegrated] = useState(false);
+  const [integratedAnalysis, setIntegratedAnalysis] = useState<string | null>(null);
 
   // Quick Big Five Test - auto-fill and complete
   const handleQuickBigFive = async () => {
@@ -181,6 +187,47 @@ const AmbienteTeste = () => {
     navigate(`/app/desenho-humano?${params.toString()}`);
   };
 
+  // Generate integrated analysis with mock data
+  const handleGenerateIntegrated = async () => {
+    setGeneratingIntegrated(true);
+    
+    try {
+      const { data: response, error } = await supabase.functions.invoke("analyze-integrated", {
+        body: {
+          bigFiveData: {
+            traitScores: DEMO_BIG_FIVE_RESULT.trait_scores,
+          },
+          humanDesignData: {
+            energy_type: DEMO_HD_RESULT.energy_type,
+            strategy: DEMO_HD_RESULT.strategy,
+            authority: DEMO_HD_RESULT.authority,
+            profile: DEMO_HD_RESULT.profile,
+            definition: DEMO_HD_RESULT.definition,
+            incarnation_cross: DEMO_HD_RESULT.incarnation_cross,
+            centers: DEMO_HD_RESULT.centers,
+          },
+        },
+      });
+
+      if (error) throw error;
+
+      setIntegratedAnalysis(response.analysis);
+      toast({
+        title: "Análise integrada gerada!",
+        description: "A simulação foi concluída com sucesso.",
+      });
+    } catch (error: any) {
+      console.error("Erro ao gerar análise integrada:", error);
+      toast({
+        title: "Erro",
+        description: error.message || "Não foi possível gerar a análise.",
+        variant: "destructive",
+      });
+    } finally {
+      setGeneratingIntegrated(false);
+    }
+  };
+
   const getClassificationLabel = (classification: string) => {
     const labels: Record<string, string> = {
       low: "Baixo",
@@ -328,6 +375,88 @@ const AmbienteTeste = () => {
             </Button>
           </CardContent>
         </Card>
+
+        {/* Integrated Analysis Card */}
+        <Card className="md:col-span-2 border-accent/30 bg-gradient-to-br from-accent/5 to-background">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Layers className="w-5 h-5 text-accent" />
+              <CardTitle>Relatório Integrado - Big Five + Desenho Humano</CardTitle>
+            </div>
+            <CardDescription>
+              Simulação do cruzamento de dados do Big Five com o Desenho Humano usando dados mock.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-4 p-4 bg-muted rounded-lg">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground mb-2">Dados Big Five Demo:</p>
+                <div className="space-y-1 text-sm">
+                  {Object.entries(DEMO_BIG_FIVE_RESULT.trait_scores).map(([trait, score]) => (
+                    <div key={trait} className="flex justify-between">
+                      <span className="text-muted-foreground">{TRAIT_LABELS[trait]}:</span>
+                      <span className="font-medium">{score}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground mb-2">Dados HD Demo:</p>
+                <div className="space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Tipo:</span>
+                    <span className="font-medium">{DEMO_HD_RESULT.energy_type}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Autoridade:</span>
+                    <span className="font-medium">{DEMO_HD_RESULT.authority}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Perfil:</span>
+                    <span className="font-medium">{DEMO_HD_RESULT.profile}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Definição:</span>
+                    <span className="font-medium">{DEMO_HD_RESULT.definition}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <Button 
+                onClick={() => setShowIntegratedPreview(!showIntegratedPreview)}
+                variant="outline"
+                className="flex-1 gap-2"
+              >
+                <Eye className="w-4 h-4" />
+                {showIntegratedPreview ? "Ocultar Painel" : "Ver Painel de Simulação"}
+              </Button>
+
+              <Button 
+                onClick={handleGenerateIntegrated}
+                disabled={generatingIntegrated}
+                className="flex-1 gap-2"
+              >
+                {generatingIntegrated ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Gerando...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-4 h-4" />
+                    Gerar Análise Integrada
+                  </>
+                )}
+              </Button>
+            </div>
+
+            <p className="text-xs text-muted-foreground">
+              A análise integrada usa IA para cruzar os dados de ambas as metodologias e gerar um relatório único.
+            </p>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Big Five Preview */}
@@ -422,6 +551,64 @@ const AmbienteTeste = () => {
                 </div>
               </div>
             </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Integrated Analysis Preview */}
+      {showIntegratedPreview && (
+        <Card className="mt-6 border-accent/30">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <Layers className="w-5 h-5 text-accent" />
+                Simulação - Relatório Integrado
+              </CardTitle>
+              <div className="flex items-center gap-2">
+                {integratedAnalysis && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleGenerateIntegrated}
+                    disabled={generatingIntegrated}
+                    className="gap-2"
+                  >
+                    <RefreshCw className={`w-4 h-4 ${generatingIntegrated ? "animate-spin" : ""}`} />
+                    Regenerar
+                  </Button>
+                )}
+                <DemoResultBadge />
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {integratedAnalysis ? (
+              <div className="prose prose-sm max-w-none dark:prose-invert">
+                <ReactMarkdown>{integratedAnalysis}</ReactMarkdown>
+              </div>
+            ) : (
+              <div className="text-center py-12 text-muted-foreground">
+                <Sparkles className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                <p className="mb-4">Clique em "Gerar Análise Integrada" para simular o relatório.</p>
+                <Button 
+                  onClick={handleGenerateIntegrated}
+                  disabled={generatingIntegrated}
+                  className="gap-2"
+                >
+                  {generatingIntegrated ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Gerando...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4" />
+                      Gerar Análise Integrada
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
