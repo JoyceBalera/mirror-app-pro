@@ -40,8 +40,11 @@ const DesenhoHumanoTest = () => {
     if (locationParam) setBirthLocation(locationParam);
   }, [searchParams]);
 
-  // Check if there's an existing HD session in progress
+  // Check if there's an existing HD session in progress (skip in demo mode)
   useEffect(() => {
+    // Skip session checks in demo mode
+    if (isDemo) return;
+
     const checkExistingSession = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
