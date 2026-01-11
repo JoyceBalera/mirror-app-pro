@@ -226,10 +226,7 @@ const AppDashboard = () => {
   };
 
   const handleViewIntegratedReport = () => {
-    toast({
-      title: "Em breve!",
-      description: "O relatório integrado estará disponível em breve.",
-    });
+    navigate("/app/integrado");
   };
 
   if (loading || sessionLoading) {

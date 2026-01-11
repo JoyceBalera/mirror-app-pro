@@ -191,6 +191,54 @@ export type Database = {
         }
         Relationships: []
       }
+      integrated_analyses: {
+        Row: {
+          analysis_text: string
+          big_five_session_id: string
+          created_at: string
+          generated_at: string
+          human_design_result_id: string
+          id: string
+          model_used: string | null
+          user_id: string
+        }
+        Insert: {
+          analysis_text: string
+          big_five_session_id: string
+          created_at?: string
+          generated_at?: string
+          human_design_result_id: string
+          id?: string
+          model_used?: string | null
+          user_id: string
+        }
+        Update: {
+          analysis_text?: string
+          big_five_session_id?: string
+          created_at?: string
+          generated_at?: string
+          human_design_result_id?: string
+          id?: string
+          model_used?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "integrated_analyses_big_five_session_id_fkey"
+            columns: ["big_five_session_id"]
+            isOneToOne: false
+            referencedRelation: "test_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "integrated_analyses_human_design_result_id_fkey"
+            columns: ["human_design_result_id"]
+            isOneToOne: false
+            referencedRelation: "human_design_results"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
