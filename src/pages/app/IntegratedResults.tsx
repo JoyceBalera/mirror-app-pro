@@ -5,13 +5,14 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, Sparkles, FileText, RefreshCw, Download } from "lucide-react";
+import { ArrowLeft, Sparkles, FileText, RefreshCw, Download, Loader2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import { generateIntegratedReport, IntegratedReportData } from "@/utils/generateIntegratedReport";
 
 interface IntegratedData {
   bigFiveSession: {
     id: string;
-    traitScores: any[];
+    traitScores: Record<string, number>;
   } | null;
   humanDesignResult: {
     id: string;
@@ -35,12 +36,14 @@ const IntegratedResults = () => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
   const [data, setData] = useState<IntegratedData>({
     bigFiveSession: null,
     humanDesignResult: null,
     existingAnalysis: null,
   });
   const [analysisText, setAnalysisText] = useState<string | null>(null);
+  const [fullHDData, setFullHDData] = useState<any>(null);
 
   useEffect(() => {
     fetchData();
@@ -75,7 +78,7 @@ const IntegratedResults = () => {
         if (results) {
           bigFiveData = {
             id: bigFiveSession.id,
-            traitScores: results.trait_scores as any[],
+            traitScores: results.trait_scores as Record<string, number>,
           };
         }
       }
@@ -88,6 +91,9 @@ const IntegratedResults = () => {
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle();
+
+      // Store full HD data for PDF
+      setFullHDData(hdResult);
 
       // Check for existing integrated analysis
       let existingAnalysis = null;
@@ -187,6 +193,62 @@ const IntegratedResults = () => {
     }
   };
 
+  const handleDownloadPdf = async () => {
+    if (!analysisText || !data.bigFiveSession || !fullHDData) {
+      toast({
+        title: "Dados incompletos",
+        description: "Gere a análise primeiro para baixar o PDF.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setDownloadingPdf(true);
+
+    try {
+      const reportData: IntegratedReportData = {
+        traitScores: data.bigFiveSession.traitScores as any,
+        classifications: {}, // Will be derived from scores
+        energy_type: fullHDData.energy_type,
+        strategy: fullHDData.strategy,
+        authority: fullHDData.authority,
+        profile: fullHDData.profile,
+        definition: fullHDData.definition,
+        incarnation_cross: fullHDData.incarnation_cross,
+        centers: fullHDData.centers || {},
+        ai_analysis: analysisText,
+      };
+
+      // Derive classifications from trait scores
+      const getClassification = (score: number) => {
+        if (score <= 40) return "low";
+        if (score <= 60) return "medium";
+        return "high";
+      };
+
+      const traitScores = data.bigFiveSession.traitScores;
+      Object.keys(traitScores).forEach((trait) => {
+        reportData.classifications[trait] = getClassification(traitScores[trait]);
+      });
+
+      await generateIntegratedReport(reportData);
+
+      toast({
+        title: "PDF gerado!",
+        description: "O download do relatório foi iniciado.",
+      });
+    } catch (error: any) {
+      console.error("Erro ao gerar PDF:", error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível gerar o PDF.",
+        variant: "destructive",
+      });
+    } finally {
+      setDownloadingPdf(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -272,21 +334,37 @@ const IntegratedResults = () => {
         </Card>
       ) : analysisText ? (
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
+          <CardHeader className="flex flex-row items-center justify-between flex-wrap gap-2">
             <CardTitle className="flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-accent" />
               Sua Análise Integrada
             </CardTitle>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={generateAnalysis}
-              disabled={generating}
-              className="gap-2"
-            >
-              <RefreshCw className={`w-4 h-4 ${generating ? "animate-spin" : ""}`} />
-              Regenerar
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleDownloadPdf}
+                disabled={downloadingPdf}
+                className="gap-2"
+              >
+                {downloadingPdf ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Download className="w-4 h-4" />
+                )}
+                Baixar PDF
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={generateAnalysis}
+                disabled={generating}
+                className="gap-2"
+              >
+                <RefreshCw className={`w-4 h-4 ${generating ? "animate-spin" : ""}`} />
+                Regenerar
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="prose prose-sm max-w-none dark:prose-invert">
