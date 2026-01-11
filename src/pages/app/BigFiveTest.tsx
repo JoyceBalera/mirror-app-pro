@@ -285,7 +285,7 @@ const BigFiveTest = () => {
             </div>
 
             <p className="text-sm text-muted-foreground">
-              Este teste avalia cinco grandes dimensões da personalidade: Abertura, 
+              Este teste avalia cinco grandes dimensões da personalidade: Abertura à Experiência, 
               Conscienciosidade, Extroversão, Amabilidade e Neuroticismo. Responda 
               com sinceridade para obter resultados mais precisos.
             </p>
