@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, Sparkles, FileText, RefreshCw, Download, Loader2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { generateIntegratedReport, IntegratedReportData } from "@/utils/generateIntegratedReport";
+import HDBodyGraph from "@/components/humandesign/HDBodyGraph";
 
 interface IntegratedData {
   bigFiveSession: {
@@ -22,7 +23,11 @@ interface IntegratedData {
     profile: string;
     definition: string;
     incarnation_cross: string;
-    centers: Record<string, string>;
+    centers: Record<string, boolean>;
+    activated_gates: number[];
+    personality_activations: any[];
+    design_activations: any[];
+    channels: any[];
   } | null;
   existingAnalysis: {
     id: string;
@@ -83,10 +88,10 @@ const IntegratedResults = () => {
         }
       }
 
-      // Fetch Human Design result
+      // Fetch Human Design result with all data needed for BodyGraph
       const { data: hdResult } = await supabase
         .from("human_design_results")
-        .select("id, energy_type, strategy, authority, profile, definition, incarnation_cross, centers")
+        .select("id, energy_type, strategy, authority, profile, definition, incarnation_cross, centers, activated_gates, personality_activations, design_activations, channels")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false })
         .limit(1)
@@ -193,6 +198,51 @@ const IntegratedResults = () => {
     }
   };
 
+  // Function to capture Bodygraph SVG as PNG
+  const captureBodyGraphAsImage = async (): Promise<string | null> => {
+    try {
+      const svgElement = document.querySelector('.bodygraph-svg') as SVGElement;
+      if (!svgElement) {
+        console.warn('Bodygraph SVG não encontrado');
+        return null;
+      }
+
+      const serializer = new XMLSerializer();
+      const svgString = serializer.serializeToString(svgElement);
+      const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(svgBlob);
+
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const scale = 2;
+          canvas.width = 330 * scale;
+          canvas.height = 620 * scale;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.scale(scale, scale);
+            ctx.drawImage(img, 0, 0, 330, 620);
+          }
+          const dataUrl = canvas.toDataURL('image/png');
+          URL.revokeObjectURL(url);
+          resolve(dataUrl);
+        };
+        img.onerror = () => {
+          console.error('Erro ao carregar SVG como imagem');
+          URL.revokeObjectURL(url);
+          resolve(null);
+        };
+        img.src = url;
+      });
+    } catch (error) {
+      console.error('Erro ao capturar Bodygraph:', error);
+      return null;
+    }
+  };
+
   const handleDownloadPdf = async () => {
     if (!analysisText || !data.bigFiveSession || !fullHDData) {
       toast({
@@ -206,6 +256,9 @@ const IntegratedResults = () => {
     setDownloadingPdf(true);
 
     try {
+      // Capture BodyGraph image first
+      const bodygraphImage = await captureBodyGraphAsImage();
+
       // Derive classifications from trait scores
       const getClassification = (score: number) => {
         if (score <= 40) return "low";
@@ -238,6 +291,9 @@ const IntegratedResults = () => {
         });
       }
 
+      // Get active channels for PDF
+      const activeChannels = fullHDData.channels || [];
+
       const reportData: IntegratedReportData = {
         traitScores: traitScores as Record<string, number>,
         traitClassifications,
@@ -249,7 +305,9 @@ const IntegratedResults = () => {
         incarnationCross: fullHDData.incarnation_cross || '',
         definedCenters,
         openCenters,
+        activeChannels,
         ai_analysis: analysisText,
+        bodygraph_image: bodygraphImage || undefined,
       };
 
       await generateIntegratedReport(reportData);
@@ -338,6 +396,25 @@ const IntegratedResults = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Hidden BodyGraph for PDF capture */}
+      {data.humanDesignResult && (
+        <div style={{ position: 'absolute', left: '-9999px', top: 0, visibility: 'hidden' }}>
+          <HDBodyGraph
+            definedCenters={Object.entries(data.humanDesignResult.centers || {})
+              .filter(([_, isDefined]) => isDefined)
+              .map(([centerId]) => centerId)}
+            activeChannels={(data.humanDesignResult.channels || []).map((ch: any) => ({
+              id: ch.id || `${ch.gates?.[0]}-${ch.gates?.[1]}`,
+              gates: ch.gates,
+              isComplete: true
+            }))}
+            activatedGates={data.humanDesignResult.activated_gates || []}
+            personalityGates={(data.humanDesignResult.personality_activations || []).map((a: any) => a.gate)}
+            designGates={(data.humanDesignResult.design_activations || []).map((a: any) => a.gate)}
+          />
+        </div>
+      )}
 
       {/* Analysis Section */}
       {!canGenerate ? (

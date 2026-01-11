@@ -14,6 +14,7 @@ export interface IntegratedReportData {
   incarnationCross: string;
   definedCenters: string[];
   openCenters: string[];
+  activeChannels?: any[];
   
   // Analysis
   ai_analysis: string;
@@ -314,7 +315,67 @@ export async function generateIntegratedReport(data: IntegratedReportData): Prom
   const openLines = doc.splitTextToSize(openText, contentWidth - 50);
   doc.text(openLines, margin + 42, yPosition + 20);
 
-  // =================== PÁGINA 2+ - ANÁLISE INTEGRADA ===================
+  // =================== PÁGINA 2 - BODYGRAPH VISUAL ===================
+  if (data.bodygraph_image) {
+    doc.addPage();
+    yPosition = 15;
+
+    // Header elegante
+    drawGradientHeader(0, 25, COLORS.accent, COLORS.carmim);
+    
+    doc.setTextColor(...COLORS.white);
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
+    doc.text('SEU BODYGRAPH', pageWidth / 2, 16, { align: 'center' });
+    
+    yPosition = 35;
+
+    // BodyGraph image centered
+    const imgWidth = 85;
+    const imgHeight = 160;
+    const imgX = (pageWidth - imgWidth) / 2;
+    
+    try {
+      doc.addImage(data.bodygraph_image, 'PNG', imgX, yPosition, imgWidth, imgHeight);
+      yPosition += imgHeight + 10;
+    } catch (error) {
+      console.error('Erro ao adicionar imagem do Bodygraph:', error);
+      doc.setFontSize(10);
+      doc.setTextColor(...COLORS.lightText);
+      doc.text('Imagem do Bodygraph não disponível', pageWidth / 2, yPosition + 50, { align: 'center' });
+      yPosition += 80;
+    }
+
+    // Summary section below bodygraph
+    doc.setFillColor(...COLORS.bgLight);
+    doc.roundedRect(margin, yPosition, contentWidth, 40, 3, 3, 'F');
+    
+    // Channels summary
+    const activeChannels = data.activeChannels || [];
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...COLORS.carmim);
+    doc.text(`Canais Ativos (${activeChannels.length}):`, margin + 5, yPosition + 10);
+    
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...COLORS.darkText);
+    doc.setFontSize(9);
+    
+    if (activeChannels.length > 0) {
+      const channelNames = activeChannels.map((ch: any) => {
+        if (ch.gates && ch.gates.length === 2) {
+          return `${ch.gates[0]}-${ch.gates[1]}`;
+        }
+        return ch.name || ch.id || 'Canal';
+      }).join(', ');
+      const channelLines = doc.splitTextToSize(channelNames, contentWidth - 10);
+      doc.text(channelLines, margin + 5, yPosition + 20);
+    } else {
+      doc.text('Nenhum canal completo', margin + 5, yPosition + 20);
+    }
+  }
+
+  // =================== PÁGINA 3+ - ANÁLISE INTEGRADA ===================
   if (data.ai_analysis) {
     doc.addPage();
     yPosition = 15;
