@@ -2,24 +2,19 @@ import jsPDF from 'jspdf';
 import { TRAIT_LABELS } from '@/constants/scoring';
 
 export interface IntegratedReportData {
-  // Big Five data
-  traitScores: {
-    neuroticism: number;
-    extraversion: number;
-    openness: number;
-    agreeableness: number;
-    conscientiousness: number;
-  };
-  classifications: Record<string, string>;
+  // Big Five data - flexible format
+  traitScores: Record<string, number>;
+  traitClassifications: Record<string, string>;
   
   // Human Design data
-  energy_type: string;
-  strategy: string | null;
-  authority: string | null;
-  profile: string | null;
-  definition: string | null;
-  incarnation_cross: string | null;
-  centers: Record<string, boolean>;
+  energyType: string;
+  strategy: string;
+  authority: string;
+  profile: string;
+  definition: string;
+  incarnationCross: string;
+  definedCenters: string[];
+  openCenters: string[];
   
   // Analysis
   ai_analysis: string;
@@ -129,12 +124,11 @@ export async function generateIntegratedReport(data: IntegratedReportData): Prom
   yPosition += 18;
 
   // Traços do Big Five
-  const traits = ['neuroticism', 'extraversion', 'openness', 'agreeableness', 'conscientiousness'] as const;
+  const traits = ['Neuroticismo', 'Extroversão', 'Abertura à Experiência', 'Amabilidade', 'Conscienciosidade'];
   
-  traits.forEach((trait, index) => {
-    const score = data.traitScores[trait];
-    const classification = data.classifications[trait] || 'medium';
-    const label = TRAIT_LABELS[trait] || trait;
+  traits.forEach((traitLabel, index) => {
+    const score = data.traitScores[traitLabel] || 0;
+    const classification = data.traitClassifications[traitLabel] || 'medium';
     const classLabel = CLASSIFICATION_LABELS[classification] || classification;
     
     const xPos = margin;
@@ -154,12 +148,12 @@ export async function generateIntegratedReport(data: IntegratedReportData): Prom
     doc.setFontSize(9);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...COLORS.darkText);
-    doc.text(label, xPos + 5, yPosition + 4);
+    doc.text(traitLabel, xPos + 5, yPosition + 4);
     
     // Score
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(...COLORS.lightText);
-    doc.text(`${score} - ${classLabel}`, xPos + contentWidth - 30, yPosition + 4);
+    doc.text(`${Math.round(score)} - ${classLabel}`, xPos + contentWidth - 30, yPosition + 4);
     
     yPosition += 16;
   });
@@ -177,12 +171,12 @@ export async function generateIntegratedReport(data: IntegratedReportData): Prom
 
   // Grid de informações HD
   const hdItems = [
-    { label: 'Tipo Energético', value: data.energy_type },
+    { label: 'Tipo Energético', value: data.energyType },
     { label: 'Estratégia', value: data.strategy || 'N/A' },
     { label: 'Autoridade', value: data.authority || 'N/A' },
     { label: 'Perfil', value: data.profile || 'N/A' },
     { label: 'Definição', value: data.definition || 'N/A' },
-    { label: 'Cruz', value: data.incarnation_cross || 'N/A' },
+    { label: 'Cruz', value: data.incarnationCross || 'N/A' },
   ];
 
   const colWidth = contentWidth / 2;
@@ -214,14 +208,8 @@ export async function generateIntegratedReport(data: IntegratedReportData): Prom
 
   yPosition += 20;
 
-  // Centros
-  const definedCenters = Object.entries(data.centers || {})
-    .filter(([_, isDefined]) => isDefined)
-    .map(([centerId]) => CENTER_NAMES[centerId] || centerId);
-  
-  const openCenters = Object.entries(data.centers || {})
-    .filter(([_, isDefined]) => !isDefined)
-    .map(([centerId]) => CENTER_NAMES[centerId] || centerId);
+  const definedCenters = data.definedCenters || [];
+  const openCenters = data.openCenters || [];
 
   doc.setFontSize(9);
   doc.setFont('helvetica', 'bold');

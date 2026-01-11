@@ -206,19 +206,6 @@ const IntegratedResults = () => {
     setDownloadingPdf(true);
 
     try {
-      const reportData: IntegratedReportData = {
-        traitScores: data.bigFiveSession.traitScores as any,
-        classifications: {}, // Will be derived from scores
-        energy_type: fullHDData.energy_type,
-        strategy: fullHDData.strategy,
-        authority: fullHDData.authority,
-        profile: fullHDData.profile,
-        definition: fullHDData.definition,
-        incarnation_cross: fullHDData.incarnation_cross,
-        centers: fullHDData.centers || {},
-        ai_analysis: analysisText,
-      };
-
       // Derive classifications from trait scores
       const getClassification = (score: number) => {
         if (score <= 40) return "low";
@@ -227,9 +214,43 @@ const IntegratedResults = () => {
       };
 
       const traitScores = data.bigFiveSession.traitScores;
+      const traitClassifications: Record<string, string> = {};
       Object.keys(traitScores).forEach((trait) => {
-        reportData.classifications[trait] = getClassification(traitScores[trait]);
+        traitClassifications[trait] = getClassification(traitScores[trait]);
       });
+
+      // Derive defined and open centers
+      const definedCenters: string[] = [];
+      const openCenters: string[] = [];
+      const centerNames: Record<string, string> = {
+        head: 'Cabeça', ajna: 'Ajna', throat: 'Garganta',
+        g: 'G (Identidade)', heart: 'Coração (Ego)', sacral: 'Sacral',
+        spleen: 'Baço', solar: 'Plexo Solar', root: 'Raiz',
+      };
+      if (fullHDData.centers) {
+        Object.entries(fullHDData.centers).forEach(([centerId, isDefined]) => {
+          const centerName = centerNames[centerId] || centerId;
+          if (isDefined) {
+            definedCenters.push(centerName);
+          } else {
+            openCenters.push(centerName);
+          }
+        });
+      }
+
+      const reportData: IntegratedReportData = {
+        traitScores: traitScores as Record<string, number>,
+        traitClassifications,
+        energyType: fullHDData.energy_type,
+        strategy: fullHDData.strategy || '',
+        authority: fullHDData.authority || '',
+        profile: fullHDData.profile || '',
+        definition: fullHDData.definition || '',
+        incarnationCross: fullHDData.incarnation_cross || '',
+        definedCenters,
+        openCenters,
+        ai_analysis: analysisText,
+      };
 
       await generateIntegratedReport(reportData);
 
