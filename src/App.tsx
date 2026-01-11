@@ -21,6 +21,7 @@ import BigFiveTest from "./pages/app/BigFiveTest";
 import BigFiveResults from "./pages/app/BigFiveResults";
 import DesenhoHumanoTest from "./pages/app/DesenhoHumanoTest";
 import DesenhoHumanoResults from "./pages/DesenhoHumanoResults";
+import IntegratedResults from "./pages/app/IntegratedResults";
 import Historico from "./pages/app/Historico";
 
 // Admin pages
@@ -91,6 +92,13 @@ const App = () => {
               <AuthGuard>
                 <AppLayout>
                   <DesenhoHumanoResults />
+                </AppLayout>
+              </AuthGuard>
+            } />
+            <Route path="/app/integrado" element={
+              <AuthGuard>
+                <AppLayout>
+                  <IntegratedResults />
                 </AppLayout>
               </AuthGuard>
             } />
