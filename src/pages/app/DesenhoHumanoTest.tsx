@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useActiveSession } from "@/hooks/useActiveSession";
 import { geocodeLocation, getTimezoneFromCoords, convertLocalBirthToUTC } from "@/utils/geocoding";
 import { calculateHumanDesignChart } from "@/utils/humanDesignCalculator";
+import { LocationAutocomplete } from "@/components/ui/location-autocomplete";
 
 const DesenhoHumanoTest = () => {
   const navigate = useNavigate();
@@ -322,21 +323,18 @@ const DesenhoHumanoTest = () => {
                   <Label htmlFor="birthLocation">
                     Local de Nascimento *
                   </Label>
-                  <Input
-                    id="birthLocation"
-                    type="text"
+                  <LocationAutocomplete
                     value={birthLocation}
-                    onChange={(e) => setBirthLocation(e.target.value)}
-                    placeholder="São Paulo, SP, Brasil"
-                    className={errors.birthLocation ? "border-destructive" : ""}
-                    minLength={5}
+                    onChange={setBirthLocation}
+                    placeholder="Digite sua cidade..."
                     disabled={isSubmitting}
+                    error={!!errors.birthLocation}
                   />
                   {errors.birthLocation && (
                     <p className="text-sm text-destructive">{errors.birthLocation}</p>
                   )}
                   <p className="text-sm text-muted-foreground">
-                    Cidade, Estado, País
+                    Comece a digitar e selecione sua cidade
                   </p>
                 </div>
 
