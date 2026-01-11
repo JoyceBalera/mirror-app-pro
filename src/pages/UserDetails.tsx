@@ -5,13 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Download, Home, LogOut, Sparkles, Loader2, RefreshCw, Eye } from "lucide-react";
+import { ArrowLeft, Download, Home, LogOut, Sparkles, Loader2, RefreshCw, Eye, Layers } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { SCORING, TRAIT_LABELS, getTraitPercentage } from "@/constants/scoring";
 import { generateTestResultPDF } from "@/utils/pdfGenerator";
 import { generateHDReport, type HDReportData } from "@/utils/generateHDReport";
+import { generateIntegratedReport, type IntegratedReportData } from "@/utils/generateIntegratedReport";
 
 interface TestResult {
   id: string;
@@ -72,6 +73,9 @@ const UserDetails = () => {
   const [generatingAnalysis, setGeneratingAnalysis] = useState<string | null>(null);
   const [generatingHDAnalysis, setGeneratingHDAnalysis] = useState<string | null>(null);
   const [recalculating, setRecalculating] = useState<string | null>(null);
+  const [integratedAnalysis, setIntegratedAnalysis] = useState<string | null>(null);
+  const [generatingIntegrated, setGeneratingIntegrated] = useState(false);
+  const [downloadingIntegrated, setDownloadingIntegrated] = useState(false);
 
   useEffect(() => {
     if (userId) {
@@ -338,6 +342,169 @@ const UserDetails = () => {
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate("/auth");
+  };
+
+  // Check for existing integrated analysis
+  useEffect(() => {
+    const fetchIntegratedAnalysis = async () => {
+      if (!userId) return;
+      
+      const { data } = await supabase
+        .from('integrated_analyses')
+        .select('analysis_text')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(1);
+      
+      if (data && data.length > 0) {
+        setIntegratedAnalysis(data[0].analysis_text);
+      }
+    };
+    
+    fetchIntegratedAnalysis();
+  }, [userId]);
+
+  const handleGenerateIntegratedAnalysis = async () => {
+    if (results.length === 0 || hdResults.length === 0) {
+      toast({
+        title: "Testes incompletos",
+        description: "O usuário precisa ter completado ambos os testes (Big Five e Desenho Humano).",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setGeneratingIntegrated(true);
+    try {
+      const latestBigFive = results[0];
+      const latestHD = hdResults[0];
+
+      const bigFiveData = Object.entries(latestBigFive.trait_scores).map(([key, score]) => ({
+        name: getTraitLabel(key),
+        score: score as number,
+        classification: getClassificationLabel(latestBigFive.classifications[key]),
+      }));
+
+      const humanDesignData = {
+        energy_type: latestHD.energy_type,
+        strategy: latestHD.strategy,
+        authority: latestHD.authority,
+        profile: latestHD.profile,
+        definition: latestHD.definition,
+        incarnation_cross: latestHD.incarnation_cross,
+        centers: latestHD.centers,
+        channels: latestHD.channels,
+      };
+
+      const { data, error } = await supabase.functions.invoke("analyze-integrated", {
+        body: { bigFiveData, humanDesignData },
+      });
+
+      if (error) throw error;
+      if (data.error) throw new Error(data.error);
+
+      // Save to database
+      await supabase.from('integrated_analyses').insert({
+        user_id: userId,
+        big_five_session_id: latestBigFive.session_id,
+        human_design_result_id: latestHD.id,
+        analysis_text: data.analysis,
+        model_used: 'gemini-2.5-flash',
+      });
+
+      setIntegratedAnalysis(data.analysis);
+
+      toast({
+        title: "Análise Integrada gerada!",
+        description: "A análise foi gerada e salva com sucesso.",
+      });
+    } catch (error: any) {
+      console.error("Erro ao gerar análise integrada:", error);
+      toast({
+        title: "Erro ao gerar análise",
+        description: error.message || "Não foi possível gerar a análise integrada.",
+        variant: "destructive",
+      });
+    } finally {
+      setGeneratingIntegrated(false);
+    }
+  };
+
+  const handleDownloadIntegratedPDF = async () => {
+    if (!integratedAnalysis || results.length === 0 || hdResults.length === 0) {
+      toast({
+        title: "Dados insuficientes",
+        description: "É necessário ter a análise integrada gerada e ambos os testes completos.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setDownloadingIntegrated(true);
+    try {
+      const latestBigFive = results[0];
+      const latestHD = hdResults[0];
+
+      // Build trait scores and classifications
+      const traitScores: Record<string, number> = {};
+      const traitClassifications: Record<string, string> = {};
+      
+      Object.entries(latestBigFive.trait_scores).forEach(([key, score]) => {
+        traitScores[getTraitLabel(key)] = score as number;
+        const scoreNum = score as number;
+        if (scoreNum <= 40) {
+          traitClassifications[getTraitLabel(key)] = 'low';
+        } else if (scoreNum <= 60) {
+          traitClassifications[getTraitLabel(key)] = 'medium';
+        } else {
+          traitClassifications[getTraitLabel(key)] = 'high';
+        }
+      });
+
+      // Derive defined and open centers
+      const definedCenters: string[] = [];
+      const openCenters: string[] = [];
+      if (latestHD.centers) {
+        Object.entries(latestHD.centers).forEach(([centerId, isDefined]) => {
+          const centerName = getCenterName(centerId);
+          if (isDefined) {
+            definedCenters.push(centerName);
+          } else {
+            openCenters.push(centerName);
+          }
+        });
+      }
+
+      const reportData: IntegratedReportData = {
+        traitScores,
+        traitClassifications,
+        energyType: latestHD.energy_type,
+        strategy: latestHD.strategy || '',
+        authority: latestHD.authority || '',
+        profile: latestHD.profile || '',
+        definition: latestHD.definition || '',
+        incarnationCross: latestHD.incarnation_cross || '',
+        definedCenters,
+        openCenters,
+        ai_analysis: integratedAnalysis,
+      };
+
+      await generateIntegratedReport(reportData);
+
+      toast({
+        title: "PDF gerado!",
+        description: "O relatório integrado foi baixado com sucesso.",
+      });
+    } catch (error: any) {
+      console.error("Erro ao gerar PDF integrado:", error);
+      toast({
+        title: "Erro ao gerar PDF",
+        description: error.message || "Não foi possível gerar o PDF.",
+        variant: "destructive",
+      });
+    } finally {
+      setDownloadingIntegrated(false);
+    }
   };
 
   const getCenterName = (centerId: string): string => {
@@ -695,6 +862,106 @@ const UserDetails = () => {
             ))}
           </div>
         )}
+
+        {/* Integrated Report Section */}
+        <h2 className="text-xl font-semibold mb-4 mt-8 flex items-center gap-2">
+          <Badge variant="secondary" className="bg-gradient-to-r from-blue-100 to-purple-100 text-purple-700">
+            <Layers className="w-3 h-3 mr-1" />
+            Integrado
+          </Badge>
+          Relatório Integrado (Big Five + Desenho Humano)
+        </h2>
+
+        <Card className="p-6">
+          {results.length === 0 || hdResults.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">
+                O usuário precisa completar ambos os testes (Big Five e Desenho Humano) para gerar o relatório integrado.
+              </p>
+              <div className="flex justify-center gap-2 mt-4">
+                {results.length === 0 && (
+                  <Badge variant="outline" className="text-orange-600 border-orange-300">
+                    Big Five Pendente
+                  </Badge>
+                )}
+                {hdResults.length === 0 && (
+                  <Badge variant="outline" className="text-orange-600 border-orange-300">
+                    Desenho Humano Pendente
+                  </Badge>
+                )}
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-lg font-semibold">Análise Integrada</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Cruzamento dos resultados Big Five + Desenho Humano
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  {integratedAnalysis && (
+                    <Button
+                      onClick={handleDownloadIntegratedPDF}
+                      disabled={downloadingIntegrated}
+                      variant="outline"
+                      size="sm"
+                      className="gap-2"
+                    >
+                      {downloadingIntegrated ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Gerando PDF...
+                        </>
+                      ) : (
+                        <>
+                          <Download className="w-4 h-4" />
+                          PDF Integrado
+                        </>
+                      )}
+                    </Button>
+                  )}
+                  <Button
+                    onClick={handleGenerateIntegratedAnalysis}
+                    disabled={generatingIntegrated}
+                    variant={integratedAnalysis ? "outline" : "default"}
+                    size="sm"
+                    className="gap-2"
+                  >
+                    {generatingIntegrated ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Gerando...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-4 h-4" />
+                        {integratedAnalysis ? "Regenerar" : "Gerar Análise Integrada"}
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+
+              {integratedAnalysis ? (
+                <div className="bg-muted/50 p-4 rounded-lg max-h-96 overflow-y-auto">
+                  <p className="text-sm whitespace-pre-wrap">{integratedAnalysis}</p>
+                </div>
+              ) : (
+                <div className="bg-muted/30 p-6 rounded-lg text-center">
+                  <Layers className="w-12 h-12 mx-auto mb-4 text-muted-foreground/50" />
+                  <p className="text-muted-foreground">
+                    Nenhuma análise integrada foi gerada ainda.
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Clique em "Gerar Análise Integrada" para criar um relatório que cruza os dados de Big Five e Desenho Humano.
+                  </p>
+                </div>
+              )}
+            </>
+          )}
+        </Card>
       </main>
     </div>
   );
