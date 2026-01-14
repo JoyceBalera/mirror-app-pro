@@ -120,7 +120,7 @@ const Auth = () => {
     <div className="min-h-screen gradient-hero flex items-center justify-center px-4 relative">
       {/* Language Switcher */}
       <div className="absolute top-4 right-4">
-        <LanguageSwitcher className="text-white" />
+        <LanguageSwitcher />
       </div>
 
       <Card className="w-full max-w-md p-8 shadow-2xl">
