@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,36 +8,38 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Brain } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-
-const translateAuthError = (error: string): string => {
-  const translations: { [key: string]: string } = {
-    "Password should be at least 6 characters": "A senha deve ter no mínimo 6 caracteres",
-    "User already registered": "Este email já está cadastrado",
-    "Invalid login credentials": "Email ou senha incorretos",
-    "Email not confirmed": "Email não confirmado. Verifique sua caixa de entrada",
-    "Password is too weak": "A senha é muito fraca. Use uma senha mais forte",
-    "Password is known to be weak": "Esta senha é muito comum e insegura. Use uma combinação única de letras, números e símbolos",
-    "Signup disabled": "Cadastro desabilitado no momento",
-    "Invalid email": "Email inválido",
-  };
-  
-  for (const [english, portuguese] of Object.entries(translations)) {
-    if (error.includes(english)) {
-      return portuguese;
-    }
-  }
-  
-  return error;
-};
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 const Auth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const translateAuthError = (error: string): string => {
+    const translations: { [key: string]: string } = {
+      "Password should be at least 6 characters": t("auth.errors.passwordLength"),
+      "User already registered": t("auth.errors.userExists"),
+      "Invalid login credentials": t("auth.errors.invalidCredentials"),
+      "Email not confirmed": t("auth.errors.emailNotConfirmed"),
+      "Password is too weak": t("auth.errors.weakPassword"),
+      "Password is known to be weak": t("auth.errors.commonPassword"),
+      "Signup disabled": t("auth.errors.signupDisabled"),
+      "Invalid email": t("auth.errors.invalidEmail"),
+    };
+
+    for (const [english, translated] of Object.entries(translations)) {
+      if (error.includes(english)) {
+        return translated;
+      }
+    }
+
+    return error;
+  };
 
   useEffect(() => {
     const checkUser = async () => {
@@ -55,8 +58,8 @@ const Auth = () => {
 
     if (!isLogin && password.length < 6) {
       toast({
-        title: "Senha inválida",
-        description: "A senha deve ter no mínimo 6 caracteres",
+        title: t("auth.invalidPassword"),
+        description: t("auth.passwordMinLength"),
         variant: "destructive",
       });
       setLoading(false);
@@ -73,8 +76,8 @@ const Auth = () => {
         if (error) throw error;
 
         toast({
-          title: "Login realizado!",
-          description: "Bem-vindo de volta!",
+          title: t("auth.loginSuccess"),
+          description: t("auth.welcomeBackToast"),
         });
         navigate('/dashboard');
       } else {
@@ -94,17 +97,17 @@ const Auth = () => {
         if (error) throw error;
 
         toast({
-          title: "Conta criada!",
-          description: "Você pode fazer login agora.",
+          title: t("auth.accountCreated"),
+          description: t("auth.loginNow"),
         });
         
         setIsLogin(true);
       }
     } catch (error: any) {
-      const translatedMessage = translateAuthError(error.message || "Algo deu errado");
+      const translatedMessage = translateAuthError(error.message || t("auth.somethingWentWrong"));
       
       toast({
-        title: "Erro",
+        title: t("common.error"),
         description: translatedMessage,
         variant: "destructive",
       });
@@ -114,7 +117,12 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen gradient-hero flex items-center justify-center px-4">
+    <div className="min-h-screen gradient-hero flex items-center justify-center px-4 relative">
+      {/* Language Switcher */}
+      <div className="absolute top-4 right-4">
+        <LanguageSwitcher className="text-white" />
+      </div>
+
       <Card className="w-full max-w-md p-8 shadow-2xl">
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
@@ -124,23 +132,23 @@ const Auth = () => {
           </div>
           
           <h1 className="text-3xl font-bold mb-2">
-            {isLogin ? "Bem-vindo de volta" : "Criar conta"}
+            {isLogin ? t("auth.welcomeBack") : t("auth.createAccount")}
           </h1>
           <p className="text-muted-foreground">
             {isLogin
-              ? "Entre para acessar seu teste de personalidade"
-              : "Crie uma conta para salvar seus resultados"}
+              ? t("auth.loginDescription")
+              : t("auth.signupDescription")}
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {!isLogin && (
             <div className="space-y-2">
-              <Label htmlFor="fullName">Nome Completo</Label>
+              <Label htmlFor="fullName">{t("auth.fullName")}</Label>
               <Input
                 id="fullName"
                 type="text"
-                placeholder="Seu nome completo"
+                placeholder={t("auth.fullNamePlaceholder")}
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 required
@@ -149,11 +157,11 @@ const Auth = () => {
           )}
           
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{t("auth.email")}</Label>
             <Input
               id="email"
               type="email"
-              placeholder="seu@email.com"
+              placeholder={t("auth.emailPlaceholder")}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -161,11 +169,11 @@ const Auth = () => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password">Senha</Label>
+            <Label htmlFor="password">{t("auth.password")}</Label>
             <Input
               id="password"
               type="password"
-              placeholder="••••••••"
+              placeholder={t("auth.passwordPlaceholder")}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -174,22 +182,22 @@ const Auth = () => {
             {!isLogin && (
               <div className="bg-muted/50 p-3 rounded-md">
                 <p className="text-xs text-muted-foreground mb-2 font-medium">
-                  A senha deve conter:
+                  {t("auth.passwordRequirements")}
                 </p>
                 <ul className="text-xs text-muted-foreground space-y-1">
                   <li className="flex items-center gap-2">
                     <span className={password.length >= 6 ? "text-green-500" : "text-muted-foreground"}>
                       {password.length >= 6 ? "✓" : "○"}
                     </span>
-                    Mínimo de 6 caracteres
+                    {t("auth.minChars")}
                   </li>
                   <li className="flex items-center gap-2">
                     <span className="text-muted-foreground">○</span>
-                    Evite senhas comuns (ex: 123456, password)
+                    {t("auth.avoidCommon")}
                   </li>
                   <li className="flex items-center gap-2">
                     <span className="text-muted-foreground">○</span>
-                    Use combinação de letras, números e símbolos
+                    {t("auth.useCombination")}
                   </li>
                 </ul>
               </div>
@@ -201,7 +209,7 @@ const Auth = () => {
             className="w-full gradient-primary text-white hover:opacity-90"
             disabled={loading}
           >
-            {loading ? "Carregando..." : isLogin ? "Entrar" : "Criar conta"}
+            {loading ? t("common.loading") : isLogin ? t("auth.login") : t("auth.signup")}
           </Button>
         </form>
 
@@ -212,8 +220,8 @@ const Auth = () => {
             className="text-sm text-primary hover:underline"
           >
             {isLogin
-              ? "Não tem uma conta? Criar conta"
-              : "Já tem uma conta? Entrar"}
+              ? t("auth.noAccount")
+              : t("auth.hasAccount")}
           </button>
         </div>
       </Card>

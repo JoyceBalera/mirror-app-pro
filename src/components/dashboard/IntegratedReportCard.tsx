@@ -2,6 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Sparkles, Gift } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 
 interface IntegratedReportCardProps {
@@ -10,6 +11,8 @@ interface IntegratedReportCardProps {
 }
 
 const IntegratedReportCard = ({ onView, className }: IntegratedReportCardProps) => {
+  const { t } = useTranslation();
+
   return (
     <Card
       className={cn(
@@ -23,7 +26,7 @@ const IntegratedReportCard = ({ onView, className }: IntegratedReportCardProps) 
         className="absolute top-4 right-4 bg-accent text-accent-foreground flex items-center gap-1"
       >
         <Gift className="w-3 h-3" />
-        NOVO
+        {t("integratedReport.new")}
       </Badge>
 
       <CardContent className="flex flex-col items-center justify-center py-10 px-6 text-center">
@@ -32,12 +35,11 @@ const IntegratedReportCard = ({ onView, className }: IntegratedReportCardProps) 
         </div>
 
         <h3 className="text-2xl font-bold text-primary mb-2">
-          RELATÓRIO INTEGRADO
+          {t("integratedReport.title")}
         </h3>
 
         <p className="text-muted-foreground mb-6 max-w-md">
-          Sua análise completa: Big Five + Desenho Humano. Uma visão integrada
-          do seu perfil de personalidade e mapa energético.
+          {t("integratedReport.description")}
         </p>
 
         <Button
@@ -45,7 +47,7 @@ const IntegratedReportCard = ({ onView, className }: IntegratedReportCardProps) 
           size="lg"
           className="bg-primary hover:bg-primary/90 px-8 py-3"
         >
-          VER ANÁLISE COMPLETA
+          {t("integratedReport.viewComplete")}
           <Sparkles className="ml-2 w-5 h-5" />
         </Button>
       </CardContent>

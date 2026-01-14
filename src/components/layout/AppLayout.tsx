@@ -1,8 +1,10 @@
 import { ReactNode, useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { useUserRole } from '@/hooks/useUserRole';
 import { Button } from '@/components/ui/button';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { 
   LayoutDashboard, 
   History, 
@@ -20,6 +22,7 @@ interface AppLayoutProps {
 const AppLayout = ({ children }: AppLayoutProps) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation();
   const { isAdmin } = useUserRole();
   const [userName, setUserName] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -46,8 +49,8 @@ const AppLayout = ({ children }: AppLayoutProps) => {
   };
 
   const navItems = [
-    { path: '/app', label: 'Dashboard', icon: LayoutDashboard },
-    { path: '/app/historico', label: 'Histórico', icon: History },
+    { path: '/app', label: t('header.dashboard'), icon: LayoutDashboard },
+    { path: '/app/historico', label: t('header.history'), icon: History },
   ];
 
   const isActive = (path: string) => {
@@ -64,7 +67,7 @@ const AppLayout = ({ children }: AppLayoutProps) => {
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link to="/app" className="text-xl font-bold">
-              Mapa da Personalidade
+              {t('header.appName')}
             </Link>
           </div>
 
@@ -96,14 +99,16 @@ const AppLayout = ({ children }: AppLayoutProps) => {
                 className="gap-2 hover:bg-primary-foreground/10"
               >
                 <Shield className="w-4 h-4" />
-                Admin
+                {t('common.admin')}
               </Button>
             )}
 
             <div className="h-6 w-px bg-primary-foreground/20 mx-2" />
             
+            <LanguageSwitcher className="text-primary-foreground hover:bg-primary-foreground/10" />
+            
             <span className="text-sm text-primary-foreground/80">
-              Olá, {userName}
+              {t('header.hello')}, {userName}
             </span>
             
             <Button
@@ -113,7 +118,7 @@ const AppLayout = ({ children }: AppLayoutProps) => {
               className="gap-2 hover:bg-primary-foreground/10"
             >
               <LogOut className="w-4 h-4" />
-              Sair
+              {t('common.logout')}
             </Button>
           </nav>
 
@@ -164,14 +169,17 @@ const AppLayout = ({ children }: AppLayoutProps) => {
                   className="justify-start gap-2 w-full hover:bg-primary-foreground/10"
                 >
                   <Shield className="w-4 h-4" />
-                  Painel Admin
+                  {t('header.adminPanel')}
                 </Button>
               )}
               
               <div className="h-px bg-primary-foreground/20 my-2" />
               
-              <div className="text-sm text-primary-foreground/80 px-3 py-2">
-                Olá, {userName}
+              <div className="flex items-center justify-between px-3 py-2">
+                <span className="text-sm text-primary-foreground/80">
+                  {t('header.hello')}, {userName}
+                </span>
+                <LanguageSwitcher className="text-primary-foreground" />
               </div>
               
               <Button
@@ -181,7 +189,7 @@ const AppLayout = ({ children }: AppLayoutProps) => {
                 className="justify-start gap-2 w-full hover:bg-primary-foreground/10"
               >
                 <LogOut className="w-4 h-4" />
-                Sair
+                {t('common.logout')}
               </Button>
             </nav>
           </div>

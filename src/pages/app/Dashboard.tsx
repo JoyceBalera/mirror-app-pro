@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useActiveSession } from "@/hooks/useActiveSession";
@@ -22,6 +23,7 @@ interface UserTestAccess {
 const AppDashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const { 
     hasActiveSession, 
     activeSessionType, 
@@ -92,8 +94,8 @@ const AppDashboard = () => {
       } catch (error: any) {
         console.error("Erro ao carregar dashboard:", error);
         toast({
-          title: "Erro",
-          description: "Não foi possível carregar seus dados.",
+          title: t("common.error"),
+          description: t("dashboard.resultNotFound"),
           variant: "destructive",
         });
       } finally {
@@ -102,7 +104,7 @@ const AppDashboard = () => {
     };
 
     fetchDashboardData();
-  }, [navigate, toast]);
+  }, [navigate, toast, t]);
 
   // Visibility logic
   const showBigFive = access?.has_big_five ?? false;
@@ -119,9 +121,9 @@ const AppDashboard = () => {
   const getActiveSessionLabel = () => {
     switch (activeSessionType) {
       case 'big_five':
-        return 'Big Five';
+        return t('testCard.bigFive');
       case 'desenho_humano':
-        return 'Desenho Humano';
+        return t('testCard.humanDesign');
       default:
         return 'teste';
     }
@@ -150,8 +152,8 @@ const AppDashboard = () => {
   const handleStartBigFive = () => {
     if (hasActiveSession && activeSessionType !== 'big_five') {
       toast({
-        title: "Teste em andamento",
-        description: `Finalize o ${getActiveSessionLabel()} antes de iniciar outro teste.`,
+        title: t("dashboard.testInProgress"),
+        description: t("dashboard.finishFirst", { testName: getActiveSessionLabel() }),
         variant: "destructive",
       });
       return;
@@ -176,8 +178,8 @@ const AppDashboard = () => {
         navigate(`/app/big-five/results/${result.session_id}`);
       } else {
         toast({
-          title: "Erro",
-          description: "Resultado não encontrado.",
+          title: t("common.error"),
+          description: t("dashboard.resultNotFound"),
           variant: "destructive",
         });
       }
@@ -189,8 +191,8 @@ const AppDashboard = () => {
   const handleStartDesenhoHumano = () => {
     if (hasActiveSession && activeSessionType !== 'desenho_humano') {
       toast({
-        title: "Teste em andamento",
-        description: `Finalize o ${getActiveSessionLabel()} antes de iniciar outro teste.`,
+        title: t("dashboard.testInProgress"),
+        description: t("dashboard.finishFirst", { testName: getActiveSessionLabel() }),
         variant: "destructive",
       });
       return;
@@ -215,8 +217,8 @@ const AppDashboard = () => {
         navigate(`/app/desenho-humano/results/${hdResult.id}`);
       } else {
         toast({
-          title: "Erro",
-          description: "Resultado não encontrado.",
+          title: t("common.error"),
+          description: t("dashboard.resultNotFound"),
           variant: "destructive",
         });
       }
@@ -251,17 +253,17 @@ const AppDashboard = () => {
               <AlertTriangle className="w-5 h-5 text-primary" />
               <div>
                 <p className="font-semibold text-primary">
-                  Você tem um teste em andamento
+                  {t("dashboard.testInProgress")}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  Finalize o {getActiveSessionLabel()} antes de iniciar outro teste.
+                  {t("dashboard.finishFirst", { testName: getActiveSessionLabel() })}
                 </p>
               </div>
             </div>
             {resumeUrl && (
               <Button onClick={() => navigate(resumeUrl)} className="gap-2">
                 <PlayCircle className="w-4 h-4" />
-                Continuar {getActiveSessionLabel()}
+                {t("dashboard.continue", { testName: getActiveSessionLabel() })}
               </Button>
             )}
           </div>
@@ -269,7 +271,7 @@ const AppDashboard = () => {
       )}
 
       <h2 className="text-2xl font-bold text-primary mb-6">
-        Seus Testes Disponíveis
+        {t("dashboard.availableTests")}
       </h2>
 
       {!hasAnyTest ? (
