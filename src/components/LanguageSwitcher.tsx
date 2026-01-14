@@ -30,12 +30,16 @@ export const LanguageSwitcher = ({ variant = 'compact', className }: LanguageSwi
     <Select value={currentLang} onValueChange={(lang) => i18n.changeLanguage(lang)}>
       <SelectTrigger
         className={cn(
-          "w-auto gap-2 bg-transparent border-none shadow-none focus:ring-0",
+          "w-auto gap-2 border border-primary/20 bg-white/80 backdrop-blur-sm",
+          "shadow-sm hover:bg-white hover:border-primary/40",
+          "rounded-full px-3 py-1.5 h-auto",
+          "focus:ring-2 focus:ring-primary/20 focus:ring-offset-0",
+          "transition-all duration-200",
           className
         )}
       >
-        <Globe className="w-4 h-4" />
-        <SelectValue>
+        <Globe className="w-4 h-4 text-primary" />
+        <SelectValue className="text-sm font-medium">
           {variant === 'compact' ? currentLanguage.label : currentLanguage.fullLabel}
         </SelectValue>
       </SelectTrigger>
