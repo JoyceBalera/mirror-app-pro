@@ -4,7 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Lock, CheckCircle2, Sparkles, BarChart3, Star } from "lucide-react";
 import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { ptBR, es, enUS } from "date-fns/locale";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 
 export type TestStatus = 'available' | 'locked' | 'unlocked' | 'completed';
@@ -19,23 +20,6 @@ interface TestCardProps {
   className?: string;
 }
 
-const testConfig = {
-  'big-five': {
-    icon: BarChart3,
-    emoji: '📊',
-    title: 'BIG FIVE',
-    description: 'Descubra os 5 grandes traços da sua personalidade',
-    info: '⏱️ 30 minutos • 📝 300 perguntas',
-  },
-  'desenho-humano': {
-    icon: Star,
-    emoji: '🌟',
-    title: 'DESENHO HUMANO',
-    description: 'Descubra seu mapa energético e propósito de vida',
-    info: '⏱️ ~20 minutos',
-  },
-};
-
 const TestCard = ({
   type,
   status,
@@ -44,6 +28,36 @@ const TestCard = ({
   onViewReport,
   className,
 }: TestCardProps) => {
+  const { t, i18n } = useTranslation();
+
+  const getDateLocale = () => {
+    switch (i18n.language?.split('-')[0]) {
+      case 'es':
+        return es;
+      case 'en':
+        return enUS;
+      default:
+        return ptBR;
+    }
+  };
+
+  const testConfig = {
+    'big-five': {
+      icon: BarChart3,
+      emoji: '📊',
+      title: t('testCard.bigFive'),
+      description: t('testCard.bigFiveDesc'),
+      info: t('testCard.bigFiveInfo'),
+    },
+    'desenho-humano': {
+      icon: Star,
+      emoji: '🌟',
+      title: t('testCard.humanDesign'),
+      description: t('testCard.hdDesc'),
+      info: t('testCard.hdInfo'),
+    },
+  };
+
   const config = testConfig[type];
   const Icon = config.icon;
 
@@ -52,7 +66,7 @@ const TestCard = ({
   const isUnlocked = status === 'unlocked';
 
   const formattedDate = completedAt
-    ? format(new Date(completedAt), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })
+    ? format(new Date(completedAt), "dd 'de' MMMM 'de' yyyy", { locale: getDateLocale() })
     : null;
 
   return (
@@ -74,21 +88,21 @@ const TestCard = ({
               variant="secondary" 
               className="absolute top-4 right-4 bg-secondary text-secondary-foreground"
             >
-              BLOQUEADO
+              {t('testCard.locked')}
             </Badge>
           )}
           {isUnlocked && (
             <Badge 
               className="absolute top-4 right-4 bg-accent text-accent-foreground animate-bounce"
             >
-              DESBLOQUEADO! ✨
+              {t('testCard.unlocked')}
             </Badge>
           )}
           {isCompleted && (
             <Badge 
               className="absolute top-4 right-4 bg-accent text-accent-foreground"
             >
-              CONCLUÍDO
+              {t('testCard.completed')}
             </Badge>
           )}
 
@@ -135,17 +149,17 @@ const TestCard = ({
               )}
             >
               {isLocked
-                ? "Complete o Big Five para desbloquear este teste"
+                ? t('testCard.completeBigFiveFirst')
                 : isCompleted
-                ? "Teste concluído!"
+                ? t('testCard.testCompleted')
                 : isUnlocked
-                ? "Agora disponível! " + config.description
+                ? t('testCard.nowAvailable') + " " + config.description
                 : config.description}
             </p>
 
             {isCompleted && formattedDate && (
               <p className="text-sm text-muted-foreground">
-                Realizado em: {formattedDate}
+                {t('testCard.completedOn')} {formattedDate}
               </p>
             )}
 
@@ -172,10 +186,10 @@ const TestCard = ({
                 )}
               >
                 {isCompleted ? (
-                  <>VER RELATÓRIO 📄</>
+                  <>{t('testCard.viewReport')}</>
                 ) : (
                   <>
-                    INICIAR TESTE <Sparkles className="ml-2 w-4 h-4" />
+                    {t('testCard.startTest')} <Sparkles className="ml-2 w-4 h-4" />
                   </>
                 )}
               </Button>
@@ -186,7 +200,7 @@ const TestCard = ({
 
       {isLocked && (
         <TooltipContent>
-          <p>Complete o Big Five primeiro</p>
+          <p>{t('testCard.completeBigFiveFirst')}</p>
         </TooltipContent>
       )}
     </Tooltip>

@@ -1,0 +1,86 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "logout": "Logout",
+    "admin": "Admin"
+  },
+  "auth": {
+    "welcomeBack": "Welcome back",
+    "createAccount": "Create account",
+    "loginDescription": "Sign in to access your personality test",
+    "signupDescription": "Create an account to save your results",
+    "fullName": "Full Name",
+    "fullNamePlaceholder": "Your full name",
+    "email": "Email",
+    "emailPlaceholder": "your@email.com",
+    "password": "Password",
+    "passwordPlaceholder": "••••••••",
+    "login": "Sign In",
+    "signup": "Create Account",
+    "noAccount": "Don't have an account? Create account",
+    "hasAccount": "Already have an account? Sign in",
+    "passwordRequirements": "Password must contain:",
+    "minChars": "Minimum 6 characters",
+    "avoidCommon": "Avoid common passwords (e.g.: 123456, password)",
+    "useCombination": "Use a combination of letters, numbers, and symbols",
+    "invalidPassword": "Invalid password",
+    "passwordMinLength": "Password must be at least 6 characters",
+    "loginSuccess": "Login successful!",
+    "welcomeBackToast": "Welcome back!",
+    "accountCreated": "Account created!",
+    "loginNow": "You can login now.",
+    "somethingWentWrong": "Something went wrong",
+    "errors": {
+      "passwordLength": "Password must be at least 6 characters",
+      "userExists": "This email is already registered",
+      "invalidCredentials": "Invalid email or password",
+      "emailNotConfirmed": "Email not confirmed. Check your inbox",
+      "weakPassword": "Password is too weak. Use a stronger one",
+      "commonPassword": "This password is too common and insecure. Use a unique combination of letters, numbers, and symbols",
+      "signupDisabled": "Signup is currently disabled",
+      "invalidEmail": "Invalid email"
+    }
+  },
+  "header": {
+    "appName": "Personality Map",
+    "dashboard": "Dashboard",
+    "history": "History",
+    "hello": "Hello",
+    "adminPanel": "Admin Panel"
+  },
+  "dashboard": {
+    "availableTests": "Your Available Tests",
+    "testInProgress": "You have a test in progress",
+    "finishFirst": "Finish the {{testName}} before starting another test.",
+    "continue": "Continue {{testName}}",
+    "resultNotFound": "Result not found."
+  },
+  "testCard": {
+    "bigFive": "BIG FIVE",
+    "humanDesign": "HUMAN DESIGN",
+    "bigFiveDesc": "Discover the 5 major traits of your personality",
+    "hdDesc": "Discover your energy map and life purpose",
+    "bigFiveInfo": "⏱️ 30 minutes • 📝 300 questions",
+    "hdInfo": "⏱️ ~20 minutes",
+    "locked": "LOCKED",
+    "unlocked": "UNLOCKED! ✨",
+    "completed": "COMPLETED",
+    "completeBigFiveFirst": "Complete Big Five to unlock this test",
+    "testCompleted": "Test completed!",
+    "nowAvailable": "Now available!",
+    "completedOn": "Completed on:",
+    "viewReport": "VIEW REPORT 📄",
+    "startTest": "START TEST"
+  },
+  "emptyState": {
+    "waitingAccess": "Waiting for access",
+    "description": "Your tests have not been released yet. Wait for administrator contact or reach out for more information."
+  },
+  "integratedReport": {
+    "new": "NEW",
+    "title": "INTEGRATED REPORT",
+    "description": "Your complete analysis: Big Five + Human Design. An integrated view of your personality profile and energy map.",
+    "viewComplete": "VIEW COMPLETE ANALYSIS"
+  }
+}

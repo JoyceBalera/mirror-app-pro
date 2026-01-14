@@ -1,0 +1,86 @@
+{
+  "common": {
+    "loading": "Carregando...",
+    "error": "Erro",
+    "logout": "Sair",
+    "admin": "Admin"
+  },
+  "auth": {
+    "welcomeBack": "Bem-vindo de volta",
+    "createAccount": "Criar conta",
+    "loginDescription": "Entre para acessar seu teste de personalidade",
+    "signupDescription": "Crie uma conta para salvar seus resultados",
+    "fullName": "Nome Completo",
+    "fullNamePlaceholder": "Seu nome completo",
+    "email": "Email",
+    "emailPlaceholder": "seu@email.com",
+    "password": "Senha",
+    "passwordPlaceholder": "••••••••",
+    "login": "Entrar",
+    "signup": "Criar conta",
+    "noAccount": "Não tem uma conta? Criar conta",
+    "hasAccount": "Já tem uma conta? Entrar",
+    "passwordRequirements": "A senha deve conter:",
+    "minChars": "Mínimo de 6 caracteres",
+    "avoidCommon": "Evite senhas comuns (ex: 123456, password)",
+    "useCombination": "Use combinação de letras, números e símbolos",
+    "invalidPassword": "Senha inválida",
+    "passwordMinLength": "A senha deve ter no mínimo 6 caracteres",
+    "loginSuccess": "Login realizado!",
+    "welcomeBackToast": "Bem-vindo de volta!",
+    "accountCreated": "Conta criada!",
+    "loginNow": "Você pode fazer login agora.",
+    "somethingWentWrong": "Algo deu errado",
+    "errors": {
+      "passwordLength": "A senha deve ter no mínimo 6 caracteres",
+      "userExists": "Este email já está cadastrado",
+      "invalidCredentials": "Email ou senha incorretos",
+      "emailNotConfirmed": "Email não confirmado. Verifique sua caixa de entrada",
+      "weakPassword": "A senha é muito fraca. Use uma senha mais forte",
+      "commonPassword": "Esta senha é muito comum e insegura. Use uma combinação única de letras, números e símbolos",
+      "signupDisabled": "Cadastro desabilitado no momento",
+      "invalidEmail": "Email inválido"
+    }
+  },
+  "header": {
+    "appName": "Mapa da Personalidade",
+    "dashboard": "Dashboard",
+    "history": "Histórico",
+    "hello": "Olá",
+    "adminPanel": "Painel Admin"
+  },
+  "dashboard": {
+    "availableTests": "Seus Testes Disponíveis",
+    "testInProgress": "Você tem um teste em andamento",
+    "finishFirst": "Finalize o {{testName}} antes de iniciar outro teste.",
+    "continue": "Continuar {{testName}}",
+    "resultNotFound": "Resultado não encontrado."
+  },
+  "testCard": {
+    "bigFive": "BIG FIVE",
+    "humanDesign": "DESENHO HUMANO",
+    "bigFiveDesc": "Descubra os 5 grandes traços da sua personalidade",
+    "hdDesc": "Descubra seu mapa energético e propósito de vida",
+    "bigFiveInfo": "⏱️ 30 minutos • 📝 300 perguntas",
+    "hdInfo": "⏱️ ~20 minutos",
+    "locked": "BLOQUEADO",
+    "unlocked": "DESBLOQUEADO! ✨",
+    "completed": "CONCLUÍDO",
+    "completeBigFiveFirst": "Complete o Big Five para desbloquear este teste",
+    "testCompleted": "Teste concluído!",
+    "nowAvailable": "Agora disponível!",
+    "completedOn": "Realizado em:",
+    "viewReport": "VER RELATÓRIO 📄",
+    "startTest": "INICIAR TESTE"
+  },
+  "emptyState": {
+    "waitingAccess": "Aguardando liberação de acesso",
+    "description": "Seus testes ainda não foram liberados. Aguarde o contato do administrador ou entre em contato para mais informações."
+  },
+  "integratedReport": {
+    "new": "NOVO",
+    "title": "RELATÓRIO INTEGRADO",
+    "description": "Sua análise completa: Big Five + Desenho Humano. Uma visão integrada do seu perfil de personalidade e mapa energético.",
+    "viewComplete": "VER ANÁLISE COMPLETA"
+  }
+}
