@@ -1,7 +1,7 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { TRAIT_LABELS } from "@/constants/scoring";
-import { facetNames } from "@/utils/scoreCalculator";
+import { facetNames, getFacetClassification } from "@/utils/scoreCalculator";
 
 interface TraitData {
   name: string;
@@ -28,12 +28,7 @@ const getFacetLabel = (facet: string): string => {
   return facetNames[facet] || facet;
 };
 
-const getClassificationLabel = (classification: string | number): string => {
-  if (typeof classification === 'number') {
-    if (classification < 40) return "Baixo";
-    if (classification < 70) return "Médio";
-    return "Alto";
-  }
+const getClassificationLabel = (classification: string): string => {
   const labels: { [key: string]: string } = {
     low: "Baixo",
     medium: "Médio",
@@ -76,7 +71,7 @@ export const generateTestResultPDF = (
   // Resumo dos traços principais
   doc.setFontSize(14);
   doc.setFont("helvetica", "bold");
-  doc.text("Resumo dos Traços", 14, yPos);
+  doc.text("Resumo dos Traços e Facetas", 14, yPos);
   yPos += 10;
 
   Object.entries(traitScores).forEach(([trait, score]) => {
@@ -100,7 +95,7 @@ export const generateTestResultPDF = (
     const facetsData = Object.entries(traitFacets).map(([facetKey, facetScore]) => [
       getFacetLabel(facetKey),
       facetScore.toString(),
-      getClassificationLabel(facetScore),
+      getFacetClassification(facetScore),
     ]);
 
     if (facetsData.length > 0) {
