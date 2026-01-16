@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { SCORING, TRAIT_LABELS, getTraitPercentage } from "@/constants/scoring";
+import { facetNames, getFacetClassification } from "@/utils/scoreCalculator";
 import { generateTestResultPDF } from "@/utils/pdfGenerator";
 
 interface TestResult {
@@ -143,9 +144,9 @@ const BigFiveResults = () => {
         score: score,
         classification: getClassificationLabel(result.classifications[key]),
         facets: Object.entries(result.facet_scores[key] || {}).map(([facetKey, facetScore]) => ({
-          name: facetKey,
+          name: facetNames[facetKey] || facetKey,
           score: facetScore,
-          classification: getClassificationLabel(String(facetScore))
+          classification: getFacetClassification(Number(facetScore))
         }))
       }));
 
@@ -259,7 +260,7 @@ const BigFiveResults = () => {
 
       {/* Trait Scores */}
       <Card className="p-6 mb-6">
-        <h2 className="text-xl font-semibold mb-6">Seus Traços de Personalidade</h2>
+        <h2 className="text-xl font-semibold mb-6">Resumo dos Traços e Facetas</h2>
         
         <div className="space-y-6">
           {Object.entries(result.trait_scores).map(([trait, scoreValue]) => {

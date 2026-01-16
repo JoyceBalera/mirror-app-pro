@@ -226,7 +226,7 @@ export const Results = ({ traitScores, onRestart, sessionId, userName }: Results
     // Resumo dos traços principais
     doc.setFontSize(14);
     doc.setFont("helvetica", "bold");
-    doc.text("Resumo dos Traços", 14, yPos);
+    doc.text("Resumo dos Traços e Facetas", 14, yPos);
     yPos += 10;
 
     traitScores.forEach((trait) => {
