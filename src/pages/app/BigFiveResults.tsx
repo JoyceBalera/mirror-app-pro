@@ -11,6 +11,49 @@ import { ptBR } from "date-fns/locale";
 import { SCORING, TRAIT_LABELS, getTraitPercentage } from "@/constants/scoring";
 import { generateTestResultPDF } from "@/utils/pdfGenerator";
 
+// Mapeamento de códigos de facetas para nomes legíveis
+const FACET_NAMES: Record<string, Record<string, string>> = {
+  neuroticismo: {
+    N1: "Ansiedade", N2: "Raiva", N3: "Depressão", 
+    N4: "Constrangimento", N5: "Imoderação", N6: "Vulnerabilidade"
+  },
+  extroversão: {
+    E1: "Simpatia", E2: "Gregarismo", E3: "Assertividade",
+    E4: "Atividade", E5: "Busca por Excitação", E6: "Emoções Positivas"
+  },
+  abertura: {
+    O1: "Imaginação", O2: "Interesse Artístico", O3: "Emotividade",
+    O4: "Aventura", O5: "Intelecto", O6: "Liberalismo"
+  },
+  amabilidade: {
+    A1: "Confiança", A2: "Moralidade", A3: "Altruísmo",
+    A4: "Cooperação", A5: "Modéstia", A6: "Simpatia"
+  },
+  conscienciosidade: {
+    C1: "Autoeficácia", C2: "Ordem", C3: "Senso de Dever",
+    C4: "Busca por Realização", C5: "Autodisciplina", C6: "Cautela"
+  }
+};
+
+// Calcula classificação de faceta baseado no score (10-50)
+const getFacetClassification = (score: number): string => {
+  if (score <= 23) return "Baixa";
+  if (score <= 36) return "Média";
+  return "Alta";
+};
+
+// Normaliza nome do trait para busca no mapeamento
+const normalizeTraitKey = (key: string): string => {
+  const map: Record<string, string> = {
+    neuroticism: "neuroticismo",
+    extraversion: "extroversão", 
+    openness: "abertura",
+    agreeableness: "amabilidade",
+    conscientiousness: "conscienciosidade"
+  };
+  return map[key.toLowerCase()] || key.toLowerCase();
+};
+
 interface TestResult {
   id: string;
   session_id: string;
@@ -138,16 +181,21 @@ const BigFiveResults = () => {
     
     setGeneratingAnalysis(true);
     try {
-      const formattedTraitScores = Object.entries(result.trait_scores).map(([key, score]) => ({
-        name: getTraitLabel(key),
-        score: score,
-        classification: getClassificationLabel(result.classifications[key]),
-        facets: Object.entries(result.facet_scores[key] || {}).map(([facetKey, facetScore]) => ({
-          name: facetKey,
-          score: facetScore,
-          classification: getClassificationLabel(String(facetScore))
-        }))
-      }));
+      const formattedTraitScores = Object.entries(result.trait_scores).map(([key, score]) => {
+        const normalizedKey = normalizeTraitKey(key);
+        const facetNames = FACET_NAMES[normalizedKey] || {};
+        
+        return {
+          name: getTraitLabel(key),
+          score: score,
+          classification: getClassificationLabel(result.classifications[key]),
+          facets: Object.entries(result.facet_scores[key] || {}).map(([facetKey, facetScore]) => ({
+            name: facetNames[facetKey] || facetKey, // Nome legível da faceta
+            score: facetScore,
+            classification: getFacetClassification(facetScore as number) // Classificação calculada
+          }))
+        };
+      });
 
       const { data, error } = await supabase.functions.invoke("analyze-personality", {
         body: { traitScores: formattedTraitScores },
