@@ -166,16 +166,18 @@ const AppDashboard = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { data: result } = await supabase
-        .from("test_results")
-        .select("id, session_id")
-        .eq("test_sessions.user_id", user.id)
-        .order("calculated_at", { ascending: false })
+      // Buscar a sessão mais recente completada do usuário
+      const { data: session } = await supabase
+        .from("test_sessions")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("status", "completed")
+        .order("completed_at", { ascending: false })
         .limit(1)
         .maybeSingle();
 
-      if (result) {
-        navigate(`/app/big-five/results/${result.session_id}`);
+      if (session) {
+        navigate(`/app/big-five/results/${session.id}`);
       } else {
         toast({
           title: t("common.error"),
