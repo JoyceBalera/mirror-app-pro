@@ -13,6 +13,7 @@ import { SCORING, TRAIT_LABELS, getTraitPercentage } from "@/constants/scoring";
 import { generateTestResultPDF } from "@/utils/pdfGenerator";
 import { generateHDReport, type HDReportData } from "@/utils/generateHDReport";
 import { generateIntegratedReport, type IntegratedReportData } from "@/utils/generateIntegratedReport";
+import AIDataDebugPanel from "@/components/AIDataDebugPanel";
 
 interface TestResult {
   id: string;
@@ -680,6 +681,20 @@ const UserDetails = () => {
                           <p className="text-xs text-muted-foreground mt-4">
                             Modelo: {result.ai_analyses[0].model_used}
                           </p>
+                          
+                          {/* Debug Panel - Ver dados usados pela IA */}
+                          <div className="mt-4 pt-4 border-t border-muted">
+                            <AIDataDebugPanel
+                              sessionId={result.session_id}
+                              generatedAt={result.ai_analyses[0]?.generated_at}
+                              modelUsed={result.ai_analyses[0]?.model_used}
+                              data={{
+                                traitScores: result.trait_scores,
+                                facetScores: result.facet_scores,
+                                classifications: result.classifications,
+                              }}
+                            />
+                          </div>
                         </div>
                       )}
                     </>
@@ -828,6 +843,27 @@ const UserDetails = () => {
                           <p className="text-xs text-muted-foreground mt-4">
                             Modelo: {hdResult.human_design_analyses[0].model_used}
                           </p>
+                          
+                          {/* Debug Panel - Ver dados usados pela IA */}
+                          <div className="mt-4 pt-4 border-t border-muted">
+                            <AIDataDebugPanel
+                              resultId={hdResult.id}
+                              generatedAt={hdResult.human_design_analyses[0]?.generated_at}
+                              modelUsed={hdResult.human_design_analyses[0]?.model_used}
+                              data={{
+                                energyType: hdResult.energy_type,
+                                strategy: hdResult.strategy,
+                                authority: hdResult.authority,
+                                profile: hdResult.profile,
+                                definition: hdResult.definition,
+                                incarnationCross: hdResult.incarnation_cross,
+                                centers: hdResult.centers,
+                                channels: hdResult.channels,
+                                personalityActivations: hdResult.personality_activations,
+                                designActivations: hdResult.design_activations,
+                              }}
+                            />
+                          </div>
                         </div>
                       )}
                     </>

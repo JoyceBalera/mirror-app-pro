@@ -15,7 +15,6 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { extractAdvancedVariables, type AdvancedVariables } from "@/utils/humanDesignVariables";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { generateHDReport } from "@/utils/generateHDReport";
-import AIDataDebugPanel from "@/components/AIDataDebugPanel";
 interface HumanDesignResult {
   id: string;
   user_id: string;
@@ -842,56 +841,33 @@ const DesenhoHumanoResults = () => {
                           </div>
                         </div>
 
-                        <div className="mt-6 pt-4 border-t border-[#BFAFB2] flex flex-col gap-4">
-                          <div className="flex items-center justify-between text-sm text-muted-foreground">
-                            <span>Gerada em: {new Date(aiAnalysis.generated_at).toLocaleDateString('pt-BR', { 
-                              day: '2-digit', 
-                              month: '2-digit', 
-                              year: 'numeric',
-                              hour: '2-digit',
-                              minute: '2-digit'
-                            })}</span>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={handleGenerateAnalysis}
-                              disabled={generatingAnalysis}
-                              className="border-[#7B192B] text-[#7B192B]"
-                            >
-                              {generatingAnalysis ? (
-                                <>
-                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                  Regenerando...
-                                </>
-                              ) : (
-                                <>
-                                  <RefreshCw className="mr-2 h-4 w-4" />
-                                  Regenerar Análise
-                                </>
-                              )}
-                            </Button>
-                          </div>
-                          
-                          {/* Debug Panel - Ver dados usados pela IA */}
-                          <AIDataDebugPanel
-                            title="Ver dados enviados à IA"
-                            resultId={result.id}
-                            generatedAt={aiAnalysis.generated_at}
-                            data={{
-                              energyType: result.energy_type,
-                              strategy: result.strategy,
-                              authority: result.authority,
-                              profile: result.profile,
-                              definition: result.definition,
-                              incarnationCross: result.incarnation_cross,
-                              definedCenters,
-                              activatedGates: result.activated_gates,
-                              channels: result.channels,
-                              advancedVariables: variables,
-                              personalityActivations: result.personality_activations,
-                              designActivations: result.design_activations,
-                            }}
-                          />
+                        <div className="mt-6 pt-4 border-t border-[#BFAFB2] flex items-center justify-between text-sm text-muted-foreground">
+                          <span>Gerada em: {new Date(aiAnalysis.generated_at).toLocaleDateString('pt-BR', { 
+                            day: '2-digit', 
+                            month: '2-digit', 
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}</span>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleGenerateAnalysis}
+                            disabled={generatingAnalysis}
+                            className="border-[#7B192B] text-[#7B192B]"
+                          >
+                            {generatingAnalysis ? (
+                              <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Regenerando...
+                              </>
+                            ) : (
+                              <>
+                                <RefreshCw className="mr-2 h-4 w-4" />
+                                Regenerar Análise
+                              </>
+                            )}
+                          </Button>
                         </div>
                       </div>
                     ) : (
