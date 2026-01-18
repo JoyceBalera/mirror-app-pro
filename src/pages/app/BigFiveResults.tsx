@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { SCORING, TRAIT_LABELS, getTraitPercentage } from "@/constants/scoring";
 import { generateTestResultPDF } from "@/utils/pdfGenerator";
+import AIDataDebugPanel from "@/components/AIDataDebugPanel";
 
 // Mapeamento de códigos de facetas para nomes legíveis
 const FACET_NAMES: Record<string, Record<string, string>> = {
@@ -176,27 +177,31 @@ const BigFiveResults = () => {
     return colors[classification] || "text-muted-foreground";
   };
 
+  // Prepare formatted data for AI (memoized for debug panel)
+  const formattedTraitScores = useMemo(() => {
+    if (!result) return [];
+    return Object.entries(result.trait_scores).map(([key, score]) => {
+      const normalizedKey = normalizeTraitKey(key);
+      const facetNames = FACET_NAMES[normalizedKey] || {};
+      
+      return {
+        name: getTraitLabel(key),
+        score: score,
+        classification: getClassificationLabel(result.classifications[key]),
+        facets: Object.entries(result.facet_scores[key] || {}).map(([facetKey, facetScore]) => ({
+          name: facetNames[facetKey] || facetKey,
+          score: facetScore,
+          classification: getFacetClassification(facetScore as number)
+        }))
+      };
+    });
+  }, [result]);
+
   const handleGenerateAnalysis = async () => {
     if (!result) return;
     
     setGeneratingAnalysis(true);
     try {
-      const formattedTraitScores = Object.entries(result.trait_scores).map(([key, score]) => {
-        const normalizedKey = normalizeTraitKey(key);
-        const facetNames = FACET_NAMES[normalizedKey] || {};
-        
-        return {
-          name: getTraitLabel(key),
-          score: score,
-          classification: getClassificationLabel(result.classifications[key]),
-          facets: Object.entries(result.facet_scores[key] || {}).map(([facetKey, facetScore]) => ({
-            name: facetNames[facetKey] || facetKey, // Nome legível da faceta
-            score: facetScore,
-            classification: getFacetClassification(facetScore as number) // Classificação calculada
-          }))
-        };
-      });
-
       const { data, error } = await supabase.functions.invoke("analyze-personality", {
         body: { traitScores: formattedTraitScores },
       });
@@ -361,6 +366,21 @@ const BigFiveResults = () => {
                 </p>
               </div>
             )}
+
+            {/* Debug Panel - Ver dados usados pela IA */}
+            <div className="mt-4 border-t pt-4">
+              <AIDataDebugPanel
+                sessionId={sessionId}
+                generatedAt={result.ai_analyses[0]?.generated_at}
+                modelUsed={result.ai_analyses[0]?.model_used}
+                data={{
+                  traitScores: formattedTraitScores,
+                  rawTraitScores: result.trait_scores,
+                  rawFacetScores: result.facet_scores,
+                  classifications: result.classifications,
+                }}
+              />
+            </div>
           </>
         ) : (
           <div className="bg-muted/30 p-6 rounded-lg text-center">
