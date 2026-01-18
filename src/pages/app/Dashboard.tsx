@@ -93,11 +93,8 @@ const AppDashboard = () => {
 
       } catch (error: any) {
         console.error("Erro ao carregar dashboard:", error);
-        toast({
-          title: t("common.error"),
-          description: t("dashboard.resultNotFound"),
-          variant: "destructive",
-        });
+        // Não mostrar toast aqui - erros de refresh de sessão são tratados pelo redirect
+        // O toast "resultNotFound" só deve aparecer em navegação explícita para resultados
       } finally {
         setLoading(false);
       }
