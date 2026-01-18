@@ -100,15 +100,13 @@ const IntegratedResults = () => {
       // Store full HD data for PDF
       setFullHDData(hdResult);
 
-      // Check for existing integrated analysis
+      // Check for existing integrated analysis (most recent for the user)
       let existingAnalysis = null;
       if (bigFiveData && hdResult) {
         const { data: analysis } = await supabase
           .from("integrated_analyses")
           .select("id, analysis_text, generated_at")
           .eq("user_id", user.id)
-          .eq("big_five_session_id", bigFiveData.id)
-          .eq("human_design_result_id", hdResult.id)
           .order("generated_at", { ascending: false })
           .limit(1)
           .maybeSingle();
