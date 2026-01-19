@@ -142,20 +142,20 @@ const BigFiveResults = () => {
       Baixa: "Baixo",
       Média: "Médio",
       Alta: "Alto",
+      "Muito Baixo": "Muito Baixo",
+      "Muito Alto": "Muito Alto",
     };
     return labels[classification] || classification;
   };
 
   const getClassificationColor = (classification: string) => {
-    const colors: { [key: string]: string } = {
-      low: "text-red-600",
-      medium: "text-yellow-600",
-      high: "text-green-600",
-      Baixa: "text-red-600",
-      Média: "text-yellow-600",
-      Alta: "text-green-600",
-    };
-    return colors[classification] || "text-muted-foreground";
+    const normalizedClass = classification.toLowerCase();
+    if (normalizedClass.includes("muito baixo")) return "text-red-700";
+    if (normalizedClass.includes("baixo") || normalizedClass === "low") return "text-orange-600";
+    if (normalizedClass.includes("médio") || normalizedClass === "medium") return "text-yellow-600";
+    if (normalizedClass.includes("muito alto")) return "text-emerald-700";
+    if (normalizedClass.includes("alto") || normalizedClass === "high") return "text-green-600";
+    return "text-muted-foreground";
   };
 
   // Prepare formatted data for AI - ALWAYS recalculates classifications from raw scores
