@@ -359,19 +359,23 @@ const traitNameMap: Record<string, string> = {
   conscientiousness: "conscienciosidade",
 };
 
-// Classificação para traços (60 questões x 1-5 pontos = 60-300)
+// Classificação para traços (60 questões x 1-5 pontos = 60-300) - 5 níveis Luciana
 const getTraitClassification = (score: number): string => {
-  if (score >= 60 && score <= 140) return "Baixa";
-  if (score >= 141 && score <= 220) return "Média";
-  if (score >= 221 && score <= 300) return "Alta";
+  if (score >= 60 && score <= 108) return "Muito Baixo";
+  if (score >= 109 && score <= 156) return "Baixo";
+  if (score >= 157 && score <= 198) return "Médio";
+  if (score >= 199 && score <= 246) return "Alto";
+  if (score >= 247 && score <= 300) return "Muito Alto";
   return "Indefinido";
 };
 
-// Classificação para facetas (10 questões x 1-5 pontos = 10-50)
+// Classificação para facetas (10 questões x 1-5 pontos = 10-50) - 5 níveis Luciana
 const getFacetClassification = (score: number): string => {
-  if (score >= 10 && score <= 23) return "Baixa";
-  if (score >= 24 && score <= 36) return "Média";
-  if (score >= 37 && score <= 50) return "Alta";
+  if (score >= 10 && score <= 18) return "Muito Baixo";
+  if (score >= 19 && score <= 26) return "Baixo";
+  if (score >= 27 && score <= 33) return "Médio";
+  if (score >= 34 && score <= 41) return "Alto";
+  if (score >= 42 && score <= 50) return "Muito Alto";
   return "Indefinido";
 };
 
