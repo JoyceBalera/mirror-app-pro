@@ -359,21 +359,19 @@ const traitNameMap: Record<string, string> = {
   conscientiousness: "conscienciosidade",
 };
 
-// Classificação para traços (24 questões x 1-5 pontos = 24-120)
-// Baseado em proporção corrigida para 24 questões
+// Classificação para traços (60 questões x 1-5 pontos = 60-300)
 const getTraitClassification = (score: number): string => {
-  if (score >= 24 && score <= 62) return "Baixa";
-  if (score >= 63 && score <= 96) return "Média";
-  if (score >= 97 && score <= 120) return "Alta";
+  if (score >= 60 && score <= 140) return "Baixa";
+  if (score >= 141 && score <= 220) return "Média";
+  if (score >= 221 && score <= 300) return "Alta";
   return "Indefinido";
 };
 
-// Classificação para facetas (4 questões x 1-5 pontos = 4-20)
-// Baseado em proporção corrigida para 4 questões
+// Classificação para facetas (10 questões x 1-5 pontos = 10-50)
 const getFacetClassification = (score: number): string => {
-  if (score >= 4 && score <= 11) return "Baixa";
-  if (score >= 12 && score <= 16) return "Média";
-  if (score >= 17 && score <= 20) return "Alta";
+  if (score >= 10 && score <= 23) return "Baixa";
+  if (score >= 24 && score <= 36) return "Média";
+  if (score >= 37 && score <= 50) return "Alta";
   return "Indefinido";
 };
 

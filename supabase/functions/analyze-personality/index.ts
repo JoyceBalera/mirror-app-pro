@@ -60,19 +60,19 @@ serve(async (req) => {
       C1: "Competência", C2: "Ordem", C3: "Senso de Dever", C4: "Luta pela Realização", C5: "Autodisciplina", C6: "Ponderação"
     };
 
-    // Função de classificação para traços (24 questões x 1-5 = 24-120)
+    // Função de classificação para traços (60 questões x 1-5 = 60-300)
     const getTraitClassification = (score: number): string => {
-      if (score >= 24 && score <= 62) return "Baixa";
-      if (score >= 63 && score <= 96) return "Média";
-      if (score >= 97 && score <= 120) return "Alta";
+      if (score >= 60 && score <= 140) return "Baixa";
+      if (score >= 141 && score <= 220) return "Média";
+      if (score >= 221 && score <= 300) return "Alta";
       return "Média";
     };
 
-    // Função de classificação para facetas (4 questões x 1-5 = 4-20)
+    // Função de classificação para facetas (10 questões x 1-5 = 10-50)
     const getFacetClassification = (score: number): string => {
-      if (score >= 4 && score <= 11) return "Baixa";
-      if (score >= 12 && score <= 16) return "Média";
-      if (score >= 17 && score <= 20) return "Alta";
+      if (score >= 10 && score <= 23) return "Baixa";
+      if (score >= 24 && score <= 36) return "Média";
+      if (score >= 37 && score <= 50) return "Alta";
       return "Média";
     };
 
@@ -110,14 +110,14 @@ serve(async (req) => {
 Você é uma mentora experiente em desenvolvimento pessoal e profissional de mulheres adultas. Seu papel é interpretar os resultados do Mapa de Personalidade de forma acolhedora, prática e transformadora.
 
 ESCALAS DE CLASSIFICAÇÃO (OBRIGATÓRIO SEGUIR):
-- Traços: scores de 24-120 pontos
-  - 24-62 = BAIXA
-  - 63-96 = MÉDIA
-  - 97-120 = ALTA
-- Facetas: scores de 4-20 pontos
-  - 4-11 = BAIXA
-  - 12-16 = MÉDIA
-  - 17-20 = ALTA
+- Traços: scores de 60-300 pontos
+  - 60-140 = BAIXA
+  - 141-220 = MÉDIA
+  - 221-300 = ALTA
+- Facetas: scores de 10-50 pontos
+  - 10-23 = BAIXA
+  - 24-36 = MÉDIA
+  - 37-50 = ALTA
 
 REGRA CRÍTICA: USE EXATAMENTE A CLASSIFICAÇÃO INFORMADA NOS DADOS. Se os dados dizem "BAIXA", você DEVE interpretar como nível baixo. NUNCA invente classificações diferentes.
 
