@@ -253,7 +253,7 @@ const BigFiveTest = () => {
         <Card>
           <CardHeader className="text-center pb-2">
             <h1 className="text-3xl font-bold text-primary">
-              📊 Teste Big Five
+              📊 Mapa de Personalidade
             </h1>
             <p className="text-muted-foreground mt-2">
               Descubra os 5 grandes traços da sua personalidade

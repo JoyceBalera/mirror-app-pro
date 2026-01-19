@@ -273,7 +273,7 @@ const AmbienteTeste = () => {
           <CardHeader>
             <div className="flex items-center gap-2">
               <Brain className="w-5 h-5 text-primary" />
-              <CardTitle>Big Five - Teste de Personalidade</CardTitle>
+              <CardTitle>Mapa de Personalidade</CardTitle>
             </div>
             <CardDescription>
               Este teste tem 300 perguntas. Use as opções abaixo para testar o fluxo rapidamente.
@@ -322,7 +322,7 @@ const AmbienteTeste = () => {
           <CardHeader>
             <div className="flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-primary" />
-              <CardTitle>Desenho Humano - Mapa Energético</CardTitle>
+              <CardTitle>Arquitetura Pessoal</CardTitle>
             </div>
             <CardDescription>
               O cálculo do mapa usa dados de nascimento. Use perfis conhecidos para testar.
@@ -381,16 +381,16 @@ const AmbienteTeste = () => {
           <CardHeader>
             <div className="flex items-center gap-2">
               <Layers className="w-5 h-5 text-accent" />
-              <CardTitle>Relatório Integrado - Big Five + Desenho Humano</CardTitle>
+              <CardTitle>Blueprint Pessoal - Mapa de Personalidade + Arquitetura Pessoal</CardTitle>
             </div>
             <CardDescription>
-              Simulação do cruzamento de dados do Big Five com o Desenho Humano usando dados mock.
+              Simulação do cruzamento de dados do Mapa de Personalidade com a Arquitetura Pessoal usando dados mock.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4 p-4 bg-muted rounded-lg">
               <div>
-                <p className="text-sm font-medium text-muted-foreground mb-2">Dados Big Five Demo:</p>
+                <p className="text-sm font-medium text-muted-foreground mb-2">Dados Mapa de Personalidade Demo:</p>
                 <div className="space-y-1 text-sm">
                   {Object.entries(DEMO_BIG_FIVE_RESULT.trait_scores).map(([trait, score]) => (
                     <div key={trait} className="flex justify-between">
@@ -401,7 +401,7 @@ const AmbienteTeste = () => {
                 </div>
               </div>
               <div>
-                <p className="text-sm font-medium text-muted-foreground mb-2">Dados HD Demo:</p>
+                <p className="text-sm font-medium text-muted-foreground mb-2">Dados Arquitetura Pessoal Demo:</p>
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Tipo:</span>
@@ -464,7 +464,7 @@ const AmbienteTeste = () => {
         <Card className="mt-6">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle>Preview - Resultado Big Five</CardTitle>
+              <CardTitle>Preview - Mapa de Personalidade</CardTitle>
               <DemoResultBadge />
             </div>
           </CardHeader>
@@ -496,7 +496,7 @@ const AmbienteTeste = () => {
         <Card className="mt-6">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle>Preview - Mapa de Desenho Humano</CardTitle>
+              <CardTitle>Preview - Arquitetura Pessoal</CardTitle>
               <DemoResultBadge />
             </div>
           </CardHeader>
@@ -562,7 +562,7 @@ const AmbienteTeste = () => {
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2">
                 <Layers className="w-5 h-5 text-accent" />
-                Simulação - Relatório Integrado
+                Simulação - Blueprint Pessoal
               </CardTitle>
               <div className="flex items-center gap-2">
                 {integratedAnalysis && (

@@ -12,7 +12,7 @@
     "signupDescription": "Crea una cuenta para guardar tus resultados",
     "fullName": "Nombre Completo",
     "fullNamePlaceholder": "Tu nombre completo",
-    "email": "Correo Electrónico",
+    "email": "Email",
     "emailPlaceholder": "tu@email.com",
     "password": "Contraseña",
     "passwordPlaceholder": "••••••••",
@@ -21,30 +21,30 @@
     "noAccount": "¿No tienes cuenta? Crear cuenta",
     "hasAccount": "¿Ya tienes cuenta? Iniciar sesión",
     "passwordRequirements": "La contraseña debe contener:",
-    "minChars": "Mínimo de 6 caracteres",
-    "avoidCommon": "Evita contraseñas comunes (ej: 123456, password)",
+    "minChars": "Mínimo 6 caracteres",
+    "avoidCommon": "Evita contraseñas comunes (ej: 123456, contraseña)",
     "useCombination": "Usa combinación de letras, números y símbolos",
     "invalidPassword": "Contraseña inválida",
     "passwordMinLength": "La contraseña debe tener al menos 6 caracteres",
     "loginSuccess": "¡Inicio de sesión exitoso!",
     "welcomeBackToast": "¡Bienvenido de vuelta!",
     "accountCreated": "¡Cuenta creada!",
-    "loginNow": "Ya puedes iniciar sesión.",
+    "loginNow": "Ahora puedes iniciar sesión.",
     "somethingWentWrong": "Algo salió mal",
     "errors": {
       "passwordLength": "La contraseña debe tener al menos 6 caracteres",
-      "userExists": "Este correo ya está registrado",
-      "invalidCredentials": "Correo o contraseña incorrectos",
-      "emailNotConfirmed": "Correo no confirmado. Revisa tu bandeja de entrada",
-      "weakPassword": "La contraseña es muy débil. Usa una más fuerte",
+      "userExists": "Este email ya está registrado",
+      "invalidCredentials": "Email o contraseña inválidos",
+      "emailNotConfirmed": "Email no confirmado. Revisa tu bandeja de entrada",
+      "weakPassword": "Contraseña muy débil. Usa una más fuerte",
       "commonPassword": "Esta contraseña es muy común e insegura. Usa una combinación única de letras, números y símbolos",
-      "signupDisabled": "Registro deshabilitado por el momento",
-      "invalidEmail": "Correo inválido"
+      "signupDisabled": "Registro deshabilitado actualmente",
+      "invalidEmail": "Email inválido"
     }
   },
   "header": {
     "appName": "Mapa de Personalidad",
-    "dashboard": "Panel",
+    "dashboard": "Dashboard",
     "history": "Historial",
     "hello": "Hola",
     "adminPanel": "Panel Admin"
@@ -57,8 +57,8 @@
     "resultNotFound": "Resultado no encontrado."
   },
   "testCard": {
-    "bigFive": "BIG FIVE",
-    "humanDesign": "DISEÑO HUMANO",
+    "bigFive": "MAPA DE PERSONALIDAD",
+    "humanDesign": "ARQUITECTURA PERSONAL",
     "bigFiveDesc": "Descubre los 5 grandes rasgos de tu personalidad",
     "hdDesc": "Descubre tu mapa energético y propósito de vida",
     "bigFiveInfo": "⏱️ 30 minutos • 📝 300 preguntas",
@@ -66,21 +66,21 @@
     "locked": "BLOQUEADO",
     "unlocked": "¡DESBLOQUEADO! ✨",
     "completed": "COMPLETADO",
-    "completeBigFiveFirst": "Completa el Big Five para desbloquear este test",
+    "completeBigFiveFirst": "Completa el Mapa de Personalidad para desbloquear",
     "testCompleted": "¡Test completado!",
-    "nowAvailable": "¡Ahora disponible!",
-    "completedOn": "Realizado en:",
+    "nowAvailable": "¡Ya disponible!",
+    "completedOn": "Completado el:",
     "viewReport": "VER INFORME 📄",
     "startTest": "INICIAR TEST"
   },
   "emptyState": {
-    "waitingAccess": "Esperando liberación de acceso",
+    "waitingAccess": "Esperando acceso",
     "description": "Tus tests aún no han sido liberados. Espera el contacto del administrador o comunícate para más información."
   },
   "integratedReport": {
     "new": "NUEVO",
-    "title": "INFORME INTEGRADO",
-    "description": "Tu análisis completo: Big Five + Diseño Humano. Una visión integrada de tu perfil de personalidad y mapa energético.",
+    "title": "BLUEPRINT PERSONAL",
+    "description": "Tu análisis completo: Mapa de Personalidad + Arquitectura Personal. Una visión integrada de tu perfil de personalidad y mapa energético.",
     "viewComplete": "VER ANÁLISIS COMPLETO"
   }
 }

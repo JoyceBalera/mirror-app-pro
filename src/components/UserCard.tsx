@@ -62,20 +62,20 @@ const UserCard = ({ user, onEdit }: UserCardProps) => {
             <div className="flex flex-wrap items-center gap-2 mb-2">
               {hasTestedBigFive ? (
                 <Badge variant="secondary" className="bg-blue-100 text-blue-700">
-                  Big Five ✓
+                  Mapa de Personalidade ✓
                 </Badge>
               ) : (
                 <Badge variant="secondary" className="bg-gray-100 text-gray-500">
-                  Big Five Pendente
+                  Mapa de Personalidade Pendente
                 </Badge>
               )}
               {hasTestedHD ? (
                 <Badge variant="secondary" className="bg-purple-100 text-purple-700">
-                  Desenho Humano ✓
+                  Arquitetura Pessoal ✓
                 </Badge>
               ) : (
                 <Badge variant="secondary" className="bg-gray-100 text-gray-500">
-                  Desenho Humano Pendente
+                  Arquitetura Pessoal Pendente
                 </Badge>
               )}
             </div>
@@ -85,12 +85,12 @@ const UserCard = ({ user, onEdit }: UserCardProps) => {
               <span className="text-xs text-muted-foreground">Liberados:</span>
               {user.test_access?.has_big_five ? (
                 <Badge variant="outline" className="bg-primary/10 text-primary text-xs">
-                  Big Five
+                  Mapa de Personalidade
                 </Badge>
               ) : null}
               {user.test_access?.has_desenho_humano ? (
                 <Badge variant="outline" className="bg-primary/10 text-primary text-xs">
-                  Desenho Humano
+                  Arquitetura Pessoal
                 </Badge>
               ) : null}
               {!user.test_access?.has_big_five && !user.test_access?.has_desenho_humano && (
@@ -102,12 +102,12 @@ const UserCard = ({ user, onEdit }: UserCardProps) => {
             <div className="text-sm text-muted-foreground space-y-1">
               {lastBigFiveTest && (
                 <p>
-                  Big Five: {format(new Date(lastBigFiveTest.completed_at!), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                  Mapa de Personalidade: {format(new Date(lastBigFiveTest.completed_at!), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
                 </p>
               )}
               {lastHDTest && (
                 <p>
-                  Desenho Humano: {format(new Date(lastHDTest.completed_at!), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                  Arquitetura Pessoal: {format(new Date(lastHDTest.completed_at!), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
                 </p>
               )}
             </div>

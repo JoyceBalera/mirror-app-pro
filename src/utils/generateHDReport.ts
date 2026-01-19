@@ -122,8 +122,8 @@ export async function generateHDReport(data: HDReportData): Promise<void> {
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(32);
   doc.setFont('helvetica', 'bold');
-  doc.text('ANÁLISE DE', pageWidth / 2, 40, { align: 'center' });
-  doc.text('DESENHO HUMANO', pageWidth / 2, 55, { align: 'center' });
+  doc.text('ARQUITETURA', pageWidth / 2, 40, { align: 'center' });
+  doc.text('PESSOAL', pageWidth / 2, 55, { align: 'center' });
 
   // Subtítulo
   doc.setFontSize(14);
@@ -500,6 +500,6 @@ export async function generateHDReport(data: HDReportData): Promise<void> {
   const birthDateFormatted = new Date(data.birth_date)
     .toLocaleDateString('pt-BR')
     .replace(/\//g, '-');
-  const fileName = `Desenho_Humano_${birthDateFormatted}.pdf`;
+  const fileName = `Arquitetura_Pessoal_${birthDateFormatted}.pdf`;
   doc.save(fileName);
 }

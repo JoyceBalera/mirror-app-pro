@@ -114,14 +114,14 @@ const Historico = () => {
     if (type === 'big_five') {
       return {
         icon: BarChart3,
-        label: 'Big Five',
+        label: 'Mapa de Personalidade',
         color: 'text-blue-600',
         bgColor: 'bg-blue-100'
       };
     }
     return {
       icon: Star,
-      label: 'Desenho Humano',
+      label: 'Arquitetura Pessoal',
       color: 'text-purple-600',
       bgColor: 'bg-purple-100'
     };

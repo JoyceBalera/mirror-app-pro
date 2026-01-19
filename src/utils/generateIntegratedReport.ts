@@ -115,14 +115,14 @@ export async function generateIntegratedReport(data: IntegratedReportData): Prom
   doc.setTextColor(...COLORS.white);
   doc.setFontSize(32);
   doc.setFont('helvetica', 'bold');
-  doc.text('RELATÓRIO', pageWidth / 2, 30, { align: 'center' });
-  doc.text('INTEGRADO', pageWidth / 2, 45, { align: 'center' });
+  doc.text('BLUEPRINT', pageWidth / 2, 30, { align: 'center' });
+  doc.text('PESSOAL', pageWidth / 2, 45, { align: 'center' });
 
   // Subtítulo na barra
   doc.setFontSize(12);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(...COLORS.goldLight);
-  doc.text('Big Five + Desenho Humano', pageWidth / 2, 63, { align: 'center' });
+  doc.text('Mapa de Personalidade + Arquitetura Pessoal', pageWidth / 2, 63, { align: 'center' });
 
   yPosition = 85;
 
@@ -132,7 +132,7 @@ export async function generateIntegratedReport(data: IntegratedReportData): Prom
   doc.setFontSize(10);
   doc.setFont('helvetica', 'italic');
   doc.setTextColor(...COLORS.lightText);
-  const introText = 'Este relatório apresenta uma visão integrada do seu perfil, cruzando os resultados do teste Big Five (Cinco Grandes Fatores) com o seu mapa de Desenho Humano.';
+  const introText = 'Este relatório apresenta uma visão integrada do seu perfil, cruzando os resultados do Mapa de Personalidade (Cinco Grandes Fatores) com a sua Arquitetura Pessoal.';
   const introLines = doc.splitTextToSize(introText, contentWidth - 10);
   doc.text(introLines, margin + 5, yPosition + 8);
   
@@ -154,7 +154,7 @@ export async function generateIntegratedReport(data: IntegratedReportData): Prom
   doc.setTextColor(...COLORS.white);
   doc.setFontSize(13);
   doc.setFont('helvetica', 'bold');
-  doc.text('PERFIL BIG FIVE', margin + 18, yPosition + 8);
+  doc.text('MAPA DE PERSONALIDADE', margin + 18, yPosition + 8);
   yPosition += 20;
 
   // Traços do Big Five com design melhorado
@@ -226,7 +226,7 @@ export async function generateIntegratedReport(data: IntegratedReportData): Prom
   doc.setTextColor(...COLORS.white);
   doc.setFontSize(13);
   doc.setFont('helvetica', 'bold');
-  doc.text('PERFIL DESENHO HUMANO', margin + 18, yPosition + 8);
+  doc.text('ARQUITETURA PESSOAL', margin + 18, yPosition + 8);
   yPosition += 18;
 
   // Grid 2x3 de informações HD com cards
@@ -492,6 +492,6 @@ export async function generateIntegratedReport(data: IntegratedReportData): Prom
 
   // =================== SALVAR PDF ===================
   const today = new Date().toLocaleDateString('pt-BR').replace(/\//g, '-');
-  const fileName = `Relatorio_Integrado_${today}.pdf`;
+  const fileName = `Blueprint_Pessoal_${today}.pdf`;
   doc.save(fileName);
 }
