@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { SCORING, getTraitPercentage, getFacetPercentage } from "@/constants/scoring";
 import ReactMarkdown from 'react-markdown';
+import { getTraitClassification, getFacetClassification } from "@/utils/scoreCalculator";
 
 interface ResultsProps {
   traitScores: TraitScore[];
@@ -77,8 +78,19 @@ export const Results = ({ traitScores, onRestart, sessionId, userName }: Results
     }, 60000);
 
     try {
+      // Recalcula classificações para garantir dados corretos para a IA
+      const recalculatedTraitScores = traitScores.map(trait => ({
+        ...trait,
+        trait: trait.name, // Adiciona campo 'trait' para compatibilidade
+        classification: getTraitClassification(trait.score),
+        facets: trait.facets.map(facet => ({
+          ...facet,
+          classification: getFacetClassification(facet.score)
+        }))
+      }));
+
       const { data, error } = await supabase.functions.invoke("analyze-personality", {
-        body: { traitScores },
+        body: { traitScores: recalculatedTraitScores },
       });
 
       // Limpar timeout se chegou aqui
