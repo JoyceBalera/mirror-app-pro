@@ -9,6 +9,7 @@ import { ArrowLeft, Sparkles, FileText, RefreshCw, Download, Loader2 } from "luc
 import ReactMarkdown from "react-markdown";
 import { generateIntegratedReport, IntegratedReportData } from "@/utils/generateIntegratedReport";
 import HDBodyGraph from "@/components/humandesign/HDBodyGraph";
+import { getTraitClassification, getFacetClassification } from "@/utils/scoreCalculator";
 
 interface IntegratedData {
   bigFiveSession: {
@@ -257,17 +258,13 @@ const IntegratedResults = () => {
       // Capture BodyGraph image first
       const bodygraphImage = await captureBodyGraphAsImage();
 
-      // Derive classifications from trait scores
-      const getClassification = (score: number) => {
-        if (score <= 40) return "low";
-        if (score <= 60) return "medium";
-        return "high";
-      };
-
+      // Derive classifications from trait scores using the CORRECT scoring function
+      // Faixas corretas: 60-140 = Baixa, 141-220 = Média, 221-300 = Alta
       const traitScores = data.bigFiveSession.traitScores;
       const traitClassifications: Record<string, string> = {};
       Object.keys(traitScores).forEach((trait) => {
-        traitClassifications[trait] = getClassification(traitScores[trait]);
+        // Usa a função de classificação correta do scoreCalculator
+        traitClassifications[trait] = getTraitClassification(traitScores[trait]);
       });
 
       // Derive defined and open centers

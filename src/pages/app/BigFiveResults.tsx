@@ -10,6 +10,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { SCORING, TRAIT_LABELS, getTraitPercentage } from "@/constants/scoring";
 import { generateTestResultPDF } from "@/utils/pdfGenerator";
+import { getTraitClassification, getFacetClassification as getScoreFacetClassification } from "@/utils/scoreCalculator";
 
 // Mapeamento de códigos de facetas para nomes legíveis
 const FACET_NAMES: Record<string, Record<string, string>> = {
@@ -176,21 +177,28 @@ const BigFiveResults = () => {
     return colors[classification] || "text-muted-foreground";
   };
 
-  // Prepare formatted data for AI
+  // Prepare formatted data for AI - ALWAYS recalculates classifications from raw scores
   const getFormattedTraitScores = () => {
     if (!result) return [];
     return Object.entries(result.trait_scores).map(([key, score]) => {
       const normalizedKey = normalizeTraitKey(key);
       const facetNames = FACET_NAMES[normalizedKey] || {};
+      const traitScore = score as number;
+      
+      // RECALCULA a classificação baseado no score bruto, não usa o salvo no banco
+      // Isso garante que mesmo dados antigos sejam interpretados com as faixas corretas
+      const recalculatedClassification = getTraitClassification(traitScore);
       
       return {
-        name: getTraitLabel(key),
-        score: score,
-        classification: getClassificationLabel(result.classifications[key]),
+        trait: getTraitLabel(key), // Nome do traço para a edge function
+        name: getTraitLabel(key),  // Backward compatibility
+        score: traitScore,
+        classification: recalculatedClassification, // Usa classificação recalculada
         facets: Object.entries(result.facet_scores[key] || {}).map(([facetKey, facetScore]) => ({
           name: facetNames[facetKey] || facetKey,
           score: facetScore,
-          classification: getFacetClassification(facetScore as number)
+          // RECALCULA a classificação da faceta baseado no score bruto
+          classification: getScoreFacetClassification(facetScore as number)
         }))
       };
     });
