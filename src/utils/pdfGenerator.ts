@@ -76,7 +76,7 @@ export const generateTestResultPDF = (
   // Resumo dos traços principais
   doc.setFontSize(14);
   doc.setFont("helvetica", "bold");
-  doc.text("Resumo dos Traços", 14, yPos);
+  doc.text("Resumo dos Traços e Facetas", 14, yPos);
   yPos += 10;
 
   Object.entries(traitScores).forEach(([trait, score]) => {
@@ -125,7 +125,7 @@ export const generateTestResultPDF = (
     
     doc.setFontSize(14);
     doc.setFont("helvetica", "bold");
-    doc.text("Análise Personalizada por IA", 14, yPos);
+    doc.text("Análise Personalizada", 14, yPos);
     yPos += 10;
 
     doc.setFontSize(10);

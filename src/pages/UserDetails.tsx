@@ -15,6 +15,7 @@ import { getTraitClassification, getFacetClassification } from "@/utils/scoreCal
 import { generateHDReport, type HDReportData } from "@/utils/generateHDReport";
 import { generateIntegratedReport, type IntegratedReportData } from "@/utils/generateIntegratedReport";
 import AIDataDebugPanel from "@/components/AIDataDebugPanel";
+import { facetNamesLuciana } from "@/data/bigFiveQuestionsLuciana";
 
 interface TestResult {
   id: string;
@@ -198,7 +199,8 @@ const UserDetails = () => {
         score: score as number,
         classification: getTraitClassification(score as number), // Recalcula do score bruto
         facets: Object.entries(facetScores[key] || {}).map(([facetKey, facetScore]) => ({
-          name: facetKey,
+          // Usa os nomes corretos das facetas da Luciana
+          name: facetNamesLuciana[facetKey] || facetKey,
           score: facetScore as number,
           classification: getFacetClassification(facetScore as number) // Recalcula do score bruto
         }))
