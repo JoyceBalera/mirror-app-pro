@@ -11,30 +11,10 @@ import { ptBR } from "date-fns/locale";
 import { SCORING, TRAIT_LABELS, getTraitPercentage } from "@/constants/scoring";
 import { generateTestResultPDF } from "@/utils/pdfGenerator";
 import { getTraitClassification, getFacetClassification as getScoreFacetClassification } from "@/utils/scoreCalculator";
+import { facetNamesLuciana } from "@/data/bigFiveQuestionsLuciana";
 
-// Mapeamento de códigos de facetas para nomes legíveis
-const FACET_NAMES: Record<string, Record<string, string>> = {
-  neuroticismo: {
-    N1: "Ansiedade", N2: "Raiva", N3: "Depressão", 
-    N4: "Constrangimento", N5: "Imoderação", N6: "Vulnerabilidade"
-  },
-  extroversão: {
-    E1: "Simpatia", E2: "Gregarismo", E3: "Assertividade",
-    E4: "Atividade", E5: "Busca por Excitação", E6: "Emoções Positivas"
-  },
-  abertura: {
-    O1: "Imaginação", O2: "Interesse Artístico", O3: "Emotividade",
-    O4: "Aventura", O5: "Intelecto", O6: "Liberalismo"
-  },
-  amabilidade: {
-    A1: "Confiança", A2: "Moralidade", A3: "Altruísmo",
-    A4: "Cooperação", A5: "Modéstia", A6: "Simpatia"
-  },
-  conscienciosidade: {
-    C1: "Autoeficácia", C2: "Ordem", C3: "Senso de Dever",
-    C4: "Busca por Realização", C5: "Autodisciplina", C6: "Cautela"
-  }
-};
+// Usa os nomes corretos das facetas definidos pela Luciana (mapeamento flat)
+const FACET_NAMES = facetNamesLuciana;
 
 // Calcula classificação de faceta baseado no score (10-50)
 const getFacetClassification = (score: number): string => {
@@ -181,8 +161,6 @@ const BigFiveResults = () => {
   const getFormattedTraitScores = () => {
     if (!result) return [];
     return Object.entries(result.trait_scores).map(([key, score]) => {
-      const normalizedKey = normalizeTraitKey(key);
-      const facetNames = FACET_NAMES[normalizedKey] || {};
       const traitScore = score as number;
       
       // RECALCULA a classificação baseado no score bruto, não usa o salvo no banco
@@ -195,7 +173,8 @@ const BigFiveResults = () => {
         score: traitScore,
         classification: recalculatedClassification, // Usa classificação recalculada
         facets: Object.entries(result.facet_scores[key] || {}).map(([facetKey, facetScore]) => ({
-          name: facetNames[facetKey] || facetKey,
+          // FACET_NAMES agora é flat: { N1: "Ansiedade", E1: "Calor", ... }
+          name: FACET_NAMES[facetKey] || facetKey,
           score: facetScore,
           // RECALCULA a classificação da faceta baseado no score bruto
           classification: getScoreFacetClassification(facetScore as number)
@@ -319,7 +298,7 @@ const BigFiveResults = () => {
 
       {/* Trait Scores */}
       <Card className="p-6 mb-6">
-        <h2 className="text-xl font-semibold mb-6">Seus Traços de Personalidade</h2>
+        <h2 className="text-xl font-semibold mb-6">Resumo dos Traços e Facetas</h2>
         
         <div className="space-y-6">
           {Object.entries(result.trait_scores).map(([trait, scoreValue]) => {
