@@ -185,12 +185,13 @@ const BigFiveResults = () => {
   };
 
   const handleGenerateAnalysis = async () => {
-    if (!result) return;
+    if (!result || !sessionId) return;
     
     setGeneratingAnalysis(true);
     try {
+      // Agora a edge function busca os dados diretamente do banco
       const { data, error } = await supabase.functions.invoke("analyze-personality", {
-        body: { traitScores: getFormattedTraitScores() },
+        body: { sessionId },
       });
 
       if (error) throw error;

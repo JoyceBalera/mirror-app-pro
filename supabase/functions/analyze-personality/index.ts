@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -11,37 +12,114 @@ serve(async (req) => {
   }
 
   try {
-    const { traitScores } = await req.json();
+    const { sessionId } = await req.json();
+    
+    if (!sessionId) {
+      throw new Error("sessionId é obrigatório");
+    }
+
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY não configurada");
     }
 
-    // Formatar os dados incluindo a classificação do traço explicitamente
-    // O frontend envia: { trait: "Neuroticismo", score: 182, classification: "Média", facets: [...] }
-    const formattedTraitsData = traitScores.map((traitData: any) => {
-      const traitName = traitData.trait || traitData.name; // Suporta ambos os formatos
-      const traitClassification = traitData.classification || "Média";
-      const facetsInfo = traitData.facets.map((f: any) => 
-        `${f.name.toLowerCase()}: ${f.classification.toLowerCase()}`
-      ).join(', ');
-      return `${traitName}: ${traitClassification.toUpperCase()} [score ${Math.round(traitData.score)}] (${facetsInfo})`;
+    // Buscar dados do banco de dados
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    const { data: result, error } = await supabase
+      .from('test_results')
+      .select('trait_scores, facet_scores, classifications')
+      .eq('session_id', sessionId)
+      .single();
+
+    if (error || !result) {
+      console.error("Erro ao buscar resultados:", error);
+      throw new Error("Erro ao buscar resultados do teste");
+    }
+
+    console.log("Dados obtidos do banco:", JSON.stringify(result));
+
+    // Mapeamento de nomes de traços
+    const traitNameMap: Record<string, string> = {
+      neuroticismo: "Neuroticismo",
+      extroversão: "Extroversão",
+      abertura: "Abertura à Experiência",
+      amabilidade: "Amabilidade",
+      conscienciosidade: "Conscienciosidade"
+    };
+
+    // Mapeamento de facetas
+    const facetNameMap: Record<string, string> = {
+      N1: "Ansiedade", N2: "Hostilidade", N3: "Depressão", N4: "Autoconsciência", N5: "Impulsividade", N6: "Vulnerabilidade",
+      E1: "Calor", E2: "Sociabilidade", E3: "Assertividade", E4: "Atividade", E5: "Busca de Excitação", E6: "Emoções Positivas",
+      O1: "Fantasia", O2: "Estética", O3: "Sentimentos", O4: "Ações", O5: "Ideias", O6: "Valores",
+      A1: "Confiança", A2: "Franqueza", A3: "Altruísmo", A4: "Conformidade", A5: "Modéstia", A6: "Empatia",
+      C1: "Competência", C2: "Ordem", C3: "Senso de Dever", C4: "Luta pela Realização", C5: "Autodisciplina", C6: "Ponderação"
+    };
+
+    // Função de classificação para traços (24 questões x 1-5 = 24-120)
+    const getTraitClassification = (score: number): string => {
+      if (score >= 24 && score <= 62) return "Baixa";
+      if (score >= 63 && score <= 96) return "Média";
+      if (score >= 97 && score <= 120) return "Alta";
+      return "Média";
+    };
+
+    // Função de classificação para facetas (4 questões x 1-5 = 4-20)
+    const getFacetClassification = (score: number): string => {
+      if (score >= 4 && score <= 11) return "Baixa";
+      if (score >= 12 && score <= 16) return "Média";
+      if (score >= 17 && score <= 20) return "Alta";
+      return "Média";
+    };
+
+    const traitScores = result.trait_scores as Record<string, number>;
+    const facetScores = result.facet_scores as Record<string, number>;
+
+    // Formatar dados com classificações calculadas do banco
+    const formattedTraitsData = Object.entries(traitScores).map(([traitKey, score]) => {
+      const traitName = traitNameMap[traitKey] || traitKey;
+      const traitClassification = getTraitClassification(score);
+      
+      // Encontrar facetas deste traço
+      const traitPrefix = traitKey[0].toUpperCase();
+      const facetsInfo = Object.entries(facetScores)
+        .filter(([facetKey]) => facetKey.startsWith(traitPrefix))
+        .map(([facetKey, facetScore]) => {
+          const facetName = facetNameMap[facetKey] || facetKey;
+          const facetClassification = getFacetClassification(facetScore);
+          return `${facetName}: ${facetClassification} (score ${facetScore})`;
+        })
+        .join(', ');
+      
+      return `${traitName}: ${traitClassification.toUpperCase()} [score ${score}] (${facetsInfo})`;
     }).join('; ') + '.';
 
-    const systemPrompt = `Você é uma mentora experiente em desenvolvimento pessoal e profissional de mulheres adultas. Seu papel é interpretar os resultados do Mapa de Personalidade de forma acolhedora, prática e transformadora.
+    console.log("Dados formatados para IA:", formattedTraitsData);
+
+    const systemPrompt = `REGRAS CRÍTICAS - ANTI-ALUCINAÇÃO:
+1. Use EXATAMENTE as classificações fornecidas nos dados
+2. NÃO invente dados que não foram informados
+3. Se uma faceta é "Baixa", trate como BAIXA - não minimize nem altere
+4. NUNCA contradiga os dados fornecidos
+5. Se o score indica BAIXA, a interpretação DEVE refletir comportamento de nível baixo
+
+Você é uma mentora experiente em desenvolvimento pessoal e profissional de mulheres adultas. Seu papel é interpretar os resultados do Mapa de Personalidade de forma acolhedora, prática e transformadora.
 
 ESCALAS DE CLASSIFICAÇÃO (OBRIGATÓRIO SEGUIR):
-- Traços: scores de 60-300 pontos
-  - 60-140 = BAIXA
-  - 141-220 = MÉDIA
-  - 221-300 = ALTA
-- Facetas: scores de 10-50 pontos
-  - 10-23 = BAIXA
-  - 24-36 = MÉDIA
-  - 37-50 = ALTA
+- Traços: scores de 24-120 pontos
+  - 24-62 = BAIXA
+  - 63-96 = MÉDIA
+  - 97-120 = ALTA
+- Facetas: scores de 4-20 pontos
+  - 4-11 = BAIXA
+  - 12-16 = MÉDIA
+  - 17-20 = ALTA
 
-REGRA CRÍTICA: USE EXATAMENTE A CLASSIFICAÇÃO INFORMADA NOS DADOS. Se os dados dizem "MÉDIA", você DEVE dizer "nível médio" no relatório. NUNCA invente classificações diferentes.
+REGRA CRÍTICA: USE EXATAMENTE A CLASSIFICAÇÃO INFORMADA NOS DADOS. Se os dados dizem "BAIXA", você DEVE interpretar como nível baixo. NUNCA invente classificações diferentes.
 
 REGRAS DE INTERPRETAÇÃO:
 
@@ -104,8 +182,11 @@ REGRAS DE SEGURANÇA:
 - NUNCA use termos técnicos como "Big Five", "modelo dos cinco fatores", "NEO-PI-R", "cinco grandes fatores" - use apenas "Mapa de Personalidade" quando necessário
 - OBRIGATÓRIO: Use exatamente as classificações informadas nos dados (BAIXA/MÉDIA/ALTA)`;
 
-    const userPrompt = `Gere o relatório completo conforme as instruções para os seguintes dados. IMPORTANTE: Use EXATAMENTE as classificações informadas (BAIXA/MÉDIA/ALTA), não as altere!
+    const userPrompt = `Gere o relatório completo conforme as instruções para os seguintes dados. 
 
+ATENÇÃO: Os dados abaixo já contêm as classificações corretas calculadas. Use EXATAMENTE estas classificações (BAIXA/MÉDIA/ALTA), não as altere!
+
+DADOS DO TESTE:
 ${formattedTraitsData}`;
 
     console.log("Chamando Lovable AI para análise...");

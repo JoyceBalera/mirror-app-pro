@@ -43,13 +43,13 @@ export const Results = ({ traitScores, onRestart, sessionId, userName }: Results
   };
 
   const handleGenerateAnalysis = useCallback(async () => {
-    // Validação: verificar se traitScores está válido
-    if (!traitScores || traitScores.length === 0) {
-      console.error("TraitScores inválido:", traitScores);
-      setError("Dados de traços inválidos");
+    // Validação: verificar se sessionId está válido
+    if (!sessionId) {
+      console.error("SessionId inválido:", sessionId);
+      setError("ID da sessão inválido");
       toast({
         title: "Erro",
-        description: "Não há dados de traços para analisar.",
+        description: "Não foi possível identificar a sessão do teste.",
         variant: "destructive",
       });
       return;
@@ -61,7 +61,7 @@ export const Results = ({ traitScores, onRestart, sessionId, userName }: Results
       return;
     }
 
-    console.log("Iniciando geração de análise...", { traitScores });
+    console.log("Iniciando geração de análise...", { sessionId });
     setIsGenerating(true);
     setError(null);
 
@@ -78,19 +78,9 @@ export const Results = ({ traitScores, onRestart, sessionId, userName }: Results
     }, 60000);
 
     try {
-      // Recalcula classificações para garantir dados corretos para a IA
-      const recalculatedTraitScores = traitScores.map(trait => ({
-        ...trait,
-        trait: trait.name, // Adiciona campo 'trait' para compatibilidade
-        classification: getTraitClassification(trait.score),
-        facets: trait.facets.map(facet => ({
-          ...facet,
-          classification: getFacetClassification(facet.score)
-        }))
-      }));
-
+      // Agora a edge function busca os dados diretamente do banco
       const { data, error } = await supabase.functions.invoke("analyze-personality", {
-        body: { traitScores: recalculatedTraitScores },
+        body: { sessionId },
       });
 
       // Limpar timeout se chegou aqui

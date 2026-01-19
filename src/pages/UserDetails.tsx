@@ -193,22 +193,9 @@ const UserDetails = () => {
   const handleGenerateAnalysis = async (sessionId: string, traitScores: any, facetScores: any, classifications: any) => {
     setGeneratingAnalysis(sessionId);
     try {
-      // RECALCULA classificações baseado nos scores brutos para garantir dados corretos
-      const formattedTraitScores = Object.entries(traitScores).map(([key, score]) => ({
-        trait: getTraitLabel(key),
-        name: getTraitLabel(key),
-        score: score as number,
-        classification: getTraitClassification(score as number), // Recalcula do score bruto
-        facets: Object.entries(facetScores[key] || {}).map(([facetKey, facetScore]) => ({
-          // Usa os nomes corretos das facetas da Luciana
-          name: facetNamesLuciana[facetKey] || facetKey,
-          score: facetScore as number,
-          classification: getFacetClassification(facetScore as number) // Recalcula do score bruto
-        }))
-      }));
-
+      // Agora a edge function busca os dados diretamente do banco
       const { data, error } = await supabase.functions.invoke("analyze-personality", {
-        body: { traitScores: formattedTraitScores },
+        body: { sessionId },
       });
 
       if (error) throw error;
