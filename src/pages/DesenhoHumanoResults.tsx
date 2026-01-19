@@ -454,7 +454,7 @@ const DesenhoHumanoResults = () => {
               Voltar
             </Button>
             <h1 className="text-xl md:text-2xl font-bold text-[#F7F3EF]">
-              Seu Mapa de Desenho Humano
+              Sua Arquitetura Pessoal
             </h1>
             <div className="w-20" />
           </div>

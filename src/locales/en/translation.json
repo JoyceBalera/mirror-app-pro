@@ -57,8 +57,8 @@
     "resultNotFound": "Result not found."
   },
   "testCard": {
-    "bigFive": "BIG FIVE",
-    "humanDesign": "HUMAN DESIGN",
+    "bigFive": "PERSONALITY MAP",
+    "humanDesign": "PERSONAL ARCHITECTURE",
     "bigFiveDesc": "Discover the 5 major traits of your personality",
     "hdDesc": "Discover your energy map and life purpose",
     "bigFiveInfo": "⏱️ 30 minutes • 📝 300 questions",
@@ -66,7 +66,7 @@
     "locked": "LOCKED",
     "unlocked": "UNLOCKED! ✨",
     "completed": "COMPLETED",
-    "completeBigFiveFirst": "Complete Big Five to unlock this test",
+    "completeBigFiveFirst": "Complete Personality Map to unlock this test",
     "testCompleted": "Test completed!",
     "nowAvailable": "Now available!",
     "completedOn": "Completed on:",
@@ -79,8 +79,8 @@
   },
   "integratedReport": {
     "new": "NEW",
-    "title": "INTEGRATED REPORT",
-    "description": "Your complete analysis: Big Five + Human Design. An integrated view of your personality profile and energy map.",
+    "title": "PERSONAL BLUEPRINT",
+    "description": "Your complete analysis: Personality Map + Personal Architecture. An integrated view of your personality profile and energy map.",
     "viewComplete": "VIEW COMPLETE ANALYSIS"
   }
 }

@@ -18,11 +18,11 @@ export const Welcome = ({ onStart, onQuickTest }: WelcomeProps) => {
           </div>
           
           <h1 className="text-5xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-600">
-            Big Five
+            Mapa de Personalidade
           </h1>
           
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
-            Descubra sua personalidade através do modelo científico Big Five. 
+            Descubra sua personalidade através do modelo científico dos Cinco Grandes Fatores. 
             Este teste avalia cinco dimensões fundamentais da personalidade humana.
           </p>
         </div>
