@@ -11,6 +11,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { SCORING, TRAIT_LABELS, getTraitPercentage } from "@/constants/scoring";
 import { generateTestResultPDF } from "@/utils/pdfGenerator";
+import { getTraitClassification, getFacetClassification } from "@/utils/scoreCalculator";
 import { generateHDReport, type HDReportData } from "@/utils/generateHDReport";
 import { generateIntegratedReport, type IntegratedReportData } from "@/utils/generateIntegratedReport";
 import AIDataDebugPanel from "@/components/AIDataDebugPanel";
@@ -190,14 +191,16 @@ const UserDetails = () => {
   const handleGenerateAnalysis = async (sessionId: string, traitScores: any, facetScores: any, classifications: any) => {
     setGeneratingAnalysis(sessionId);
     try {
+      // RECALCULA classificações baseado nos scores brutos para garantir dados corretos
       const formattedTraitScores = Object.entries(traitScores).map(([key, score]) => ({
+        trait: getTraitLabel(key),
         name: getTraitLabel(key),
         score: score as number,
-        classification: getClassificationLabel(classifications[key]),
-        facets: Object.entries(facetScores[key]).map(([facetKey, facetScore]) => ({
+        classification: getTraitClassification(score as number), // Recalcula do score bruto
+        facets: Object.entries(facetScores[key] || {}).map(([facetKey, facetScore]) => ({
           name: facetKey,
           score: facetScore as number,
-          classification: getClassificationLabel(facetScore as number)
+          classification: getFacetClassification(facetScore as number) // Recalcula do score bruto
         }))
       }));
 
@@ -380,10 +383,12 @@ const UserDetails = () => {
       const latestBigFive = results[0];
       const latestHD = hdResults[0];
 
+      // RECALCULA classificações baseado nos scores brutos
       const bigFiveData = Object.entries(latestBigFive.trait_scores).map(([key, score]) => ({
+        trait: getTraitLabel(key),
         name: getTraitLabel(key),
         score: score as number,
-        classification: getClassificationLabel(latestBigFive.classifications[key]),
+        classification: getTraitClassification(score as number), // Recalcula do score bruto
       }));
 
       const humanDesignData = {
@@ -450,16 +455,10 @@ const UserDetails = () => {
       const traitScores: Record<string, number> = {};
       const traitClassifications: Record<string, string> = {};
       
+      // RECALCULA classificações baseado nos scores brutos (faixas corretas: 60-140, 141-220, 221-300)
       Object.entries(latestBigFive.trait_scores).forEach(([key, score]) => {
         traitScores[getTraitLabel(key)] = score as number;
-        const scoreNum = score as number;
-        if (scoreNum <= 40) {
-          traitClassifications[getTraitLabel(key)] = 'low';
-        } else if (scoreNum <= 60) {
-          traitClassifications[getTraitLabel(key)] = 'medium';
-        } else {
-          traitClassifications[getTraitLabel(key)] = 'high';
-        }
+        traitClassifications[getTraitLabel(key)] = getTraitClassification(score as number);
       });
 
       // Derive defined and open centers
