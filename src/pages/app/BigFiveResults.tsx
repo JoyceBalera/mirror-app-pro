@@ -324,6 +324,8 @@ const BigFiveResults = () => {
         <div className="space-y-6">
           {Object.entries(result.trait_scores).map(([trait, scoreValue]) => {
             const score = scoreValue as number;
+            // RECALCULA a classificação baseado no score bruto para exibição na UI
+            const recalculatedClassification = getTraitClassification(score);
             return (
               <div key={trait}>
                 <div className="flex justify-between items-center mb-2">
@@ -332,8 +334,8 @@ const BigFiveResults = () => {
                     <span className="text-sm text-muted-foreground">
                       {score.toFixed(0)} / {SCORING.TRAIT_MAX}
                     </span>
-                    <span className={`text-sm font-medium ${getClassificationColor(result.classifications[trait])}`}>
-                      ({getClassificationLabel(result.classifications[trait])})
+                    <span className={`text-sm font-medium ${getClassificationColor(recalculatedClassification)}`}>
+                      ({getClassificationLabel(recalculatedClassification)})
                     </span>
                   </div>
                 </div>
