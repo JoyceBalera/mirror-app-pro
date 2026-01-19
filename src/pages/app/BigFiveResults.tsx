@@ -12,6 +12,7 @@ import { SCORING, TRAIT_LABELS, getTraitPercentage } from "@/constants/scoring";
 import { generateTestResultPDF } from "@/utils/pdfGenerator";
 import { getTraitClassification, getFacetClassification as getScoreFacetClassification } from "@/utils/scoreCalculator";
 import { facetNamesLuciana } from "@/data/bigFiveQuestionsLuciana";
+import ReactMarkdown from "react-markdown";
 
 // Usa os nomes corretos das facetas definidos pela Luciana (mapeamento flat)
 const FACET_NAMES = facetNamesLuciana;
@@ -346,9 +347,9 @@ const BigFiveResults = () => {
 
             {showAnalysis && (
               <div className="bg-muted/50 p-6 rounded-lg">
-                <p className="whitespace-pre-wrap text-sm leading-relaxed">
-                  {result.ai_analyses[0].analysis_text}
-                </p>
+                <div className="prose prose-sm max-w-none dark:prose-invert prose-headings:text-primary prose-strong:text-foreground">
+                  <ReactMarkdown>{result.ai_analyses[0].analysis_text}</ReactMarkdown>
+                </div>
                 <p className="text-xs text-muted-foreground mt-4">
                   Gerado em {format(new Date(result.ai_analyses[0].generated_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
                 </p>

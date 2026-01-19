@@ -16,6 +16,7 @@ import { generateHDReport, type HDReportData } from "@/utils/generateHDReport";
 import { generateIntegratedReport, type IntegratedReportData } from "@/utils/generateIntegratedReport";
 import AIDataDebugPanel from "@/components/AIDataDebugPanel";
 import { facetNamesLuciana } from "@/data/bigFiveQuestionsLuciana";
+import ReactMarkdown from "react-markdown";
 
 interface TestResult {
   id: string;
@@ -676,9 +677,9 @@ const UserDetails = () => {
 
                       {expandedAnalysis === result.id && (
                         <div className="bg-muted/50 p-4 rounded-lg">
-                          <p className="text-sm whitespace-pre-wrap">
-                            {result.ai_analyses[0].analysis_text}
-                          </p>
+                          <div className="prose prose-sm max-w-none dark:prose-invert prose-headings:text-primary prose-strong:text-foreground">
+                            <ReactMarkdown>{result.ai_analyses[0].analysis_text}</ReactMarkdown>
+                          </div>
                           <p className="text-xs text-muted-foreground mt-4">
                             Modelo: {result.ai_analyses[0].model_used}
                           </p>
@@ -838,9 +839,9 @@ const UserDetails = () => {
 
                       {expandedHDAnalysis === hdResult.id && (
                         <div className="bg-muted/50 p-4 rounded-lg">
-                          <p className="text-sm whitespace-pre-wrap">
-                            {hdResult.human_design_analyses[0].analysis_text}
-                          </p>
+                          <div className="prose prose-sm max-w-none dark:prose-invert prose-headings:text-primary prose-strong:text-foreground">
+                            <ReactMarkdown>{hdResult.human_design_analyses[0].analysis_text}</ReactMarkdown>
+                          </div>
                           <p className="text-xs text-muted-foreground mt-4">
                             Modelo: {hdResult.human_design_analyses[0].model_used}
                           </p>
