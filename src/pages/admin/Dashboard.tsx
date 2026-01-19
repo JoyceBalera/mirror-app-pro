@@ -183,7 +183,7 @@ const AdminDashboard = () => {
               <CheckCircle className="w-6 h-6 text-blue-600" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Big Five</p>
+              <p className="text-sm text-muted-foreground">Mapa de Personalidade</p>
               <p className="text-3xl font-bold">{stats.testedBigFive}</p>
             </div>
           </div>
@@ -195,7 +195,7 @@ const AdminDashboard = () => {
               <CheckCircle className="w-6 h-6 text-purple-600" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Desenho Humano</p>
+              <p className="text-sm text-muted-foreground">Arquitetura Pessoal</p>
               <p className="text-3xl font-bold">{stats.testedHD}</p>
             </div>
           </div>
@@ -230,8 +230,8 @@ const AdminDashboard = () => {
             <SelectContent>
               <SelectItem value="all">Todos</SelectItem>
               <SelectItem value="tested">Com Algum Teste</SelectItem>
-              <SelectItem value="bigfive">Big Five Realizado</SelectItem>
-              <SelectItem value="humandesign">Desenho Humano Realizado</SelectItem>
+              <SelectItem value="bigfive">Mapa de Personalidade Realizado</SelectItem>
+              <SelectItem value="humandesign">Arquitetura Pessoal Realizada</SelectItem>
               <SelectItem value="pending">Sem Nenhum Teste</SelectItem>
             </SelectContent>
           </Select>

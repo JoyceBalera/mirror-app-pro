@@ -266,7 +266,7 @@ const UserDetails = () => {
 
       toast({
         title: "Análise gerada!",
-        description: "A análise de Desenho Humano foi gerada e salva com sucesso.",
+        description: "A análise de Arquitetura Pessoal foi gerada e salva com sucesso.",
       });
 
       fetchUserData();
@@ -306,7 +306,7 @@ const UserDetails = () => {
 
       toast({
         title: "PDF gerado!",
-        description: "O relatório de Desenho Humano foi baixado com sucesso.",
+        description: "O relatório de Arquitetura Pessoal foi baixado com sucesso.",
       });
     } catch (error: any) {
       console.error("Erro ao gerar PDF:", error);
@@ -375,7 +375,7 @@ const UserDetails = () => {
     if (results.length === 0 || hdResults.length === 0) {
       toast({
         title: "Testes incompletos",
-        description: "O usuário precisa ter completado ambos os testes (Big Five e Desenho Humano).",
+        description: "O usuário precisa ter completado ambos os testes (Mapa de Personalidade e Arquitetura Pessoal).",
         variant: "destructive",
       });
       return;
@@ -573,13 +573,13 @@ const UserDetails = () => {
 
         {/* Big Five Results */}
         <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-          <Badge variant="secondary" className="bg-blue-100 text-blue-700">Big Five</Badge>
+          <Badge variant="secondary" className="bg-blue-100 text-blue-700">Mapa de Personalidade</Badge>
           Histórico de Testes ({results.length})
         </h2>
 
         {results.length === 0 ? (
           <Card className="p-8 text-center mb-8">
-            <p className="text-muted-foreground">Este usuário ainda não realizou nenhum teste Big Five</p>
+            <p className="text-muted-foreground">Este usuário ainda não realizou nenhum teste do Mapa de Personalidade</p>
           </Card>
         ) : (
           <div className="space-y-6 mb-8">
@@ -644,7 +644,7 @@ const UserDetails = () => {
 
                 {/* Big Five Scores */}
                 <div className="space-y-4 mb-6">
-                  <h4 className="font-medium">Big Five Scores:</h4>
+                  <h4 className="font-medium">Mapa de Personalidade - Scores:</h4>
                   {Object.entries(result.trait_scores).map(([trait, score]: [string, any]) => (
                     <div key={trait}>
                       <div className="flex justify-between mb-2">
@@ -734,13 +734,13 @@ const UserDetails = () => {
 
         {/* Human Design Results */}
         <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-          <Badge variant="secondary" className="bg-purple-100 text-purple-700">Desenho Humano</Badge>
+          <Badge variant="secondary" className="bg-purple-100 text-purple-700">Arquitetura Pessoal</Badge>
           Histórico de Análises ({hdResults.length})
         </h2>
 
         {hdResults.length === 0 ? (
           <Card className="p-8 text-center">
-            <p className="text-muted-foreground">Este usuário ainda não realizou nenhuma análise de Desenho Humano</p>
+            <p className="text-muted-foreground">Este usuário ainda não realizou nenhuma análise de Arquitetura Pessoal</p>
           </Card>
         ) : (
           <div className="space-y-6">
@@ -905,26 +905,26 @@ const UserDetails = () => {
         <h2 className="text-xl font-semibold mb-4 mt-8 flex items-center gap-2">
           <Badge variant="secondary" className="bg-gradient-to-r from-blue-100 to-purple-100 text-purple-700">
             <Layers className="w-3 h-3 mr-1" />
-            Integrado
+            Blueprint
           </Badge>
-          Relatório Integrado (Big Five + Desenho Humano)
+          Blueprint Pessoal (Mapa de Personalidade + Arquitetura Pessoal)
         </h2>
 
         <Card className="p-6">
           {results.length === 0 || hdResults.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-muted-foreground">
-                O usuário precisa completar ambos os testes (Big Five e Desenho Humano) para gerar o relatório integrado.
+                O usuário precisa completar ambos os testes (Mapa de Personalidade e Arquitetura Pessoal) para gerar o Blueprint Pessoal.
               </p>
               <div className="flex justify-center gap-2 mt-4">
                 {results.length === 0 && (
                   <Badge variant="outline" className="text-orange-600 border-orange-300">
-                    Big Five Pendente
+                    Mapa de Personalidade Pendente
                   </Badge>
                 )}
                 {hdResults.length === 0 && (
                   <Badge variant="outline" className="text-orange-600 border-orange-300">
-                    Desenho Humano Pendente
+                    Arquitetura Pessoal Pendente
                   </Badge>
                 )}
               </div>
@@ -933,9 +933,9 @@ const UserDetails = () => {
             <>
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <h3 className="text-lg font-semibold">Análise Integrada</h3>
+                  <h3 className="text-lg font-semibold">Blueprint Pessoal</h3>
                   <p className="text-sm text-muted-foreground">
-                    Cruzamento dos resultados Big Five + Desenho Humano
+                    Cruzamento dos resultados Mapa de Personalidade + Arquitetura Pessoal
                   </p>
                 </div>
                 <div className="flex gap-2">
@@ -975,7 +975,7 @@ const UserDetails = () => {
                     ) : (
                       <>
                         <Sparkles className="w-4 h-4" />
-                        {integratedAnalysis ? "Regenerar" : "Gerar Análise Integrada"}
+                        {integratedAnalysis ? "Regenerar" : "Gerar Blueprint Pessoal"}
                       </>
                     )}
                   </Button>
@@ -990,10 +990,10 @@ const UserDetails = () => {
                 <div className="bg-muted/30 p-6 rounded-lg text-center">
                   <Layers className="w-12 h-12 mx-auto mb-4 text-muted-foreground/50" />
                   <p className="text-muted-foreground">
-                    Nenhuma análise integrada foi gerada ainda.
+                    Nenhum Blueprint Pessoal foi gerado ainda.
                   </p>
                   <p className="text-sm text-muted-foreground mt-2">
-                    Clique em "Gerar Análise Integrada" para criar um relatório que cruza os dados de Big Five e Desenho Humano.
+                    Clique em "Gerar Blueprint Pessoal" para criar um relatório que cruza os dados do Mapa de Personalidade e Arquitetura Pessoal.
                   </p>
                 </div>
               )}
