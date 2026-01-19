@@ -107,8 +107,8 @@ const AnalysisSections = ({
               <AccordionContent className="px-4 pb-4">
                 <div className="space-y-4">
                   <p className="text-muted-foreground">
-                    O Human Design é um sistema que combina astrologia, I Ching, Kabbalah, e o sistema de chakras para revelar 
-                    sua natureza energética única. Seu mapa mostra como você foi desenhado para interagir com o mundo.
+                    A Arquitetura Pessoal é um sistema que combina astrologia, I Ching, Kabbalah, e o sistema de chakras para revelar 
+                    sua natureza energética única. Seu mapa mostra como você foi desenhada para interagir com o mundo.
                   </p>
                   {typeInfo && (
                     <div className="bg-[#F7F3EF] p-4 rounded-lg">

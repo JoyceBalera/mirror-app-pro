@@ -354,10 +354,10 @@ const IntegratedResults = () => {
           <Sparkles className="w-10 h-10 text-accent" />
         </div>
         <h1 className="text-3xl font-bold text-primary mb-2">
-          Relatório Integrado
+          Blueprint Pessoal
         </h1>
         <p className="text-muted-foreground max-w-lg mx-auto">
-          Big Five + Desenho Humano: uma visão única e completa do seu perfil
+          Mapa de Personalidade + Arquitetura Pessoal: uma visão única e completa do seu perfil
         </p>
       </div>
 
@@ -369,7 +369,7 @@ const IntegratedResults = () => {
               {data.bigFiveSession ? "✓" : "○"}
             </div>
             <div>
-              <p className="font-semibold">Big Five</p>
+              <p className="font-semibold">Mapa de Personalidade</p>
               <p className="text-sm text-muted-foreground">
                 {data.bigFiveSession ? "Teste concluído" : "Teste pendente"}
               </p>
@@ -383,7 +383,7 @@ const IntegratedResults = () => {
               {data.humanDesignResult ? "✓" : "○"}
             </div>
             <div>
-              <p className="font-semibold">Desenho Humano</p>
+              <p className="font-semibold">Arquitetura Pessoal</p>
               <p className="text-sm text-muted-foreground">
                 {data.humanDesignResult ? "Mapa calculado" : "Mapa pendente"}
               </p>
@@ -418,7 +418,7 @@ const IntegratedResults = () => {
             <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">Testes Incompletos</h3>
             <p className="text-muted-foreground mb-4">
-              Complete ambos os testes para gerar seu relatório integrado.
+              Complete ambos os testes para gerar seu Blueprint Pessoal.
             </p>
             <Button onClick={() => navigate("/app")} variant="outline">
               Ir para o Dashboard
@@ -470,10 +470,10 @@ const IntegratedResults = () => {
           <CardContent className="py-12 text-center">
             <Sparkles className="w-12 h-12 text-accent mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">
-              Gerar Análise Integrada
+              Gerar Blueprint Pessoal
             </h3>
             <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-              Nossa IA irá cruzar os dados do seu Big Five com seu Desenho Humano
+              Nossa IA irá cruzar os dados do seu Mapa de Personalidade com sua Arquitetura Pessoal
               para revelar padrões únicos do seu perfil.
             </p>
             <Button
