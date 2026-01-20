@@ -217,9 +217,9 @@ const BigFiveResults = () => {
     
     setGeneratingAnalysis(true);
     try {
-      // Agora a edge function busca os dados diretamente do banco
+      // Agora a edge function busca os dados diretamente do banco e gera no idioma selecionado
       const { data, error } = await supabase.functions.invoke("analyze-personality", {
-        body: { sessionId },
+        body: { sessionId, language },
       });
 
       if (error) throw error;
