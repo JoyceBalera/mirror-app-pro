@@ -181,7 +181,7 @@ export const generateTestResultPDF = (
   };
 
   // ============ PÁGINA 1 - CAPA ============
-  let yPos = drawGradientHeader("MAPA DE PERSONALIDADE", "Teste dos Cinco Grandes Fatores");
+  let yPos = drawGradientHeader("MAPA DE PERSONALIDADE", "Análise Comportamental Big Five");
   
   yPos += 5;
   
@@ -198,7 +198,7 @@ export const generateTestResultPDF = (
   doc.setTextColor(...COLORS.darkText);
   doc.setFont("helvetica", "normal");
   
-  const introText = "Este relatório apresenta uma análise detalhada do seu perfil de personalidade baseado no modelo dos Cinco Grandes Fatores (Big Five), amplamente reconhecido na psicologia como uma das estruturas mais robustas para compreender as principais dimensões da personalidade humana.";
+  const introText = "Este relatório apresenta uma análise detalhada do seu perfil de personalidade baseado no modelo Big Five, amplamente reconhecido na psicologia como uma das estruturas mais robustas para compreender as principais dimensões da personalidade humana.";
   const introLines = doc.splitTextToSize(introText, contentWidth - 20);
   doc.text(introLines, margin + 10, yPos + 12);
   
@@ -460,7 +460,7 @@ export const generateTestResultPDF = (
   // ============ PÁGINA FINAL - SOBRE ============
   doc.addPage();
   currentPage++;
-  yPos = drawGradientHeader("SOBRE O MAPA DE PERSONALIDADE");
+  yPos = drawGradientHeader("SOBRE O BIG FIVE");
   yPos += 10;
 
   // Box explicativo
@@ -475,7 +475,7 @@ export const generateTestResultPDF = (
   doc.setTextColor(...COLORS.darkText);
   doc.setFont("helvetica", "normal");
   
-  const aboutText = `O Mapa de Personalidade é baseado no modelo dos Cinco Grandes Fatores (Big Five), um dos modelos de personalidade mais amplamente aceitos e validados na psicologia contemporânea. Ele mede cinco dimensões fundamentais que capturam as principais diferenças na personalidade humana:
+  const aboutText = `O Mapa de Personalidade é baseado no modelo Big Five, um dos modelos de personalidade mais amplamente aceitos e validados na psicologia contemporânea. Ele mede cinco dimensões fundamentais que capturam as principais diferenças na personalidade humana:
 
 • Neuroticismo - Tendência a experimentar emoções negativas
 • Extroversão - Nível de energia e sociabilidade
