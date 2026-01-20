@@ -40,7 +40,10 @@ serve(async (req) => {
       throw new Error("Erro ao buscar resultados do teste");
     }
 
-    console.log("Dados obtidos do banco:", JSON.stringify(result));
+    console.log("=== 🔍 DEBUG: Dados brutos do banco ===");
+    console.log("trait_scores:", JSON.stringify(result.trait_scores, null, 2));
+    console.log("facet_scores:", JSON.stringify(result.facet_scores, null, 2));
+    console.log("classifications:", JSON.stringify(result.classifications, null, 2));
 
     // Mapeamento de nomes de traços
     const traitNameMap: Record<string, string> = {
@@ -102,7 +105,9 @@ serve(async (req) => {
       return `${traitName}: ${traitClassification.toUpperCase()} [score ${score}] (${facetsInfo})`;
     }).join('; ') + '.';
 
-    console.log("Dados formatados para IA:", formattedTraitsData);
+    console.log("=== 📤 DEBUG: String enviada para IA ===");
+    console.log(formattedTraitsData);
+    console.log("=== Comprimento da string:", formattedTraitsData.length, "caracteres ===");
 
     const systemPrompt = `REGRAS CRÍTICAS - ANTI-ALUCINAÇÃO:
 1. Use EXATAMENTE as classificações fornecidas nos dados
