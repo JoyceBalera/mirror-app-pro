@@ -86,8 +86,16 @@ serve(async (req) => {
     const traitScores = result.trait_scores as Record<string, number>;
     const facetScores = result.facet_scores as Record<string, Record<string, number>>;
 
+    // DEBUG: Verificar estrutura dos dados
+    console.log("=== 🔍 DEBUG: Chaves de traitScores:", Object.keys(traitScores));
+    console.log("=== 🔍 DEBUG: Chaves de facetScores:", Object.keys(facetScores));
+    console.log("=== 🔍 DEBUG: facetScores completo:", JSON.stringify(facetScores, null, 2));
+
     // Formatar dados com classificações calculadas do banco
     const formattedTraitsData = Object.entries(traitScores).map(([traitKey, score]) => {
+      // DEBUG: Log para cada traço
+      const traitFacetsDebug = facetScores[traitKey];
+      console.log(`=== 🔍 DEBUG traitKey: "${traitKey}", facetas encontradas:`, traitFacetsDebug);
       const traitName = traitNameMap[traitKey] || traitKey;
       const traitClassification = getTraitClassification(score);
       
