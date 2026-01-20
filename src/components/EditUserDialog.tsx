@@ -145,8 +145,8 @@ const EditUserDialog = ({ user, currentRole, open, onOpenChange, onUserEdited }:
             
             <div className="flex items-center justify-between">
               <div>
-                <Label htmlFor="bigFive">Big Five</Label>
-                <p className="text-xs text-muted-foreground">Teste de personalidade</p>
+                <Label htmlFor="bigFive">Mapa de Personalidade</Label>
+                <p className="text-xs text-muted-foreground">Análise comportamental</p>
               </div>
               <Switch
                 id="bigFive"
@@ -157,7 +157,7 @@ const EditUserDialog = ({ user, currentRole, open, onOpenChange, onUserEdited }:
 
             <div className="flex items-center justify-between">
               <div>
-                <Label htmlFor="desenhoHumano">Desenho Humano</Label>
+                <Label htmlFor="desenhoHumano">Arquitetura Pessoal</Label>
                 <p className="text-xs text-muted-foreground">Mapa energético</p>
               </div>
               <Switch
