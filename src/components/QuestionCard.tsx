@@ -2,6 +2,7 @@ import { Question } from "@/types/test";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface QuestionCardProps {
   question: Question;
@@ -18,14 +19,15 @@ export const QuestionCard = ({
   questionNumber,
   totalQuestions,
 }: QuestionCardProps) => {
+  const { t } = useLanguage();
   const progress = (questionNumber / totalQuestions) * 100;
 
   const options = [
-    { value: 1, label: "Discordo Totalmente" },
-    { value: 2, label: "Discordo" },
-    { value: 3, label: "Neutro" },
-    { value: 4, label: "Concordo" },
-    { value: 5, label: "Concordo Totalmente" },
+    { value: 1, label: t.test.disagreeStrongly },
+    { value: 2, label: t.test.disagree },
+    { value: 3, label: t.test.neutral },
+    { value: 4, label: t.test.agree },
+    { value: 5, label: t.test.agreeStrongly },
   ];
 
   return (
@@ -33,7 +35,7 @@ export const QuestionCard = ({
       <div className="mb-4 sm:mb-6">
         <div className="flex justify-between items-center mb-2">
           <span className="text-xs sm:text-sm font-medium text-muted-foreground">
-            Questão {questionNumber} de {totalQuestions}
+            {t.test.question} {questionNumber} {t.test.of} {totalQuestions}
           </span>
           <span className="text-xs sm:text-sm font-medium text-primary">
             {Math.round(progress)}%
