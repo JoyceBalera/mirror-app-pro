@@ -7,12 +7,13 @@ import { Progress } from "@/components/ui/progress";
 import { ArrowLeft, Download, Sparkles, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { ptBR, enUS, es } from "date-fns/locale";
 import { SCORING, TRAIT_LABELS, getTraitPercentage } from "@/constants/scoring";
 import { generateTestResultPDF } from "@/utils/pdfGenerator";
 import { getTraitClassification, getFacetClassification as getScoreFacetClassification } from "@/utils/scoreCalculator";
 import { facetNamesLuciana } from "@/data/bigFiveQuestionsLuciana";
 import ReactMarkdown from "react-markdown";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 // Usa os nomes corretos das facetas definidos pela Luciana (mapeamento flat)
 const FACET_NAMES = facetNamesLuciana;
@@ -58,11 +59,21 @@ const BigFiveResults = () => {
   const { sessionId } = useParams<{ sessionId: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t, language } = useLanguage();
   const [result, setResult] = useState<TestResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [userName, setUserName] = useState("");
   const [generatingAnalysis, setGeneratingAnalysis] = useState(false);
   const [showAnalysis, setShowAnalysis] = useState(false);
+
+  // Get date-fns locale based on current language
+  const getDateLocale = () => {
+    switch (language) {
+      case 'en': return enUS;
+      case 'es': return es;
+      default: return ptBR;
+    }
+  };
 
   useEffect(() => {
     if (sessionId) {
@@ -102,8 +113,8 @@ const BigFiveResults = () => {
       // Verify ownership
       if (testResult.test_sessions.user_id !== user.id) {
         toast({
-          title: "Acesso negado",
-          description: "Você não tem permissão para ver este resultado.",
+          title: t.results.accessDenied,
+          description: t.results.noPermission,
           variant: "destructive",
         });
         navigate("/app");
@@ -121,8 +132,8 @@ const BigFiveResults = () => {
     } catch (error: any) {
       console.error("Error fetching result:", error);
       toast({
-        title: "Erro",
-        description: "Não foi possível carregar os resultados.",
+        title: t.errors.loadingFailed,
+        description: t.results.errorLoading,
         variant: "destructive",
       });
     } finally {
@@ -131,21 +142,38 @@ const BigFiveResults = () => {
   };
 
   const getTraitLabel = (trait: string) => {
-    return TRAIT_LABELS[trait] || trait;
+    const traitKey = normalizeTraitKey(trait);
+    const traitMap: Record<string, keyof typeof t.results.traits> = {
+      neuroticismo: 'neuroticism',
+      extroversão: 'extroversion',
+      abertura: 'openness',
+      amabilidade: 'agreeableness',
+      conscienciosidade: 'conscientiousness',
+      neuroticism: 'neuroticism',
+      extraversion: 'extroversion',
+      openness: 'openness',
+      agreeableness: 'agreeableness',
+      conscientiousness: 'conscientiousness'
+    };
+    const key = traitMap[traitKey] || traitMap[trait.toLowerCase()];
+    return key ? t.results.traits[key] : TRAIT_LABELS[trait] || trait;
   };
 
   const getClassificationLabel = (classification: string) => {
-    const labels: { [key: string]: string } = {
-      low: "Baixo",
-      medium: "Médio", 
-      high: "Alto",
-      Baixa: "Baixo",
-      Média: "Médio",
-      Alta: "Alto",
-      "Muito Baixo": "Muito Baixo",
-      "Muito Alto": "Muito Alto",
+    const classMap: Record<string, string> = {
+      "Muito Baixo": t.results.levels.veryLow,
+      "Baixo": t.results.levels.low,
+      "Médio": t.results.levels.medium,
+      "Alto": t.results.levels.high,
+      "Muito Alto": t.results.levels.veryHigh,
+      "low": t.results.levels.low,
+      "medium": t.results.levels.medium,
+      "high": t.results.levels.high,
+      "Baixa": t.results.levels.low,
+      "Média": t.results.levels.medium,
+      "Alta": t.results.levels.high,
     };
-    return labels[classification] || classification;
+    return classMap[classification] || classification;
   };
 
   const getClassificationColor = (classification: string) => {
@@ -204,8 +232,8 @@ const BigFiveResults = () => {
       });
 
       toast({
-        title: "Análise gerada! ✨",
-        description: "Sua análise personalizada está pronta.",
+        title: t.results.analysisGenerated,
+        description: t.results.analysisReady,
       });
 
       fetchResult();
@@ -213,8 +241,8 @@ const BigFiveResults = () => {
     } catch (error: any) {
       console.error("Error generating analysis:", error);
       toast({
-        title: "Erro ao gerar análise",
-        description: error.message || "Não foi possível gerar a análise.",
+        title: t.results.analysisError,
+        description: error.message || t.results.analysisErrorDesc,
         variant: "destructive",
       });
     } finally {
@@ -239,8 +267,8 @@ const BigFiveResults = () => {
       }
     );
     toast({
-      title: "PDF gerado!",
-      description: "O relatório foi baixado com sucesso.",
+      title: t.results.pdfGenerated,
+      description: t.results.pdfSuccess,
     });
   };
 
@@ -256,9 +284,9 @@ const BigFiveResults = () => {
     return (
       <div className="container mx-auto px-4 py-8">
         <Card className="p-8 text-center">
-          <p className="text-muted-foreground">Resultado não encontrado.</p>
+          <p className="text-muted-foreground">{t.results.notFound}</p>
           <Button onClick={() => navigate("/app")} className="mt-4">
-            Voltar ao Dashboard
+            {t.results.backToDashboard}
           </Button>
         </Card>
       </div>
@@ -273,7 +301,7 @@ const BigFiveResults = () => {
         className="mb-6 gap-2"
       >
         <ArrowLeft className="w-4 h-4" />
-        Voltar ao Dashboard
+        {t.results.backToDashboard}
       </Button>
 
       {/* Header */}
@@ -281,18 +309,18 @@ const BigFiveResults = () => {
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div>
             <h1 className="text-2xl font-bold text-primary">
-              Seus Resultados Big Five
+              {t.results.title} {t.results.pageTitle}
             </h1>
             {result.test_sessions.completed_at && (
               <p className="text-sm text-muted-foreground mt-1">
-                Realizado em {format(new Date(result.test_sessions.completed_at), "dd 'de' MMMM 'de' yyyy 'às' HH:mm", { locale: ptBR })}
+                {t.results.completedOn} {format(new Date(result.test_sessions.completed_at), "PPP 'às' HH:mm", { locale: getDateLocale() })}
               </p>
             )}
           </div>
           <div className="flex gap-2">
             <Button onClick={handleDownloadPDF} variant="outline" className="gap-2">
               <Download className="w-4 h-4" />
-              Baixar PDF
+              {t.results.download}
             </Button>
           </div>
         </div>
@@ -300,7 +328,7 @@ const BigFiveResults = () => {
 
       {/* Trait Scores */}
       <Card className="p-6 mb-6">
-        <h2 className="text-xl font-semibold mb-6">Resumo dos Traços e Facetas</h2>
+        <h2 className="text-xl font-semibold mb-6">{t.results.traitsSummary}</h2>
         
         <div className="space-y-6">
           {Object.entries(result.trait_scores).map(([trait, scoreValue]) => {
@@ -332,7 +360,7 @@ const BigFiveResults = () => {
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-primary" />
-            Análise Personalizada
+            {t.results.aiAnalysis}
           </h2>
         </div>
 
@@ -343,7 +371,7 @@ const BigFiveResults = () => {
               onClick={() => setShowAnalysis(!showAnalysis)}
               className="w-full mb-4"
             >
-              {showAnalysis ? 'Ocultar' : 'Ver'} Análise Completa
+              {showAnalysis ? t.results.hideAnalysis : t.results.showAnalysis}
             </Button>
 
             {showAnalysis && (
@@ -352,7 +380,7 @@ const BigFiveResults = () => {
                   <ReactMarkdown>{result.ai_analyses[0].analysis_text}</ReactMarkdown>
                 </div>
                 <p className="text-xs text-muted-foreground mt-4">
-                  Gerado em {format(new Date(result.ai_analyses[0].generated_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                  {t.results.generatedOn} {format(new Date(result.ai_analyses[0].generated_at), "PPP 'às' HH:mm", { locale: getDateLocale() })}
                 </p>
               </div>
             )}
@@ -360,8 +388,7 @@ const BigFiveResults = () => {
         ) : (
           <div className="bg-muted/30 p-6 rounded-lg text-center">
             <p className="text-muted-foreground mb-4">
-              Gere uma análise personalizada com inteligência artificial para 
-              entender melhor seus resultados.
+              {t.results.aiDescription}
             </p>
             <Button
               onClick={handleGenerateAnalysis}
@@ -371,12 +398,12 @@ const BigFiveResults = () => {
               {generatingAnalysis ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  Gerando Análise...
+                  {t.results.generatingAI}
                 </>
               ) : (
                 <>
                   <Sparkles className="w-4 h-4" />
-                  Gerar Análise com IA
+                  {t.results.generateAI}
                 </>
               )}
             </Button>
