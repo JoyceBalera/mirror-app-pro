@@ -5,6 +5,63 @@
     "logout": "Logout",
     "admin": "Admin"
   },
+  "nav": {
+    "home": "Home",
+    "test": "Test",
+    "results": "Results",
+    "about": "About"
+  },
+  "home": {
+    "title": "Discover Your Personality",
+    "subtitle": "Test based on Big Five model",
+    "startButton": "Start Test",
+    "description": "Answer 300 questions and receive detailed analysis"
+  },
+  "test": {
+    "question": "Question",
+    "of": "of",
+    "disagreeStrongly": "Strongly Disagree",
+    "disagree": "Disagree",
+    "neutral": "Neutral",
+    "agree": "Agree",
+    "agreeStrongly": "Strongly Agree",
+    "previous": "Previous",
+    "next": "Next",
+    "finish": "Finish",
+    "loading": "Loading questions...",
+    "calculating": "Calculating results...",
+    "analyzing": "Analyzing with AI..."
+  },
+  "results": {
+    "title": "Your Results",
+    "mainTraits": "Main Traits",
+    "facets": "Specific Facets",
+    "aiAnalysis": "Personalized Analysis",
+    "score": "Score",
+    "classification": "Classification",
+    "download": "Download PDF",
+    "restart": "Take New Test",
+    "traits": {
+      "neuroticism": "Neuroticism",
+      "extroversion": "Extroversion",
+      "openness": "Openness",
+      "agreeableness": "Agreeableness",
+      "conscientiousness": "Conscientiousness"
+    },
+    "levels": {
+      "veryLow": "Very Low",
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "veryHigh": "Very High"
+    }
+  },
+  "errors": {
+    "loadingFailed": "Loading failed",
+    "tryAgain": "Try again",
+    "savingFailed": "Error saving response",
+    "analysisFailed": "Analysis error. Please try again."
+  },
   "auth": {
     "welcomeBack": "Welcome back",
     "createAccount": "Create account",

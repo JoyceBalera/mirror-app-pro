@@ -5,6 +5,63 @@
     "logout": "Salir",
     "admin": "Admin"
   },
+  "nav": {
+    "home": "Inicio",
+    "test": "Prueba",
+    "results": "Resultados",
+    "about": "Acerca"
+  },
+  "home": {
+    "title": "Descubre tu Personalidad",
+    "subtitle": "Prueba basada en el modelo Big Five",
+    "startButton": "Iniciar Prueba",
+    "description": "Responde 300 preguntas y recibe análisis detallado"
+  },
+  "test": {
+    "question": "Pregunta",
+    "of": "de",
+    "disagreeStrongly": "Totalmente en Desacuerdo",
+    "disagree": "En Desacuerdo",
+    "neutral": "Neutral",
+    "agree": "De Acuerdo",
+    "agreeStrongly": "Totalmente de Acuerdo",
+    "previous": "Anterior",
+    "next": "Siguiente",
+    "finish": "Finalizar",
+    "loading": "Cargando preguntas...",
+    "calculating": "Calculando resultados...",
+    "analyzing": "Analizando con IA..."
+  },
+  "results": {
+    "title": "Tus Resultados",
+    "mainTraits": "Rasgos Principales",
+    "facets": "Facetas Específicas",
+    "aiAnalysis": "Análisis Personalizado",
+    "score": "Puntuación",
+    "classification": "Clasificación",
+    "download": "Descargar PDF",
+    "restart": "Nueva Prueba",
+    "traits": {
+      "neuroticism": "Neuroticismo",
+      "extroversion": "Extroversión",
+      "openness": "Apertura",
+      "agreeableness": "Amabilidad",
+      "conscientiousness": "Responsabilidad"
+    },
+    "levels": {
+      "veryLow": "Muy Bajo",
+      "low": "Bajo",
+      "medium": "Medio",
+      "high": "Alto",
+      "veryHigh": "Muy Alto"
+    }
+  },
+  "errors": {
+    "loadingFailed": "Error al cargar",
+    "tryAgain": "Intentar de nuevo",
+    "savingFailed": "Error al guardar respuesta",
+    "analysisFailed": "Error en análisis. Por favor, intenta de nuevo."
+  },
   "auth": {
     "welcomeBack": "Bienvenido de vuelta",
     "createAccount": "Crear cuenta",
