@@ -84,17 +84,16 @@ serve(async (req) => {
     };
 
     const traitScores = result.trait_scores as Record<string, number>;
-    const facetScores = result.facet_scores as Record<string, number>;
+    const facetScores = result.facet_scores as Record<string, Record<string, number>>;
 
     // Formatar dados com classificações calculadas do banco
     const formattedTraitsData = Object.entries(traitScores).map(([traitKey, score]) => {
       const traitName = traitNameMap[traitKey] || traitKey;
       const traitClassification = getTraitClassification(score);
       
-      // Encontrar facetas deste traço
-      const traitPrefix = traitKey[0].toUpperCase();
-      const facetsInfo = Object.entries(facetScores)
-        .filter(([facetKey]) => facetKey.startsWith(traitPrefix))
+      // Acessar facetas diretamente pelo nome do traço (estrutura aninhada)
+      const traitFacets = facetScores[traitKey] || {};
+      const facetsInfo = Object.entries(traitFacets)
         .map(([facetKey, facetScore]) => {
           const facetName = facetNameMap[facetKey] || facetKey;
           const facetClassification = getFacetClassification(facetScore);
