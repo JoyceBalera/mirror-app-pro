@@ -225,11 +225,18 @@ const BigFiveResults = () => {
       if (error) throw error;
       if (data.error) throw new Error(data.error);
 
-      await supabase.from('ai_analyses').insert({
-        session_id: sessionId,
-        analysis_text: data.analysis,
-        model_used: 'gemini-2.5-flash',
-      });
+      // A tabela ai_analyses é 1:1 por session_id; então regenerar precisa sobrescrever.
+      const { error: upsertError } = await supabase.from('ai_analyses').upsert(
+        {
+          session_id: sessionId,
+          analysis_text: data.analysis,
+          model_used: 'google/gemini-2.5-flash',
+          generated_at: new Date().toISOString(),
+        },
+        { onConflict: 'session_id' }
+      );
+
+      if (upsertError) throw upsertError;
 
       toast({
         title: t.results.analysisGenerated,
@@ -366,13 +373,33 @@ const BigFiveResults = () => {
 
         {result.ai_analyses && result.ai_analyses.length > 0 ? (
           <>
-            <Button
-              variant="outline"
-              onClick={() => setShowAnalysis(!showAnalysis)}
-              className="w-full mb-4"
-            >
-              {showAnalysis ? t.results.hideAnalysis : t.results.showAnalysis}
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-2 mb-4">
+              <Button
+                variant="outline"
+                onClick={() => setShowAnalysis(!showAnalysis)}
+                className="w-full"
+              >
+                {showAnalysis ? t.results.hideAnalysis : t.results.showAnalysis}
+              </Button>
+
+              <Button
+                onClick={handleGenerateAnalysis}
+                disabled={generatingAnalysis}
+                className="w-full gap-2"
+              >
+                {generatingAnalysis ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    {t.results.regeneratingAI}
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-4 h-4" />
+                    {t.results.regenerateAI}
+                  </>
+                )}
+              </Button>
+            </div>
 
             {showAnalysis && (
               <div className="bg-muted/50 p-6 rounded-lg">

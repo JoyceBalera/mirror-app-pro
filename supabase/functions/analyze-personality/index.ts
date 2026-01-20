@@ -12,7 +12,14 @@ serve(async (req) => {
   }
 
   try {
-    const { sessionId, language = 'pt' } = await req.json();
+    const body = await req.json();
+    const sessionId = body?.sessionId as string | undefined;
+    const languageRaw = (typeof body?.language === "string" ? body.language : "pt")
+      .split("-")[0]
+      .toLowerCase();
+    const language = (languageRaw === "pt" || languageRaw === "en" || languageRaw === "es")
+      ? languageRaw
+      : "pt";
     
     if (!sessionId) {
       throw new Error("sessionId é obrigatório");
