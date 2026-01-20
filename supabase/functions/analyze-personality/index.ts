@@ -40,10 +40,6 @@ serve(async (req) => {
       throw new Error("Erro ao buscar resultados do teste");
     }
 
-    console.log("=== 🔍 DEBUG: Dados brutos do banco ===");
-    console.log("trait_scores:", JSON.stringify(result.trait_scores, null, 2));
-    console.log("facet_scores:", JSON.stringify(result.facet_scores, null, 2));
-    console.log("classifications:", JSON.stringify(result.classifications, null, 2));
 
     // Mapeamento de nomes de traços
     const traitNameMap: Record<string, string> = {
@@ -86,16 +82,9 @@ serve(async (req) => {
     const traitScores = result.trait_scores as Record<string, number>;
     const facetScores = result.facet_scores as Record<string, Record<string, number>>;
 
-    // DEBUG: Verificar estrutura dos dados
-    console.log("=== 🔍 DEBUG: Chaves de traitScores:", Object.keys(traitScores));
-    console.log("=== 🔍 DEBUG: Chaves de facetScores:", Object.keys(facetScores));
-    console.log("=== 🔍 DEBUG: facetScores completo:", JSON.stringify(facetScores, null, 2));
 
     // Formatar dados com classificações calculadas do banco
     const formattedTraitsData = Object.entries(traitScores).map(([traitKey, score]) => {
-      // DEBUG: Log para cada traço
-      const traitFacetsDebug = facetScores[traitKey];
-      console.log(`=== 🔍 DEBUG traitKey: "${traitKey}", facetas encontradas:`, traitFacetsDebug);
       const traitName = traitNameMap[traitKey] || traitKey;
       const traitClassification = getTraitClassification(score);
       
@@ -112,9 +101,6 @@ serve(async (req) => {
       return `${traitName}: ${traitClassification.toUpperCase()} [score ${score}] (${facetsInfo})`;
     }).join('; ') + '.';
 
-    console.log("=== 📤 DEBUG: String enviada para IA ===");
-    console.log(formattedTraitsData);
-    console.log("=== Comprimento da string:", formattedTraitsData.length, "caracteres ===");
 
     const systemPrompt = `REGRAS CRÍTICAS - ANTI-ALUCINAÇÃO:
 1. Use EXATAMENTE as classificações fornecidas nos dados
