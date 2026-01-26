@@ -1,17 +1,29 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { CheckCircle2, XCircle, AlertCircle, Calculator, ListChecks, RotateCcw } from 'lucide-react';
-import { questionsLuciana as questions, facetNamesLuciana, traitMap } from '@/data/bigFiveQuestionsLuciana';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { CheckCircle2, XCircle, AlertCircle, Calculator, ListChecks, RotateCcw, User, Loader2, Search } from 'lucide-react';
+import { questionsLuciana as questions, facetNamesLuciana } from '@/data/bigFiveQuestionsLuciana';
 import { calculateScore, getTraitClassification, getFacetClassification } from '@/utils/scoreCalculator';
 import { Answer } from '@/types/test';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 type TestCase = 'all-1' | 'all-3' | 'all-5';
+
+interface UserWithSession {
+  userId: string;
+  userName: string;
+  email: string;
+  sessionId: string;
+  completedAt: string;
+}
 
 const traitNamesPortuguese: Record<string, string> = {
   neuroticism: 'Neuroticismo',
@@ -22,7 +34,127 @@ const traitNamesPortuguese: Record<string, string> = {
 };
 
 const Validacao = () => {
+  const { toast } = useToast();
   const [selectedCase, setSelectedCase] = useState<TestCase>('all-3');
+  
+  // User validation state
+  const [usersWithSessions, setUsersWithSessions] = useState<UserWithSession[]>([]);
+  const [selectedUserId, setSelectedUserId] = useState<string>('');
+  const [loadingUsers, setLoadingUsers] = useState(false);
+  const [loadingUserData, setLoadingUserData] = useState(false);
+  const [userAnswers, setUserAnswers] = useState<Answer[]>([]);
+  const [userStoredResults, setUserStoredResults] = useState<{
+    traitScores: Record<string, number>;
+    facetScores: Record<string, Record<string, number>>;
+  } | null>(null);
+
+  // Fetch users with completed sessions
+  useEffect(() => {
+    const fetchUsersWithSessions = async () => {
+      setLoadingUsers(true);
+      try {
+        const { data: sessions, error } = await supabase
+          .from('test_sessions')
+          .select(`
+            id,
+            user_id,
+            completed_at,
+            profiles!test_sessions_user_id_fkey (
+              full_name,
+              email
+            )
+          `)
+          .eq('status', 'completed')
+          .order('completed_at', { ascending: false });
+
+        if (error) throw error;
+
+        const users: UserWithSession[] = (sessions || []).map((s: any) => ({
+          userId: s.user_id,
+          userName: s.profiles?.full_name || 'Sem nome',
+          email: s.profiles?.email || 'Sem email',
+          sessionId: s.id,
+          completedAt: s.completed_at,
+        }));
+
+        setUsersWithSessions(users);
+      } catch (error) {
+        console.error('Error fetching users:', error);
+        toast({
+          title: 'Erro ao carregar usuários',
+          description: 'Não foi possível carregar a lista de usuários.',
+          variant: 'destructive',
+        });
+      } finally {
+        setLoadingUsers(false);
+      }
+    };
+
+    fetchUsersWithSessions();
+  }, [toast]);
+
+  // Fetch user answers and stored results when user is selected
+  const fetchUserData = async (sessionId: string) => {
+    setLoadingUserData(true);
+    setUserAnswers([]);
+    setUserStoredResults(null);
+
+    try {
+      // Fetch answers
+      const { data: answers, error: answersError } = await supabase
+        .from('test_answers')
+        .select('question_id, score')
+        .eq('session_id', sessionId);
+
+      if (answersError) throw answersError;
+
+      const formattedAnswers: Answer[] = (answers || []).map(a => ({
+        questionId: a.question_id,
+        score: a.score,
+      }));
+
+      setUserAnswers(formattedAnswers);
+
+      // Fetch stored results
+      const { data: results, error: resultsError } = await supabase
+        .from('test_results')
+        .select('trait_scores, facet_scores')
+        .eq('session_id', sessionId)
+        .maybeSingle();
+
+      if (resultsError) throw resultsError;
+
+      if (results) {
+        setUserStoredResults({
+          traitScores: results.trait_scores as Record<string, number>,
+          facetScores: results.facet_scores as Record<string, Record<string, number>>,
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+      toast({
+        title: 'Erro ao carregar dados',
+        description: 'Não foi possível carregar os dados do usuário.',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoadingUserData(false);
+    }
+  };
+
+  // Handle user selection
+  const handleUserSelect = (sessionId: string) => {
+    setSelectedUserId(sessionId);
+    if (sessionId) {
+      fetchUserData(sessionId);
+    }
+  };
+
+  // Calculate scores from user answers
+  const userCalculatedResults = useMemo(() => {
+    if (userAnswers.length === 0) return null;
+    return calculateScore(userAnswers);
+  }, [userAnswers]);
 
   // Generate answers based on test case
   const generateAnswers = (testCase: TestCase): Answer[] => {
@@ -41,8 +173,6 @@ const Validacao = () => {
 
   // Expected values based on mathematical logic
   const expectedValues = useMemo(() => {
-    // With 50/50 split of plus/minus questions:
-    // All answers same value → trait = 180, facet = 30
     return {
       traitScore: 180,
       facetScore: 30,
@@ -87,7 +217,7 @@ const Validacao = () => {
     };
   }, []);
 
-  // Inversion examples (first 5 minus questions per trait)
+  // Inversion examples
   const inversionExamples = useMemo(() => {
     const minusQuestions = questions.filter(q => q.keyed === 'minus');
     const examples: Record<string, typeof questions> = {};
@@ -137,6 +267,8 @@ const Validacao = () => {
     );
   };
 
+  const selectedUser = usersWithSessions.find(u => u.sessionId === selectedUserId);
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
@@ -147,10 +279,14 @@ const Validacao = () => {
       </div>
 
       <Tabs defaultValue="validation" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="validation" className="gap-2">
             <Calculator className="w-4 h-4" />
-            Validação de Scores
+            Validação Sistema
+          </TabsTrigger>
+          <TabsTrigger value="user-validation" className="gap-2">
+            <User className="w-4 h-4" />
+            Validação Usuário
           </TabsTrigger>
           <TabsTrigger value="integrity" className="gap-2">
             <ListChecks className="w-4 h-4" />
@@ -162,10 +298,9 @@ const Validacao = () => {
           </TabsTrigger>
         </TabsList>
 
-        {/* Tab: Validação de Scores */}
+        {/* Tab: Validação de Scores do Sistema */}
         <TabsContent value="validation" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Seleção de Caso de Teste */}
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg">Casos de Teste</CardTitle>
@@ -226,7 +361,6 @@ const Validacao = () => {
               </CardContent>
             </Card>
 
-            {/* Resultados por Traço */}
             <Card className="lg:col-span-2">
               <CardHeader>
                 <CardTitle className="text-lg">Resultados por Traço</CardTitle>
@@ -273,7 +407,6 @@ const Validacao = () => {
             </Card>
           </div>
 
-          {/* Resultados por Faceta */}
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">Resultados por Faceta</CardTitle>
@@ -297,11 +430,11 @@ const Validacao = () => {
                           {facet}: {facetNamesLuciana[facet]}
                         </span>
                         <div className="flex items-center gap-2">
-                        <span className="font-mono">{score}</span>
-                        {score === expectedValues.facetScore ? (
-                          <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                        ) : (
-                          <XCircle className="w-4 h-4 text-destructive" />
+                          <span className="font-mono">{score}</span>
+                          {score === expectedValues.facetScore ? (
+                            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                          ) : (
+                            <XCircle className="w-4 h-4 text-destructive" />
                           )}
                         </div>
                       </div>
@@ -311,6 +444,221 @@ const Validacao = () => {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* Tab: Validação de Usuário Específico */}
+        <TabsContent value="user-validation" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Search className="w-5 h-5" />
+                Selecionar Usuário
+              </CardTitle>
+              <CardDescription>
+                Escolha um usuário com teste completado para validar seus cálculos
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex gap-4 items-end">
+                <div className="flex-1">
+                  <Label className="mb-2 block">Usuário com teste completado</Label>
+                  <Select
+                    value={selectedUserId}
+                    onValueChange={handleUserSelect}
+                    disabled={loadingUsers}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder={loadingUsers ? "Carregando..." : "Selecione um usuário"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {usersWithSessions.map((user) => (
+                        <SelectItem key={user.sessionId} value={user.sessionId}>
+                          {user.userName} ({user.email}) - {new Date(user.completedAt).toLocaleDateString('pt-BR')}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                {selectedUserId && (
+                  <Button
+                    variant="outline"
+                    onClick={() => fetchUserData(selectedUserId)}
+                    disabled={loadingUserData}
+                  >
+                    {loadingUserData ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      'Recarregar'
+                    )}
+                  </Button>
+                )}
+              </div>
+
+              {selectedUser && (
+                <div className="mt-4 p-4 bg-muted/50 rounded-lg">
+                  <div className="flex items-center gap-2 text-sm">
+                    <User className="w-4 h-4" />
+                    <span className="font-medium">{selectedUser.userName}</span>
+                    <span className="text-muted-foreground">•</span>
+                    <span className="text-muted-foreground">{selectedUser.email}</span>
+                    <span className="text-muted-foreground">•</span>
+                    <span className="text-muted-foreground">
+                      Teste completado em {new Date(selectedUser.completedAt).toLocaleDateString('pt-BR')}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {loadingUserData && (
+            <div className="flex justify-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+            </div>
+          )}
+
+          {!loadingUserData && userAnswers.length > 0 && userCalculatedResults && (
+            <>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Resumo de Respostas</CardTitle>
+                  <CardDescription>
+                    {userAnswers.length} respostas encontradas
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2">
+                      {userAnswers.length === 300 ? (
+                        <Badge className="bg-emerald-600/90">
+                          <CheckCircle2 className="w-3 h-3 mr-1" />
+                          300 respostas (completo)
+                        </Badge>
+                      ) : (
+                        <Badge variant="destructive">
+                          <XCircle className="w-3 h-3 mr-1" />
+                          {userAnswers.length} respostas (incompleto)
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Comparação: Recalculado vs Armazenado</CardTitle>
+                  <CardDescription>
+                    Verifica se os scores armazenados no banco correspondem ao recálculo das respostas
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Traço</TableHead>
+                        <TableHead className="text-center">Recalculado</TableHead>
+                        <TableHead className="text-center">Armazenado</TableHead>
+                        <TableHead className="text-center">Classificação</TableHead>
+                        <TableHead className="text-center">Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {Object.entries(userCalculatedResults.scores).map(([trait, calculatedScore]) => {
+                        const storedScore = userStoredResults?.traitScores?.[trait] ?? 0;
+                        return (
+                          <TableRow key={trait}>
+                            <TableCell className="font-medium">
+                              {traitNamesPortuguese[trait]}
+                            </TableCell>
+                            <TableCell className="text-center font-mono">
+                              {calculatedScore}
+                            </TableCell>
+                            <TableCell className="text-center font-mono">
+                              {storedScore || '-'}
+                            </TableCell>
+                            <TableCell className="text-center">
+                              <Badge variant="outline">
+                                {getTraitClassification(calculatedScore)}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-center">
+                              {renderValidationBadge(calculatedScore, storedScore)}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Facetas: Recalculado vs Armazenado</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                    {Object.entries(userCalculatedResults.facetScores).map(([trait, facets]) => (
+                      <div key={trait} className="space-y-2">
+                        <h4 className="font-medium text-sm border-b pb-1">
+                          {traitNamesPortuguese[trait]}
+                        </h4>
+                        {Object.entries(facets).map(([facet, calculatedScore]) => {
+                          const storedScore = userStoredResults?.facetScores?.[trait]?.[facet] ?? 0;
+                          const isMatch = calculatedScore === storedScore;
+                          return (
+                            <div
+                              key={facet}
+                              className={`flex items-center justify-between text-sm p-2 rounded ${
+                                isMatch ? 'bg-muted/30' : 'bg-destructive/10 border border-destructive/30'
+                              }`}
+                            >
+                              <span className="text-muted-foreground">
+                                {facet}
+                              </span>
+                              <div className="flex items-center gap-2">
+                                <span className="font-mono">{calculatedScore}</span>
+                                <span className="text-muted-foreground">/</span>
+                                <span className="font-mono text-muted-foreground">{storedScore || '-'}</span>
+                                {isMatch ? (
+                                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                                ) : (
+                                  <XCircle className="w-4 h-4 text-destructive" />
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </>
+          )}
+
+          {!loadingUserData && selectedUserId && userAnswers.length === 0 && (
+            <Card>
+              <CardContent className="py-12 text-center">
+                <AlertCircle className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                <p className="text-muted-foreground">
+                  Nenhuma resposta encontrada para este usuário.
+                </p>
+              </CardContent>
+            </Card>
+          )}
+
+          {!selectedUserId && (
+            <Card>
+              <CardContent className="py-12 text-center">
+                <User className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                <p className="text-muted-foreground">
+                  Selecione um usuário acima para validar seus cálculos.
+                </p>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
 
         {/* Tab: Integridade */}
@@ -323,7 +671,6 @@ const Validacao = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Checks principais */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div className="flex items-center justify-between p-4 rounded-lg border">
                   <div>
@@ -367,7 +714,6 @@ const Validacao = () => {
                 </div>
               </div>
 
-              {/* Contagem por Traço */}
               <div>
                 <h4 className="font-medium mb-3">Questões por Traço (esperado: 60)</h4>
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
@@ -390,7 +736,6 @@ const Validacao = () => {
                 </div>
               </div>
 
-              {/* Contagem por Faceta */}
               <div>
                 <h4 className="font-medium mb-3">Questões por Faceta (esperado: 10)</h4>
                 <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
