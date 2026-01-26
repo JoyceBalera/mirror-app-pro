@@ -5,7 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
-import { Loader2, FlaskConical, Brain, Sparkles, Eye, Zap, Target, User, Layers, RefreshCw } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Loader2, FlaskConical, Brain, Sparkles, Eye, Zap, Target, User, Layers, RefreshCw, Edit } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { questionsLuciana } from "@/data/bigFiveQuestionsLuciana";
@@ -16,6 +19,7 @@ import DemoResultBadge from "@/components/admin/DemoResultBadge";
 import HDBodyGraph from "@/components/humandesign/HDBodyGraph";
 import { SCORING, TRAIT_LABELS, getTraitPercentage } from "@/constants/scoring";
 import ReactMarkdown from "react-markdown";
+import { LocationAutocomplete } from "@/components/ui/location-autocomplete";
 
 const AmbienteTeste = () => {
   const navigate = useNavigate();
@@ -29,6 +33,12 @@ const AmbienteTeste = () => {
   // Human Design state
   const [selectedProfile, setSelectedProfile] = useState<string>("einstein");
   const [showHDPreview, setShowHDPreview] = useState(false);
+  const [hdInputMode, setHdInputMode] = useState<"demo" | "manual">("demo");
+  
+  // Manual HD input state
+  const [manualBirthDate, setManualBirthDate] = useState("");
+  const [manualBirthTime, setManualBirthTime] = useState("");
+  const [manualBirthLocation, setManualBirthLocation] = useState("");
   
   // Integrated Analysis state
   const [showIntegratedPreview, setShowIntegratedPreview] = useState(false);
@@ -171,7 +181,7 @@ const AmbienteTeste = () => {
     }
   };
 
-  // Navigate to HD test with pre-filled data
+  // Navigate to HD test with pre-filled data (demo profile)
   const handleQuickHD = () => {
     const profile = DEMO_PROFILES[selectedProfile];
     if (!profile) return;
@@ -181,6 +191,27 @@ const AmbienteTeste = () => {
       date: profile.birth_date,
       time: profile.birth_time,
       location: profile.birth_location,
+      demo: "true",
+    });
+    
+    navigate(`/app/desenho-humano?${params.toString()}`);
+  };
+
+  // Navigate to HD test with manual data
+  const handleManualHD = () => {
+    if (!manualBirthDate || !manualBirthTime || !manualBirthLocation) {
+      toast({
+        title: "Dados incompletos",
+        description: "Preencha data, hora e local de nascimento.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    const params = new URLSearchParams({
+      date: manualBirthDate,
+      time: manualBirthTime,
+      location: manualBirthLocation,
       demo: "true",
     });
     
@@ -325,45 +356,112 @@ const AmbienteTeste = () => {
               <CardTitle>Arquitetura Pessoal</CardTitle>
             </div>
             <CardDescription>
-              O cálculo do mapa usa dados de nascimento. Use perfis conhecidos para testar.
+              O cálculo do mapa usa dados de nascimento. Use perfis demo ou insira dados reais.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Selecionar Perfil Demo:</label>
-              <Select value={selectedProfile} onValueChange={setSelectedProfile}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.entries(DEMO_PROFILES).map(([key, profile]) => (
-                    <SelectItem key={key} value={key}>
-                      <div className="flex flex-col">
-                        <span>{profile.name}</span>
-                        <span className="text-xs text-muted-foreground">{profile.expected_type}</span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <Tabs value={hdInputMode} onValueChange={(v) => setHdInputMode(v as "demo" | "manual")}>
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="demo" className="gap-2">
+                  <User className="w-4 h-4" />
+                  Perfis Demo
+                </TabsTrigger>
+                <TabsTrigger value="manual" className="gap-2">
+                  <Edit className="w-4 h-4" />
+                  Dados Manuais
+                </TabsTrigger>
+              </TabsList>
 
-            {selectedProfile && DEMO_PROFILES[selectedProfile] && (
-              <div className="p-3 bg-muted rounded-lg text-sm">
-                <p><strong>Data:</strong> {DEMO_PROFILES[selectedProfile].birth_date}</p>
-                <p><strong>Hora:</strong> {DEMO_PROFILES[selectedProfile].birth_time}</p>
-                <p><strong>Local:</strong> {DEMO_PROFILES[selectedProfile].birth_location}</p>
-                <p className="text-muted-foreground mt-1">{DEMO_PROFILES[selectedProfile].description}</p>
-              </div>
-            )}
+              <TabsContent value="demo" className="space-y-4 mt-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Selecionar Perfil Demo:</label>
+                  <Select value={selectedProfile} onValueChange={setSelectedProfile}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(DEMO_PROFILES).map(([key, profile]) => (
+                        <SelectItem key={key} value={key}>
+                          <div className="flex flex-col">
+                            <span>{profile.name}</span>
+                            <span className="text-xs text-muted-foreground">{profile.expected_type}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-            <Button 
-              onClick={handleQuickHD}
-              className="w-full gap-2"
-            >
-              <Target className="w-4 h-4" />
-              Gerar Mapa com Perfil Selecionado
-            </Button>
+                {selectedProfile && DEMO_PROFILES[selectedProfile] && (
+                  <div className="p-3 bg-muted rounded-lg text-sm">
+                    <p><strong>Data:</strong> {DEMO_PROFILES[selectedProfile].birth_date}</p>
+                    <p><strong>Hora:</strong> {DEMO_PROFILES[selectedProfile].birth_time}</p>
+                    <p><strong>Local:</strong> {DEMO_PROFILES[selectedProfile].birth_location}</p>
+                    <p className="text-muted-foreground mt-1">{DEMO_PROFILES[selectedProfile].description}</p>
+                  </div>
+                )}
+
+                <Button 
+                  onClick={handleQuickHD}
+                  className="w-full gap-2"
+                >
+                  <Target className="w-4 h-4" />
+                  Gerar Mapa com Perfil Selecionado
+                </Button>
+              </TabsContent>
+
+              <TabsContent value="manual" className="space-y-4 mt-4">
+                <div className="space-y-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="manual-birth-date">Data de Nascimento</Label>
+                    <Input
+                      id="manual-birth-date"
+                      type="date"
+                      value={manualBirthDate}
+                      onChange={(e) => setManualBirthDate(e.target.value)}
+                      placeholder="YYYY-MM-DD"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="manual-birth-time">Hora de Nascimento</Label>
+                    <Input
+                      id="manual-birth-time"
+                      type="time"
+                      value={manualBirthTime}
+                      onChange={(e) => setManualBirthTime(e.target.value)}
+                      placeholder="HH:MM"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="manual-birth-location">Local de Nascimento</Label>
+                    <LocationAutocomplete
+                      value={manualBirthLocation}
+                      onChange={setManualBirthLocation}
+                      placeholder="Digite a cidade..."
+                    />
+                  </div>
+                </div>
+
+                {manualBirthDate && manualBirthTime && manualBirthLocation && (
+                  <div className="p-3 bg-muted rounded-lg text-sm">
+                    <p><strong>Data:</strong> {manualBirthDate}</p>
+                    <p><strong>Hora:</strong> {manualBirthTime}</p>
+                    <p><strong>Local:</strong> {manualBirthLocation}</p>
+                  </div>
+                )}
+
+                <Button 
+                  onClick={handleManualHD}
+                  className="w-full gap-2"
+                  disabled={!manualBirthDate || !manualBirthTime || !manualBirthLocation}
+                >
+                  <Target className="w-4 h-4" />
+                  Gerar Mapa com Dados Manuais
+                </Button>
+              </TabsContent>
+            </Tabs>
 
             <Button 
               onClick={() => setShowHDPreview(!showHDPreview)}
