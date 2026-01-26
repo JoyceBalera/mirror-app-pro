@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { CheckCircle2, XCircle, AlertCircle, Calculator, ListChecks, RotateCcw, User, Loader2, Search } from 'lucide-react';
+import { CheckCircle2, XCircle, AlertCircle, Calculator, ListChecks, RotateCcw, User, Loader2, Search, RefreshCw } from 'lucide-react';
 import { questionsLuciana as questions, facetNamesLuciana } from '@/data/bigFiveQuestionsLuciana';
 import { calculateScore, getTraitClassification, getFacetClassification } from '@/utils/scoreCalculator';
 import { Answer } from '@/types/test';
@@ -47,6 +47,7 @@ const Validacao = () => {
     traitScores: Record<string, number>;
     facetScores: Record<string, Record<string, number>>;
   } | null>(null);
+  const [isRecalculating, setIsRecalculating] = useState(false);
 
   // Fetch users with completed sessions
   useEffect(() => {
@@ -155,6 +156,75 @@ const Validacao = () => {
     if (userAnswers.length === 0) return null;
     return calculateScore(userAnswers);
   }, [userAnswers]);
+
+  // Check if there are divergences between calculated and stored results
+  const hasDivergences = useMemo(() => {
+    if (!userCalculatedResults || !userStoredResults) return false;
+    
+    // Check trait divergences
+    for (const [trait, calculatedScore] of Object.entries(userCalculatedResults.scores)) {
+      const storedScore = userStoredResults.traitScores?.[trait];
+      if (calculatedScore !== storedScore) return true;
+    }
+    
+    // Check facet divergences
+    for (const [trait, facets] of Object.entries(userCalculatedResults.facetScores)) {
+      for (const [facet, calculatedScore] of Object.entries(facets)) {
+        const storedScore = userStoredResults.facetScores?.[trait]?.[facet];
+        if (calculatedScore !== storedScore) return true;
+      }
+    }
+    
+    return false;
+  }, [userCalculatedResults, userStoredResults]);
+
+  // Recalculate and fix user scores
+  const handleRecalculateScores = async () => {
+    if (!selectedUserId) return;
+    
+    setIsRecalculating(true);
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/recalculate-results`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${sessionData?.session?.access_token}`,
+            'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          },
+          body: JSON.stringify({ session_id: selectedUserId }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Erro ao recalcular');
+      }
+
+      const result = await response.json();
+      
+      toast({
+        title: 'Scores recalculados com sucesso!',
+        description: `Os scores do usuário foram corrigidos.`,
+      });
+
+      // Reload user data to show updated values
+      await fetchUserData(selectedUserId);
+      
+    } catch (error) {
+      console.error('Error recalculating scores:', error);
+      toast({
+        title: 'Erro ao recalcular',
+        description: error instanceof Error ? error.message : 'Não foi possível recalcular os scores.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsRecalculating(false);
+    }
+  };
 
   // Generate answers based on test case
   const generateAnswers = (testCase: TestCase): Answer[] => {
@@ -546,11 +616,33 @@ const Validacao = () => {
               </Card>
 
               <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Comparação: Recalculado vs Armazenado</CardTitle>
-                  <CardDescription>
-                    Verifica se os scores armazenados no banco correspondem ao recálculo das respostas
-                  </CardDescription>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0">
+                  <div>
+                    <CardTitle className="text-lg">Comparação: Recalculado vs Armazenado</CardTitle>
+                    <CardDescription>
+                      Verifica se os scores armazenados no banco correspondem ao recálculo das respostas
+                    </CardDescription>
+                  </div>
+                  {hasDivergences && (
+                    <Button
+                      onClick={handleRecalculateScores}
+                      disabled={isRecalculating}
+                      variant="destructive"
+                      className="gap-2"
+                    >
+                      {isRecalculating ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Recalculando...
+                        </>
+                      ) : (
+                        <>
+                          <RefreshCw className="w-4 h-4" />
+                          Corrigir Divergências
+                        </>
+                      )}
+                    </Button>
+                  )}
                 </CardHeader>
                 <CardContent>
                   <Table>
