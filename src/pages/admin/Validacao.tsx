@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CheckCircle2, XCircle, AlertCircle, Calculator, ListChecks, RotateCcw, User, Loader2, Search, RefreshCw } from 'lucide-react';
-import { questionsLuciana as questions, facetNamesLuciana } from '@/data/bigFiveQuestionsLuciana';
+import { questionsLuciana as questions, facetNamesLuciana, facetCodeMap } from '@/data/bigFiveQuestionsLuciana';
 import { calculateScore, getTraitClassification, getFacetClassification } from '@/utils/scoreCalculator';
 import { Answer } from '@/types/test';
 import { supabase } from '@/integrations/supabase/client';
@@ -31,6 +31,52 @@ const traitNamesPortuguese: Record<string, string> = {
   openness: 'Abertura',
   agreeableness: 'Amabilidade',
   conscientiousness: 'Conscienciosidade',
+};
+
+// Mapeamento de chaves inglesas para portuguesas (como armazenado no banco)
+const traitKeyToDbKey: Record<string, string> = {
+  neuroticism: 'neuroticismo',
+  extraversion: 'extroversão',
+  openness: 'abertura',
+  agreeableness: 'amabilidade',
+  conscientiousness: 'conscienciosidade',
+};
+
+// Mapeamento alternativo para "abertura à experiência"
+const traitKeyToDbKeyAlternative: Record<string, string> = {
+  neuroticism: 'neuroticismo',
+  extraversion: 'extroversão',
+  openness: 'abertura à experiência',
+  agreeableness: 'amabilidade',
+  conscientiousness: 'conscienciosidade',
+};
+
+// Helper para obter score de trait do banco (tenta ambas as variações de key)
+const getStoredTraitScore = (storedScores: Record<string, number> | undefined, englishKey: string): number | null => {
+  if (!storedScores) return null;
+  const dbKey = traitKeyToDbKey[englishKey];
+  const altDbKey = traitKeyToDbKeyAlternative[englishKey];
+  return storedScores[dbKey] ?? storedScores[altDbKey] ?? storedScores[englishKey] ?? null;
+};
+
+// Helper para obter score de facet do banco (converte código N1 -> Ansiedade)
+const getStoredFacetScore = (
+  storedFacets: Record<string, Record<string, number>> | undefined, 
+  englishTraitKey: string, 
+  facetCode: string
+): number | null => {
+  if (!storedFacets) return null;
+  
+  // Tenta encontrar o traço no banco (pode ser "neuroticismo" ou "neuroticism")
+  const dbTraitKey = traitKeyToDbKey[englishTraitKey];
+  const altDbTraitKey = traitKeyToDbKeyAlternative[englishTraitKey];
+  
+  const facetData = storedFacets[dbTraitKey] ?? storedFacets[altDbTraitKey] ?? storedFacets[englishTraitKey];
+  if (!facetData) return null;
+  
+  // O banco pode armazenar com nome português (Ansiedade) ou código (N1)
+  const facetName = facetNamesLuciana[facetCode]; // N1 -> Ansiedade
+  return facetData[facetName] ?? facetData[facetCode] ?? null;
 };
 
 const Validacao = () => {
@@ -161,17 +207,17 @@ const Validacao = () => {
   const hasDivergences = useMemo(() => {
     if (!userCalculatedResults || !userStoredResults) return false;
     
-    // Check trait divergences
+    // Check trait divergences (usando mapeamento de chaves)
     for (const [trait, calculatedScore] of Object.entries(userCalculatedResults.scores)) {
-      const storedScore = userStoredResults.traitScores?.[trait];
-      if (calculatedScore !== storedScore) return true;
+      const storedScore = getStoredTraitScore(userStoredResults.traitScores, trait);
+      if (storedScore !== null && calculatedScore !== storedScore) return true;
     }
     
-    // Check facet divergences
+    // Check facet divergences (usando mapeamento de códigos para nomes)
     for (const [trait, facets] of Object.entries(userCalculatedResults.facetScores)) {
-      for (const [facet, calculatedScore] of Object.entries(facets)) {
-        const storedScore = userStoredResults.facetScores?.[trait]?.[facet];
-        if (calculatedScore !== storedScore) return true;
+      for (const [facetCode, calculatedScore] of Object.entries(facets)) {
+        const storedScore = getStoredFacetScore(userStoredResults.facetScores, trait, facetCode);
+        if (storedScore !== null && calculatedScore !== storedScore) return true;
       }
     }
     
@@ -657,7 +703,8 @@ const Validacao = () => {
                     </TableHeader>
                     <TableBody>
                       {Object.entries(userCalculatedResults.scores).map(([trait, calculatedScore]) => {
-                        const storedScore = userStoredResults?.traitScores?.[trait] ?? 0;
+                        const storedScore = getStoredTraitScore(userStoredResults?.traitScores, trait);
+                        const displayStoredScore = storedScore ?? 0;
                         return (
                           <TableRow key={trait}>
                             <TableCell className="font-medium">
@@ -667,7 +714,7 @@ const Validacao = () => {
                               {calculatedScore}
                             </TableCell>
                             <TableCell className="text-center font-mono">
-                              {storedScore || '-'}
+                              {displayStoredScore || '-'}
                             </TableCell>
                             <TableCell className="text-center">
                               <Badge variant="outline">
@@ -675,7 +722,7 @@ const Validacao = () => {
                               </Badge>
                             </TableCell>
                             <TableCell className="text-center">
-                              {renderValidationBadge(calculatedScore, storedScore)}
+                              {renderValidationBadge(calculatedScore, displayStoredScore)}
                             </TableCell>
                           </TableRow>
                         );
@@ -696,23 +743,24 @@ const Validacao = () => {
                         <h4 className="font-medium text-sm border-b pb-1">
                           {traitNamesPortuguese[trait]}
                         </h4>
-                        {Object.entries(facets).map(([facet, calculatedScore]) => {
-                          const storedScore = userStoredResults?.facetScores?.[trait]?.[facet] ?? 0;
-                          const isMatch = calculatedScore === storedScore;
+                        {Object.entries(facets).map(([facetCode, calculatedScore]) => {
+                          const storedScore = getStoredFacetScore(userStoredResults?.facetScores, trait, facetCode);
+                          const displayStoredScore = storedScore ?? 0;
+                          const isMatch = calculatedScore === displayStoredScore;
                           return (
                             <div
-                              key={facet}
+                              key={facetCode}
                               className={`flex items-center justify-between text-sm p-2 rounded ${
                                 isMatch ? 'bg-muted/30' : 'bg-destructive/10 border border-destructive/30'
                               }`}
                             >
                               <span className="text-muted-foreground">
-                                {facet}
+                                {facetCode}: {facetNamesLuciana[facetCode]}
                               </span>
                               <div className="flex items-center gap-2">
                                 <span className="font-mono">{calculatedScore}</span>
                                 <span className="text-muted-foreground">/</span>
-                                <span className="font-mono text-muted-foreground">{storedScore || '-'}</span>
+                                <span className="font-mono text-muted-foreground">{displayStoredScore || '-'}</span>
                                 {isMatch ? (
                                   <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                                 ) : (
