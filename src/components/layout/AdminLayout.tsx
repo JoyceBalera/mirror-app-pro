@@ -9,7 +9,8 @@ import {
   Menu, 
   X,
   ArrowLeft,
-  FlaskConical
+  FlaskConical,
+  CheckSquare
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -31,6 +32,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
     { path: '/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
     { path: '/admin/usuarios', label: 'Usuários', icon: Users },
     { path: '/admin/ambiente-teste', label: 'Ambiente de Teste', icon: FlaskConical },
+    { path: '/admin/validacao', label: 'Validação', icon: CheckSquare },
   ];
 
   const isActive = (path: string, exact?: boolean) => {
