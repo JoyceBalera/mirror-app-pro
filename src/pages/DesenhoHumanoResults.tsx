@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +16,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { extractAdvancedVariables, type AdvancedVariables } from "@/utils/humanDesignVariables";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { generateHDReport } from "@/utils/generateHDReport";
+
 interface HumanDesignResult {
   id: string;
   user_id: string;
@@ -50,6 +52,7 @@ const DesenhoHumanoResults = () => {
   const { id } = useParams<{ id: string }>();
   const { toast } = useToast();
   const { isAdmin } = useUserRole();
+  const { t, i18n } = useTranslation();
   
   const [result, setResult] = useState<HumanDesignResult | null>(null);
   const [userName, setUserName] = useState<string>('');
@@ -62,6 +65,16 @@ const DesenhoHumanoResults = () => {
   const [generatingAnalysis, setGeneratingAnalysis] = useState(false);
   const [analysisOpen, setAnalysisOpen] = useState(true);
   const [generatingPDF, setGeneratingPDF] = useState(false);
+
+  // Get current locale for date formatting
+  const getDateLocale = () => {
+    const lang = i18n.language?.split('-')[0] || 'pt';
+    switch (lang) {
+      case 'es': return 'es-ES';
+      case 'en': return 'en-US';
+      default: return 'pt-BR';
+    }
+  };
 
   useEffect(() => {
     const fetchResult = async () => {
@@ -81,8 +94,8 @@ const DesenhoHumanoResults = () => {
         
         if (!data) {
           toast({
-            title: "Resultado não encontrado",
-            description: "O mapa solicitado não existe ou foi removido.",
+            title: t('humanDesignResults.resultNotFound'),
+            description: t('humanDesignResults.resultNotFoundDesc'),
             variant: "destructive",
           });
           navigate("/dashboard");
@@ -113,10 +126,10 @@ const DesenhoHumanoResults = () => {
           setAiAnalysis(analysisData as AIAnalysis);
         }
       } catch (error: any) {
-        console.error("Erro ao carregar resultado:", error);
+        console.error("Error loading result:", error);
         toast({
-          title: "Erro",
-          description: "Não foi possível carregar o resultado.",
+          title: t('humanDesignResults.error'),
+          description: t('humanDesignResults.errorLoadingResult'),
           variant: "destructive",
         });
         navigate("/dashboard");
@@ -126,7 +139,7 @@ const DesenhoHumanoResults = () => {
     };
 
     fetchResult();
-  }, [id, navigate, toast]);
+  }, [id, navigate, toast, t]);
 
   // Calculate advanced variables
   const variables = useMemo<AdvancedVariables | null>(() => {
@@ -154,7 +167,7 @@ const DesenhoHumanoResults = () => {
       });
 
       const humanDesignData = {
-        userName: 'você', // Could be fetched from profile if needed
+        userName: 'você',
         definedCenters,
         energyType: result.energy_type,
         strategy: result.strategy,
@@ -164,14 +177,14 @@ const DesenhoHumanoResults = () => {
         incarnationCross: result.incarnation_cross,
         activatedGates: result.activated_gates,
         channels: result.channels,
-        // Advanced variables for AI analysis
         advancedVariables: advancedVars,
       };
 
       const { data, error } = await supabase.functions.invoke('analyze-human-design', {
         body: { 
           resultId: result.id, 
-          humanDesignData 
+          humanDesignData,
+          language: i18n.language?.split('-')[0] || 'pt'
         }
       });
 
@@ -191,7 +204,6 @@ const DesenhoHumanoResults = () => {
       if (analysisData) {
         setAiAnalysis(analysisData as AIAnalysis);
       } else if (data.analysis) {
-        // If not saved but returned, use directly
         setAiAnalysis({
           id: 'temp',
           result_id: result.id,
@@ -201,14 +213,14 @@ const DesenhoHumanoResults = () => {
       }
 
       toast({
-        title: "Análise gerada!",
-        description: "Sua análise personalizada de Desenho Humano está pronta.",
+        title: t('humanDesignResults.analysisGenerated'),
+        description: t('humanDesignResults.analysisGeneratedDesc'),
       });
     } catch (error: any) {
-      console.error("Erro ao gerar análise:", error);
+      console.error("Error generating analysis:", error);
       toast({
-        title: "Erro ao gerar análise",
-        description: error.message || "Não foi possível gerar a análise. Tente novamente.",
+        title: t('humanDesignResults.analysisError'),
+        description: error.message || t('humanDesignResults.analysisErrorDesc'),
         variant: "destructive",
       });
     } finally {
@@ -221,24 +233,21 @@ const DesenhoHumanoResults = () => {
     try {
       const svgElement = document.querySelector('.bodygraph-svg') as SVGElement;
       if (!svgElement) {
-        console.warn('Bodygraph SVG não encontrado');
+        console.warn('Bodygraph SVG not found');
         return null;
       }
 
-      // Serializar SVG para string
       const serializer = new XMLSerializer();
       const svgString = serializer.serializeToString(svgElement);
 
-      // Criar blob e URL
       const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
       const url = URL.createObjectURL(svgBlob);
 
-      // Carregar em imagem e desenhar no canvas
       return new Promise((resolve) => {
         const img = new Image();
         img.onload = () => {
           const canvas = document.createElement('canvas');
-          const scale = 2; // 2x para melhor qualidade
+          const scale = 2;
           canvas.width = 330 * scale;
           canvas.height = 620 * scale;
           const ctx = canvas.getContext('2d');
@@ -253,14 +262,14 @@ const DesenhoHumanoResults = () => {
           resolve(dataUrl);
         };
         img.onerror = () => {
-          console.error('Erro ao carregar SVG como imagem');
+          console.error('Error loading SVG as image');
           URL.revokeObjectURL(url);
           resolve(null);
         };
         img.src = url;
       });
     } catch (error) {
-      console.error('Erro ao capturar Bodygraph:', error);
+      console.error('Error capturing Bodygraph:', error);
       return null;
     }
   };
@@ -271,7 +280,6 @@ const DesenhoHumanoResults = () => {
     
     setGeneratingPDF(true);
     try {
-      // Capturar imagem do Bodygraph
       const bodygraphImage = await captureBodyGraphAsImage();
       
       await generateHDReport({
@@ -295,14 +303,14 @@ const DesenhoHumanoResults = () => {
       });
       
       toast({
-        title: "PDF gerado!",
-        description: "O download do relatório começará em instantes.",
+        title: t('humanDesignResults.pdfGenerated'),
+        description: t('humanDesignResults.pdfGeneratedDesc'),
       });
     } catch (error: any) {
-      console.error("Erro ao gerar PDF:", error);
+      console.error("Error generating PDF:", error);
       toast({
-        title: "Erro ao gerar PDF",
-        description: "Não foi possível gerar o relatório. Tente novamente.",
+        title: t('humanDesignResults.pdfError'),
+        description: t('humanDesignResults.pdfErrorDesc'),
         variant: "destructive",
       });
     } finally {
@@ -310,12 +318,12 @@ const DesenhoHumanoResults = () => {
     }
   };
 
-  // Função para recalcular o mapa com o novo algoritmo
+  // Function to recalculate map with new algorithm
   const handleRecalculate = async () => {
     if (!result || !result.birth_lat || !result.birth_lon) {
       toast({
-        title: "Erro",
-        description: "Coordenadas do local de nascimento não disponíveis.",
+        title: t('humanDesignResults.error'),
+        description: t('humanDesignResults.coordinatesNotAvailable'),
         variant: "destructive",
       });
       return;
@@ -323,40 +331,34 @@ const DesenhoHumanoResults = () => {
 
     setRecalculating(true);
     try {
-      // Verificar se birth_time já tem segundos (HH:MM:SS) ou só HH:MM
       const timeParts = result.birth_time.split(':');
       const timeValue = timeParts.length === 3 
-        ? result.birth_time  // Já tem segundos (HH:MM:SS)
-        : `${result.birth_time}:00`;  // Só tem HH:MM, adicionar segundos
+        ? result.birth_time
+        : `${result.birth_time}:00`;
       
-      // Reconstruir a data/hora UTC do nascimento
       const birthDateTimeUTC = new Date(`${result.birth_date}T${timeValue}Z`);
       
-      // Validar se a data é válida
       if (isNaN(birthDateTimeUTC.getTime())) {
         toast({
-          title: "Erro",
-          description: "Data de nascimento inválida. Verifique os dados salvos.",
+          title: t('humanDesignResults.error'),
+          description: t('humanDesignResults.invalidBirthDate'),
           variant: "destructive",
         });
         setRecalculating(false);
         return;
       }
       
-      // Recalcular o chart
       const chart = await calculateHumanDesignChart(birthDateTimeUTC, {
         lat: result.birth_lat,
         lon: result.birth_lon,
         name: result.birth_location
       });
 
-      // Preparar dados dos centros como objeto
       const centersData: Record<string, boolean> = {};
       chart.centers.forEach(center => {
         centersData[center.id] = center.defined;
       });
 
-      // Atualizar no banco de dados - converter para JSON serializable
       const { error } = await supabase
         .from('human_design_results')
         .update({
@@ -378,7 +380,6 @@ const DesenhoHumanoResults = () => {
 
       if (error) throw error;
 
-      // Recarregar os dados atualizados
       const { data: updatedData } = await supabase
         .from('human_design_results')
         .select('*')
@@ -390,14 +391,14 @@ const DesenhoHumanoResults = () => {
       }
 
       toast({
-        title: "Mapa recalculado!",
-        description: "Os dados foram atualizados com o novo algoritmo.",
+        title: t('humanDesignResults.mapRecalculated'),
+        description: t('humanDesignResults.mapRecalculatedDesc'),
       });
     } catch (error: any) {
-      console.error("Erro ao recalcular:", error);
+      console.error("Error recalculating:", error);
       toast({
-        title: "Erro",
-        description: `Não foi possível recalcular: ${error.message}`,
+        title: t('humanDesignResults.error'),
+        description: error.message,
         variant: "destructive",
       });
     } finally {
@@ -405,11 +406,11 @@ const DesenhoHumanoResults = () => {
     }
   };
 
-  // Formatar design_date para exibição
+  // Format design_date for display
   const formatDesignDate = (dateStr: string | null) => {
     if (!dateStr) return 'N/A';
     const date = new Date(dateStr);
-    return date.toLocaleString('pt-BR', { 
+    return date.toLocaleString(getDateLocale(), { 
       timeZone: 'UTC',
       day: '2-digit',
       month: '2-digit',
@@ -419,7 +420,7 @@ const DesenhoHumanoResults = () => {
     }) + ' UTC';
   };
 
-  // Obter longitudes do Sol para debug
+  // Get Sun longitudes for debug
   const getSunLongitude = (activations: any[], label: string) => {
     const sun = activations?.find((a: any) => a.planet === 'Sun');
     return sun ? `${sun.longitude?.toFixed(2)}° (Gate ${sun.gate}.${sun.line})` : 'N/A';
@@ -430,7 +431,7 @@ const DesenhoHumanoResults = () => {
       <div className="min-h-screen bg-[#F7F3EF] flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="h-12 w-12 animate-spin text-[#7B192B] mx-auto mb-4" />
-          <p className="text-[#7B192B]">Carregando seu mapa energético...</p>
+          <p className="text-[#7B192B]">{t('humanDesignResults.loading')}</p>
         </div>
       </div>
     );
@@ -461,13 +462,13 @@ const DesenhoHumanoResults = () => {
             <Button
               variant="ghost"
               className="text-[#F7F3EF] hover:text-white hover:bg-white/10"
-              onClick={() => navigate("/dashboard")}
+              onClick={() => navigate("/app")}
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Voltar
+              {t('humanDesignResults.back')}
             </Button>
             <h1 className="text-xl md:text-2xl font-bold text-[#F7F3EF]">
-              Sua Arquitetura Pessoal
+              {t('humanDesignResults.pageTitle')}
             </h1>
             <div className="w-20" />
           </div>
@@ -477,47 +478,47 @@ const DesenhoHumanoResults = () => {
       <main className="bg-[#F7F3EF] min-h-[calc(100vh-80px)] py-8 px-4">
         <div className="max-w-6xl mx-auto space-y-6">
           
-          {/* Card Principal - Tipo */}
+          {/* Main Card - Type */}
           <Card className="bg-white border-2 border-[#BFAFB2] overflow-hidden">
             <div className={`${typeColors[result.energy_type] || 'bg-gray-500'} p-6 text-white text-center`}>
-              <Badge className="bg-white/20 text-white mb-2">SEU TIPO</Badge>
+              <Badge className="bg-white/20 text-white mb-2">{t('humanDesignResults.yourType')}</Badge>
               <h2 className="text-3xl md:text-4xl font-bold mb-2">{result.energy_type}</h2>
-              <p className="text-lg opacity-90">Estratégia: {result.strategy}</p>
+              <p className="text-lg opacity-90">{t('humanDesignResults.strategy')}: {result.strategy}</p>
             </div>
             <CardContent className="p-6">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
                 <div className="p-4 bg-[#F7F3EF] rounded-lg">
                   <Brain className="h-6 w-6 mx-auto mb-2 text-[#7B192B]" />
-                  <p className="text-xs text-muted-foreground">Autoridade</p>
+                  <p className="text-xs text-muted-foreground">{t('humanDesignResults.authority')}</p>
                   <p className="font-semibold text-[#7B192B]">{result.authority}</p>
                 </div>
                 <div className="p-4 bg-[#F7F3EF] rounded-lg">
                   <User className="h-6 w-6 mx-auto mb-2 text-[#7B192B]" />
-                  <p className="text-xs text-muted-foreground">Perfil</p>
+                  <p className="text-xs text-muted-foreground">{t('humanDesignResults.profile')}</p>
                   <p className="font-semibold text-[#7B192B]">{result.profile}</p>
                 </div>
                 <div className="p-4 bg-[#F7F3EF] rounded-lg">
                   <Zap className="h-6 w-6 mx-auto mb-2 text-[#7B192B]" />
-                  <p className="text-xs text-muted-foreground">Definição</p>
+                  <p className="text-xs text-muted-foreground">{t('humanDesignResults.definition')}</p>
                   <p className="font-semibold text-[#7B192B]">{result.definition}</p>
                 </div>
                 <div className="p-4 bg-[#F7F3EF] rounded-lg">
                   <Target className="h-6 w-6 mx-auto mb-2 text-[#7B192B]" />
-                  <p className="text-xs text-muted-foreground">Cruz</p>
+                  <p className="text-xs text-muted-foreground">{t('humanDesignResults.cross')}</p>
                   <p className="font-semibold text-[#7B192B] text-sm">{result.incarnation_cross}</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Variáveis Avançadas */}
+          {/* Advanced Variables */}
           {variables && (
             <TooltipProvider>
               <Card className="bg-white border-2 border-[#BFAFB2]">
                 <CardContent className="p-6">
                   <h3 className="font-bold text-[#7B192B] text-lg mb-4 flex items-center gap-2">
                     <Compass className="h-5 w-5" />
-                    Variáveis Avançadas
+                    {t('humanDesignResults.advancedVariables')}
                   </h3>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     {variables.digestion && (
@@ -525,7 +526,7 @@ const DesenhoHumanoResults = () => {
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
                             <Utensils className="h-4 w-4 text-[#7B192B]" />
-                            <p className="text-xs text-muted-foreground font-medium">Digestão</p>
+                            <p className="text-xs text-muted-foreground font-medium">{t('humanDesignResults.digestion')}</p>
                           </div>
                           {variables.digestion.tips && (
                             <Tooltip>
@@ -533,7 +534,7 @@ const DesenhoHumanoResults = () => {
                                 <Info className="h-4 w-4 text-[#7B192B]/60 cursor-help hover:text-[#7B192B] transition-colors" />
                               </TooltipTrigger>
                               <TooltipContent side="top" className="max-w-xs text-sm">
-                                <p className="font-medium mb-1">💡 Dica prática:</p>
+                                <p className="font-medium mb-1">💡 {t('humanDesignResults.practicalTip')}:</p>
                                 <p>{variables.digestion.tips}</p>
                               </TooltipContent>
                             </Tooltip>
@@ -558,7 +559,7 @@ const DesenhoHumanoResults = () => {
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
                             <MapPin className="h-4 w-4 text-[#7B192B]" />
-                            <p className="text-xs text-muted-foreground font-medium">Ambiente</p>
+                            <p className="text-xs text-muted-foreground font-medium">{t('humanDesignResults.environment')}</p>
                           </div>
                           {variables.environment.tips && (
                             <Tooltip>
@@ -566,7 +567,7 @@ const DesenhoHumanoResults = () => {
                                 <Info className="h-4 w-4 text-[#7B192B]/60 cursor-help hover:text-[#7B192B] transition-colors" />
                               </TooltipTrigger>
                               <TooltipContent side="top" className="max-w-xs text-sm">
-                                <p className="font-medium mb-1">💡 Dica prática:</p>
+                                <p className="font-medium mb-1">💡 {t('humanDesignResults.practicalTip')}:</p>
                                 <p>{variables.environment.tips}</p>
                               </TooltipContent>
                             </Tooltip>
@@ -591,7 +592,7 @@ const DesenhoHumanoResults = () => {
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
                             <Heart className="h-4 w-4 text-[#7B192B]" />
-                            <p className="text-xs text-muted-foreground font-medium">Motivação</p>
+                            <p className="text-xs text-muted-foreground font-medium">{t('humanDesignResults.motivation')}</p>
                           </div>
                           {variables.motivation.tips && (
                             <Tooltip>
@@ -599,7 +600,7 @@ const DesenhoHumanoResults = () => {
                                 <Info className="h-4 w-4 text-[#7B192B]/60 cursor-help hover:text-[#7B192B] transition-colors" />
                               </TooltipTrigger>
                               <TooltipContent side="top" className="max-w-xs text-sm">
-                                <p className="font-medium mb-1">💡 Dica prática:</p>
+                                <p className="font-medium mb-1">💡 {t('humanDesignResults.practicalTip')}:</p>
                                 <p>{variables.motivation.tips}</p>
                               </TooltipContent>
                             </Tooltip>
@@ -624,7 +625,7 @@ const DesenhoHumanoResults = () => {
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
                             <Eye className="h-4 w-4 text-[#7B192B]" />
-                            <p className="text-xs text-muted-foreground font-medium">Perspectiva</p>
+                            <p className="text-xs text-muted-foreground font-medium">{t('humanDesignResults.perspective')}</p>
                           </div>
                           {variables.perspective.tips && (
                             <Tooltip>
@@ -632,7 +633,7 @@ const DesenhoHumanoResults = () => {
                                 <Info className="h-4 w-4 text-[#7B192B]/60 cursor-help hover:text-[#7B192B] transition-colors" />
                               </TooltipTrigger>
                               <TooltipContent side="top" className="max-w-xs text-sm">
-                                <p className="font-medium mb-1">💡 Dica prática:</p>
+                                <p className="font-medium mb-1">💡 {t('humanDesignResults.practicalTip')}:</p>
                                 <p>{variables.perspective.tips}</p>
                               </TooltipContent>
                             </Tooltip>
@@ -657,7 +658,7 @@ const DesenhoHumanoResults = () => {
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
                             <Hand className="h-4 w-4 text-[#7B192B]" />
-                            <p className="text-xs text-muted-foreground font-medium">Sentido</p>
+                            <p className="text-xs text-muted-foreground font-medium">{t('humanDesignResults.sense')}</p>
                           </div>
                           {variables.sense.tips && (
                             <Tooltip>
@@ -665,7 +666,7 @@ const DesenhoHumanoResults = () => {
                                 <Info className="h-4 w-4 text-[#7B192B]/60 cursor-help hover:text-[#7B192B] transition-colors" />
                               </TooltipTrigger>
                               <TooltipContent side="top" className="max-w-xs text-sm">
-                                <p className="font-medium mb-1">💡 Dica prática:</p>
+                                <p className="font-medium mb-1">💡 {t('humanDesignResults.practicalTip')}:</p>
                                 <p>{variables.sense.tips}</p>
                               </TooltipContent>
                             </Tooltip>
@@ -685,7 +686,7 @@ const DesenhoHumanoResults = () => {
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
                             <Hand className="h-4 w-4 text-[#7B192B]" />
-                            <p className="text-xs text-muted-foreground font-medium">Sentido do Design</p>
+                            <p className="text-xs text-muted-foreground font-medium">{t('humanDesignResults.designSense')}</p>
                           </div>
                           {variables.designSense.tips && (
                             <Tooltip>
@@ -693,7 +694,7 @@ const DesenhoHumanoResults = () => {
                                 <Info className="h-4 w-4 text-[#7B192B]/60 cursor-help hover:text-[#7B192B] transition-colors" />
                               </TooltipTrigger>
                               <TooltipContent side="top" className="max-w-xs text-sm">
-                                <p className="font-medium mb-1">💡 Dica prática:</p>
+                                <p className="font-medium mb-1">💡 {t('humanDesignResults.practicalTip')}:</p>
                                 <p>{variables.designSense.tips}</p>
                               </TooltipContent>
                             </Tooltip>
@@ -713,11 +714,11 @@ const DesenhoHumanoResults = () => {
             </TooltipProvider>
           )}
 
-          {/* BodyGraph + Colunas Planetárias */}
+          {/* BodyGraph + Planetary Columns */}
           <Card className="bg-white border-2 border-[#BFAFB2] overflow-hidden">
             <CardContent className="p-6">
               <div className="grid grid-cols-[auto_1fr_auto] gap-4 md:gap-8 items-start">
-                {/* Coluna Design (Esquerda) */}
+                {/* Design Column (Left) */}
                 <div className="min-w-[100px]">
                   <PlanetaryColumn
                     title="Design"
@@ -726,7 +727,7 @@ const DesenhoHumanoResults = () => {
                   />
                 </div>
 
-                {/* BodyGraph (Centro) */}
+                {/* BodyGraph (Center) */}
                 <div className="flex justify-center">
                   <HDBodyGraph
                     definedCenters={definedCenters}
@@ -737,7 +738,7 @@ const DesenhoHumanoResults = () => {
                   />
                 </div>
 
-                {/* Coluna Personalidade (Direita) */}
+                {/* Personality Column (Right) */}
                 <div className="min-w-[100px]">
                   <PlanetaryColumn
                     title="Personality"
@@ -749,10 +750,10 @@ const DesenhoHumanoResults = () => {
             </CardContent>
           </Card>
 
-          {/* Canais Ativos */}
+          {/* Active Channels */}
           <Card className="bg-white border-2 border-[#BFAFB2]">
             <CardContent className="p-4">
-              <h3 className="font-bold text-[#7B192B] mb-3">Canais Definidos</h3>
+              <h3 className="font-bold text-[#7B192B] mb-3">{t('humanDesignResults.definedChannels')}</h3>
               {result.channels && Array.isArray(result.channels) ? (
                 <div className="flex flex-wrap gap-2">
                   {result.channels
@@ -767,16 +768,16 @@ const DesenhoHumanoResults = () => {
                       </Badge>
                     ))}
                   {result.channels.filter((ch: any) => ch.isComplete).length === 0 && (
-                    <p className="text-muted-foreground">Nenhum canal completo definido</p>
+                    <p className="text-muted-foreground">{t('humanDesignResults.noDefinedChannels')}</p>
                   )}
                 </div>
               ) : (
-                <p className="text-muted-foreground">Dados de canais não disponíveis</p>
+                <p className="text-muted-foreground">{t('humanDesignResults.channelDataNotAvailable')}</p>
               )}
             </CardContent>
           </Card>
 
-          {/* Seções de Análise */}
+          {/* Analysis Sections */}
           <AnalysisSections
             energyType={result.energy_type}
             authority={result.authority}
@@ -785,7 +786,7 @@ const DesenhoHumanoResults = () => {
             strategy={result.strategy}
           />
 
-          {/* Análise de IA por Luciana Belenton */}
+          {/* AI Analysis */}
           <Card className="bg-white border-2 border-[#7B192B] overflow-hidden">
             <CardContent className="p-0">
               <Collapsible open={analysisOpen} onOpenChange={setAnalysisOpen}>
@@ -794,17 +795,17 @@ const DesenhoHumanoResults = () => {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 text-white">
                         <Sparkles className="h-5 w-5" />
-                        <span className="font-bold text-lg">Análise Personalizada por IA</span>
+                        <span className="font-bold text-lg">{t('humanDesignResults.aiAnalysis')}</span>
                         {aiAnalysis && (
                           <Badge variant="secondary" className="bg-white/20 text-white">
-                            Gerada
+                            {t('humanDesignResults.generated')}
                           </Badge>
                         )}
                       </div>
                       {analysisOpen ? <ChevronUp className="h-5 w-5 text-white" /> : <ChevronDown className="h-5 w-5 text-white" />}
                     </div>
                     <p className="text-white/80 text-sm mt-1">
-                      Uma análise profunda e empática do seu Desenho Humano
+                      {t('humanDesignResults.aiAnalysisSubtitle')}
                     </p>
                   </div>
                 </CollapsibleTrigger>
@@ -812,26 +813,24 @@ const DesenhoHumanoResults = () => {
                   <div className="p-6">
                     {aiAnalysis ? (
                       <div>
-                        {/* Resumo Geral */}
+                        {/* General Summary */}
                         <div className="mb-6 p-6 bg-[#F7F3EF] rounded-lg border border-[#BFAFB2]">
-                          <h4 className="font-bold text-[#7B192B] text-lg mb-3">Resumo da sua Análise</h4>
+                          <h4 className="font-bold text-[#7B192B] text-lg mb-3">{t('humanDesignResults.analysisSummary')}</h4>
                           <p className="text-foreground leading-relaxed mb-4">
-                            A análise completa do seu Desenho Humano foi gerada com sucesso. Ela inclui uma interpretação profunda 
-                            do seu tipo energético <strong>{result.energy_type}</strong>, sua estratégia de <strong>{result.strategy}</strong>, 
-                            autoridade <strong>{result.authority}</strong>, perfil <strong>{result.profile}</strong> e muito mais.
+                            {t('humanDesignResults.analysisSummaryText')}
                           </p>
                           <p className="text-muted-foreground text-sm">
-                            Para acessar a análise completa com todos os detalhes, baixe o relatório em PDF abaixo.
+                            {t('humanDesignResults.downloadFullPdf')}
                           </p>
                         </div>
 
-                        {/* Botão de Download PDF */}
+                        {/* Download PDF Button */}
                         <div className="p-4 bg-gradient-to-r from-[#7B192B] to-[#A02846] rounded-lg">
                           <div className="flex items-center justify-between flex-wrap gap-4">
                             <div className="text-white">
-                              <h4 className="font-semibold">Baixar Relatório Completo em PDF</h4>
+                              <h4 className="font-semibold">{t('humanDesignResults.downloadPdfTitle')}</h4>
                               <p className="text-sm text-white/80">
-                                Análise completa, variáveis avançadas e todas as informações do seu mapa
+                                {t('humanDesignResults.downloadPdfSubtitle')}
                               </p>
                             </div>
                             <Button
@@ -842,12 +841,12 @@ const DesenhoHumanoResults = () => {
                               {generatingPDF ? (
                                 <>
                                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                  Gerando PDF...
+                                  {t('humanDesignResults.generatingPdf')}
                                 </>
                               ) : (
                                 <>
                                   <Download className="mr-2 h-4 w-4" />
-                                  Baixar PDF
+                                  {t('humanDesignResults.downloadPdf')}
                                 </>
                               )}
                             </Button>
@@ -855,7 +854,7 @@ const DesenhoHumanoResults = () => {
                         </div>
 
                         <div className="mt-6 pt-4 border-t border-[#BFAFB2] flex items-center justify-between text-sm text-muted-foreground">
-                          <span>Gerada em: {new Date(aiAnalysis.generated_at).toLocaleDateString('pt-BR', { 
+                          <span>{t('humanDesignResults.generatedAt')}: {new Date(aiAnalysis.generated_at).toLocaleDateString(getDateLocale(), { 
                             day: '2-digit', 
                             month: '2-digit', 
                             year: 'numeric',
@@ -872,12 +871,12 @@ const DesenhoHumanoResults = () => {
                             {generatingAnalysis ? (
                               <>
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Regenerando...
+                                {t('humanDesignResults.regenerating')}
                               </>
                             ) : (
                               <>
                                 <RefreshCw className="mr-2 h-4 w-4" />
-                                Regenerar Análise
+                                {t('humanDesignResults.regenerate')}
                               </>
                             )}
                           </Button>
@@ -887,11 +886,10 @@ const DesenhoHumanoResults = () => {
                       <div className="text-center py-8">
                         <Sparkles className="h-12 w-12 mx-auto text-[#7B192B] mb-4" />
                         <h3 className="text-lg font-semibold text-[#7B192B] mb-2">
-                          Sua Análise Personalizada
+                          {t('humanDesignResults.yourPersonalizedAnalysis')}
                         </h3>
                         <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                          Descubra uma análise profunda e empática do seu Desenho Humano, 
-                          com orientações especialmente elaboradas para mulheres.
+                          {t('humanDesignResults.analysisDescription')}
                         </p>
                         <Button
                           onClick={handleGenerateAnalysis}
@@ -901,12 +899,12 @@ const DesenhoHumanoResults = () => {
                           {generatingAnalysis ? (
                             <>
                               <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                              Gerando análise... (pode levar alguns minutos)
+                              {t('humanDesignResults.generatingAnalysis')}
                             </>
                           ) : (
                             <>
                               <Sparkles className="mr-2 h-5 w-5" />
-                              Gerar Análise com IA
+                              {t('humanDesignResults.generateWithAI')}
                             </>
                           )}
                         </Button>
@@ -918,19 +916,19 @@ const DesenhoHumanoResults = () => {
             </CardContent>
           </Card>
 
-          {/* Dados de Nascimento */}
+          {/* Birth Data */}
           <Card className="bg-white border-2 border-[#BFAFB2]">
             <CardContent className="p-4">
               <div className="flex flex-wrap justify-between items-center text-sm text-muted-foreground">
                 <span>📅 {result.birth_date}</span>
                 <span>🕐 {result.birth_time}</span>
                 <span>📍 {result.birth_location}</span>
-                <span>Gerado em: {new Date(result.created_at).toLocaleDateString('pt-BR')}</span>
+                <span>{t('humanDesignResults.generatedOn')}: {new Date(result.created_at).toLocaleDateString(getDateLocale())}</span>
               </div>
             </CardContent>
           </Card>
 
-          {/* Painel de Debug (Colapsável) - APENAS ADMIN */}
+          {/* Debug Panel (Collapsible) - ADMIN ONLY */}
           {isAdmin && (
             <Collapsible open={debugOpen} onOpenChange={setDebugOpen}>
               <Card className="bg-white border-2 border-amber-300">
@@ -939,7 +937,7 @@ const DesenhoHumanoResults = () => {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 text-amber-700">
                         <Bug className="h-5 w-5" />
-                        <span className="font-medium">Painel de Debug (Validação)</span>
+                        <span className="font-medium">{t('humanDesignResults.debugPanel')}</span>
                       </div>
                       {debugOpen ? <ChevronUp className="h-5 w-5 text-amber-600" /> : <ChevronDown className="h-5 w-5 text-amber-600" />}
                     </div>
@@ -950,22 +948,22 @@ const DesenhoHumanoResults = () => {
                     <div className="grid md:grid-cols-2 gap-4 text-sm font-mono">
                       {/* Birth Data */}
                       <div className="space-y-2">
-                        <h4 className="font-bold text-amber-800">Nascimento (Personality)</h4>
-                        <p><span className="text-muted-foreground">Data/Hora Salva:</span> {result.birth_date} {result.birth_time} UTC</p>
-                        <p><span className="text-muted-foreground">Coordenadas:</span> {result.birth_lat?.toFixed(4)}, {result.birth_lon?.toFixed(4)}</p>
-                        <p><span className="text-muted-foreground">Sol (Personality):</span> {getSunLongitude(result.personality_activations, 'Personality')}</p>
+                        <h4 className="font-bold text-amber-800">{t('humanDesignResults.birthPersonality')}</h4>
+                        <p><span className="text-muted-foreground">{t('humanDesignResults.dateSaved')}:</span> {result.birth_date} {result.birth_time} UTC</p>
+                        <p><span className="text-muted-foreground">{t('humanDesignResults.coordinates')}:</span> {result.birth_lat?.toFixed(4)}, {result.birth_lon?.toFixed(4)}</p>
+                        <p><span className="text-muted-foreground">{t('humanDesignResults.sunPersonality')}:</span> {getSunLongitude(result.personality_activations, 'Personality')}</p>
                       </div>
                       
                       {/* Design Data */}
                       <div className="space-y-2">
-                        <h4 className="font-bold text-amber-800">Design (88° antes)</h4>
-                        <p><span className="text-muted-foreground">Design Date:</span> {formatDesignDate(result.design_date)}</p>
-                        <p><span className="text-muted-foreground">Sol (Design):</span> {getSunLongitude(result.design_activations, 'Design')}</p>
+                        <h4 className="font-bold text-amber-800">{t('humanDesignResults.designBefore')}</h4>
+                        <p><span className="text-muted-foreground">{t('humanDesignResults.designDate')}:</span> {formatDesignDate(result.design_date)}</p>
+                        <p><span className="text-muted-foreground">{t('humanDesignResults.sunDesign')}:</span> {getSunLongitude(result.design_activations, 'Design')}</p>
                       </div>
 
                       {/* Moon and Mercury debug */}
                       <div className="md:col-span-2 pt-2 border-t border-amber-100">
-                        <h4 className="font-bold text-amber-800 mb-2">Lua e Mercúrio (Verificação)</h4>
+                        <h4 className="font-bold text-amber-800 mb-2">{t('humanDesignResults.moonMercuryVerification')}</h4>
                         <div className="grid grid-cols-2 gap-4">
                           <div>
                             <p className="text-xs text-muted-foreground">Personality</p>
@@ -988,16 +986,16 @@ const DesenhoHumanoResults = () => {
             </Collapsible>
           )}
 
-          {/* Botões de Ação */}
+          {/* Action Buttons */}
           <div className="flex justify-center gap-4 flex-wrap">
             <Button
               variant="outline"
               className="border-[#7B192B] text-[#7B192B]"
-              onClick={() => navigate("/dashboard")}
+              onClick={() => navigate("/app")}
             >
-              Voltar ao Dashboard
+              {t('humanDesignResults.backToDashboard')}
             </Button>
-            {/* Botão Recalcular - APENAS ADMIN */}
+            {/* Recalculate Button - ADMIN ONLY */}
             {isAdmin && (
               <Button
                 onClick={handleRecalculate}
@@ -1007,12 +1005,12 @@ const DesenhoHumanoResults = () => {
                 {recalculating ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Recalculando...
+                    {t('humanDesignResults.recalculating')}
                   </>
                 ) : (
                   <>
                     <RefreshCw className="mr-2 h-4 w-4" />
-                    Recalcular Mapa
+                    {t('humanDesignResults.recalculateMap')}
                   </>
                 )}
               </Button>
