@@ -10,6 +10,7 @@ import {
 } from '../data/humanDesignTheory';
 
 export interface HDReportData {
+  user_name?: string;
   birth_date: string;
   birth_time: string;
   birth_location: string;
@@ -195,6 +196,15 @@ export async function generateHDReport(data: HDReportData): Promise<void> {
   // ============ PÁGINA 1 - CAPA ============
   let yPos = drawGradientHeader("ARQUITETURA PESSOAL", "Desenho Humano Personalizado");
   
+  // Nome da usuária (se disponível)
+  if (data.user_name) {
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...COLORS.carmim);
+    doc.text(data.user_name, pageWidth / 2, yPos + 5, { align: 'center' });
+    yPos += 15;
+  }
+  
   // Box introdutório
   doc.setFillColor(...COLORS.offWhite);
   doc.roundedRect(margin, yPos, contentWidth, 35, 3, 3, 'F');
@@ -203,7 +213,7 @@ export async function generateHDReport(data: HDReportData): Promise<void> {
   doc.setTextColor(...COLORS.darkText);
   doc.setFont('helvetica', 'normal');
   
-  const introText = "Este relatório apresenta sua Arquitetura Pessoal completa, um mapa único da sua energia vital baseado no Sistema Human Design. Descubra como você foi desenhado para tomar decisões, interagir com o mundo e viver com autenticidade.";
+  const introText = "Este relatorio apresenta sua Arquitetura Pessoal completa, um mapa unico da sua energia vital baseado no Sistema Human Design. Descubra como voce foi desenhado para tomar decisoes, interagir com o mundo e viver com autenticidade.";
   const introLines = doc.splitTextToSize(introText, contentWidth - 20);
   doc.text(introLines, margin + 10, yPos + 12);
   
