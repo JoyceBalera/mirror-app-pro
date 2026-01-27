@@ -52,6 +52,7 @@ const DesenhoHumanoResults = () => {
   const { isAdmin } = useUserRole();
   
   const [result, setResult] = useState<HumanDesignResult | null>(null);
+  const [userName, setUserName] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [recalculating, setRecalculating] = useState(false);
   const [debugOpen, setDebugOpen] = useState(false);
@@ -89,6 +90,17 @@ const DesenhoHumanoResults = () => {
         }
 
         setResult(data as HumanDesignResult);
+
+        // Fetch user profile to get name
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('full_name')
+          .eq('id', data.user_id)
+          .maybeSingle();
+        
+        if (profileData?.full_name) {
+          setUserName(profileData.full_name);
+        }
 
         // Fetch existing AI analysis
         const { data: analysisData } = await supabase
@@ -263,6 +275,7 @@ const DesenhoHumanoResults = () => {
       const bodygraphImage = await captureBodyGraphAsImage();
       
       await generateHDReport({
+        user_name: userName,
         birth_date: result.birth_date,
         birth_time: result.birth_time,
         birth_location: result.birth_location,
