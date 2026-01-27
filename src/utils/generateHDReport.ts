@@ -338,15 +338,20 @@ export async function generateHDReport(data: HDReportData): Promise<void> {
   
   // Renderizar cada centro
   CENTERS_THEORY.forEach((center) => {
-    yPos = checkAddPage(45, yPos);
-    
     // Verificar se o centro está definido no mapa da usuária
     const isDefined = definedCenters.includes(center.id);
     const definedMarker = isDefined ? ' (*)' : '';
     
+    // Calcular altura dinâmica do card baseada no texto
+    doc.setFontSize(9);
+    const importanceLines = doc.splitTextToSize(center.importanceForWomen, contentWidth - 15);
+    const cardHeight = Math.max(45, 28 + (importanceLines.length * 5));
+    
+    yPos = checkAddPage(cardHeight + 8, yPos);
+    
     // Card do centro
     doc.setFillColor(...COLORS.offWhite);
-    doc.roundedRect(margin, yPos, contentWidth, 40, 3, 3, 'F');
+    doc.roundedRect(margin, yPos, contentWidth, cardHeight, 3, 3, 'F');
     
     // Nome do centro
     doc.setFontSize(11);
@@ -358,23 +363,26 @@ export async function generateHDReport(data: HDReportData): Promise<void> {
     doc.setFontSize(9);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...COLORS.lightText);
-    doc.text('Função:', margin + 5, yPos + 16);
+    doc.text('Funcao:', margin + 5, yPos + 16);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(...COLORS.darkText);
-    doc.text(center.function, margin + 22, yPos + 16);
+    doc.text(center.function, margin + 25, yPos + 16);
     
-    // Importância para mulheres
+    // Importância para mulheres - texto completo
     doc.setFontSize(9);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...COLORS.lightText);
-    doc.text('Importância para mulheres:', margin + 5, yPos + 24);
+    doc.text('Importancia para mulheres:', margin + 5, yPos + 24);
     
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(...COLORS.darkText);
-    const importanceLines = doc.splitTextToSize(center.importanceForWomen, contentWidth - 15);
-    doc.text(importanceLines.slice(0, 2).join(' '), margin + 5, yPos + 32);
+    let textY = yPos + 32;
+    importanceLines.forEach((line: string) => {
+      doc.text(line, margin + 5, textY);
+      textY += 5;
+    });
     
-    yPos += 48;
+    yPos += cardHeight + 8;
   });
   
   // Nota sobre centros definidos
@@ -457,12 +465,9 @@ export async function generateHDReport(data: HDReportData): Promise<void> {
       doc.setFillColor(...COLORS.offWhite);
       doc.roundedRect(cardX, cardY, cardWidth, 14, 2, 2, 'F');
       
+      // Indicador verde (sem caractere Unicode)
       doc.setFillColor(...COLORS.success);
       doc.roundedRect(cardX + 3, cardY + 3, 8, 8, 1, 1, 'F');
-      doc.setTextColor(...COLORS.white);
-      doc.setFontSize(7);
-      doc.setFont('helvetica', 'bold');
-      doc.text('✓', cardX + 5.5, cardY + 8.5);
       
       doc.setTextColor(...COLORS.darkText);
       doc.setFontSize(10);
@@ -501,12 +506,9 @@ export async function generateHDReport(data: HDReportData): Promise<void> {
       doc.setFillColor(...COLORS.offWhite);
       doc.roundedRect(cardX, cardY, cardWidth, 14, 2, 2, 'F');
       
+      // Indicador laranja (sem caractere Unicode)
       doc.setFillColor(...COLORS.warning);
       doc.roundedRect(cardX + 3, cardY + 3, 8, 8, 1, 1, 'F');
-      doc.setTextColor(...COLORS.white);
-      doc.setFontSize(7);
-      doc.setFont('helvetica', 'bold');
-      doc.text('○', cardX + 5, cardY + 8.5);
       
       doc.setTextColor(...COLORS.darkText);
       doc.setFontSize(10);
