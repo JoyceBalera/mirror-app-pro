@@ -1,192 +1,199 @@
 
 
-# Plano: Correções de Formatação e Tradução do Relatório de Arquitetura Pessoal
+# Plano: Nova Arquitetura do Relatório Human Design (2 Camadas)
 
-## Resumo
+## Visão Geral da Mudança
 
-Este plano aborda os problemas restantes identificados no feedback do usuário sobre o relatório PDF do Human Design, focando em:
-1. Tradução das variáveis avançadas para português
-2. Correção de possíveis bugs de formatação
-3. Verificação da estrutura do PDF
+O relatório PDF será reestruturado em **duas camadas**:
 
----
-
-## Problemas Identificados e Soluções
-
-### 1. Termos em Inglês nas Variáveis Avançadas
-
-Os termos `primary` nos mapas de `humanDesignVariables.ts` estão todos em inglês:
-- "Appetite", "Taste", "Thirst", "Touch", "Sound", "Light" (Digestão)
-- "Caves", "Markets", "Kitchens", "Mountains", "Valleys", "Shores" (Ambiente)
-- "Fear", "Hope", "Desire", "Need", "Guilt", "Innocence" (Motivação)
-- "Survival", "Possibility", "Power", "Wanting", "Probability", "Personal" (Perspectiva)
-- "Smell", "Taste", "Outer Vision", "Inner Vision", "Feeling", "Touch" (Sentido)
-
-Os termos de subcategoria também estão em inglês:
-- "Focused", "Open" (Digestão)
-- "Active", "Passive" (Ambiente)
-- "Personal", "Transpersonal" (Motivação)
-- "Left", "Right" (Perspectiva)
-
-E os termos de nível:
-- "Low", "High" (Digestão)
-
-### Solução: Traduzir todos os termos para português
-
-| Arquivo | Mudança |
-|---------|---------|
-| `src/utils/humanDesignVariables.ts` | Traduzir todos os mapas para português |
-
-### Tabela de Tradução Completa
-
-**DIGESTION_MAP:**
-| Inglês | Português |
-|--------|-----------|
-| Appetite | Apetite |
-| Taste | Paladar |
-| Thirst | Sede |
-| Touch | Toque |
-| Sound | Som |
-| Light | Luz |
-
-**DIGESTION_TONE_MAP:**
-| Inglês | Português |
-|--------|-----------|
-| Focused | Focado |
-| Open | Aberto |
-
-**ENVIRONMENT_MAP:**
-| Inglês | Português |
-|--------|-----------|
-| Caves | Cavernas |
-| Markets | Mercados |
-| Kitchens | Cozinhas |
-| Mountains | Montanhas |
-| Valleys | Vales |
-| Shores | Margens |
-
-**ENVIRONMENT_TONE_MAP:**
-| Inglês | Português |
-|--------|-----------|
-| Active | Ativo |
-| Passive | Passivo |
-
-**MOTIVATION_MAP:**
-| Inglês | Português |
-|--------|-----------|
-| Fear | Medo |
-| Hope | Esperança |
-| Desire | Desejo |
-| Need | Necessidade |
-| Guilt | Responsabilidade |
-| Innocence | Inocência |
-
-**MOTIVATION_TONE_MAP:**
-| Inglês | Português |
-|--------|-----------|
-| Personal | Pessoal |
-| Transpersonal | Transpessoal |
-
-**PERSPECTIVE_MAP:**
-| Inglês | Português |
-|--------|-----------|
-| Survival | Sobrevivência |
-| Possibility | Possibilidade |
-| Power | Poder |
-| Wanting | Anseio |
-| Probability | Probabilidade |
-| Personal | Pessoal |
-
-**PERSPECTIVE_TONE_MAP:**
-| Inglês | Português |
-|--------|-----------|
-| Left | Esquerda |
-| Right | Direita |
-
-**SENSE_MAP:**
-| Inglês | Português |
-|--------|-----------|
-| Smell | Olfato |
-| Taste | Paladar |
-| Outer Vision | Visão Externa |
-| Inner Vision | Visão Interna |
-| Feeling | Sentimento |
-| Touch | Toque |
-
-**getDigestionLevel:**
-| Inglês | Português |
-|--------|-----------|
-| Low | Baixo |
-| High | Alto |
-
----
-
-### 2. Bug "0, 1, 2..." nos Centros Energéticos
-
-Após análise do código, NÃO identifiquei um bug óbvio no código do gerador de PDF. O código em `generateHDReport.ts` (linhas 303-335 e 350-382) usa corretamente:
-
-```typescript
-definedCenters.forEach((centerId, index) => {
-  // ...
-  doc.text(CENTER_NAMES[centerId] || centerId, cardX + 15, cardY + 9);
-});
-```
-
-O problema pode estar na formatação do texto pela IA ou em algum outro lugar. Precisamos investigar mais a fundo se o problema persistir após as correções.
-
----
-
-### 3. Espaços em Branco nas Páginas Iniciais
-
-A função `checkAddPage` no HD não adiciona rodapé antes da nova página (diferente do Big Five). Isso pode causar quebras de página inesperadas.
-
-**Solução**: A lógica atual deve funcionar, mas podemos melhorar o espaçamento. Por ora, vamos focar na tradução das variáveis, pois é o problema mais crítico identificado.
-
----
-
-### 4. Acentuação Inconsistente
-
-Este problema vem do prompt da IA (que o usuário vai substituir), não do código. O prompt atual em `SYSTEM_PROMPT` tem algumas seções sem acentos (ex: "Introducao", "Funcao", "Digestao"). Como o usuário mencionou que vai fornecer novos prompts, não modificaremos isso agora.
-
----
-
-### 5. Sentido (Personality) vs (Design)
-
-Já foi corrigido na última implementação - removemos "Sentido (Personality)" e mantemos apenas "Sentido".
-
----
+1. **Camada 1 (Texto Teórico Fixo)**: Inserido diretamente pelo gerador de PDF, igual para todas as usuárias
+2. **Camada 2 (Análise Personalizada)**: Gerada pela IA com base nos dados do mapa da usuária
 
 ## Arquivos a Modificar
 
-### Arquivo 1: `src/utils/humanDesignVariables.ts`
+| Arquivo | Propósito |
+|---------|-----------|
+| `supabase/functions/analyze-human-design/index.ts` | Substituir o SYSTEM_PROMPT pelo novo prompt personalizado |
+| `src/utils/generateHDReport.ts` | Adicionar seção de teoria fixa antes da análise IA |
+| `src/data/humanDesignTheory.ts` | Novo arquivo com o texto teórico fixo |
 
-Traduzir completamente todos os mapas:
-- Linha 5-10: DIGESTION_MAP - traduzir `primary`
-- Linha 14-16: DIGESTION_TONE_MAP - traduzir valores
-- Linha 20-26: ENVIRONMENT_MAP - traduzir `primary`
-- Linha 30-32: ENVIRONMENT_TONE_MAP - traduzir valores
-- Linha 36-42: MOTIVATION_MAP - traduzir `primary`
-- Linha 46-48: MOTIVATION_TONE_MAP - traduzir valores
-- Linha 52-58: PERSPECTIVE_MAP - traduzir `primary`
-- Linha 62-64: PERSPECTIVE_TONE_MAP - traduzir valores
-- Linha 68-74: SENSE_MAP - traduzir `primary`
-- Linha 85-87: getDigestionLevel - traduzir retorno
+---
+
+## PARTE 1: Novo Prompt da Edge Function
+
+### Substituição do SYSTEM_PROMPT
+
+O prompt atual (linhas 9-241) será substituído pelo novo prompt fornecido, com as seguintes características:
+
+**Escopo do Texto**:
+- A IA NÃO repete teoria geral
+- Escreve APENAS a parte personalizada, conectando teoria ao mapa real
+- Tom de mentora experiente, linguagem humana e prática
+
+**Estrutura das Seções**:
+1. Ponte com a teoria + visão geral do mapa
+2. Tipo + Estratégia + Autoridade (núcleo da tomada de decisão)
+3. Centros (foco na experiência, sem teoria repetida)
+4. Perfil e Definição
+5. Cruz de Encarnação e principais Canais/Portões
+6. Variáveis avançadas
+7. Integração final com mensagem motivadora
+
+**Tom e Idioma**:
+- Português do Brasil
+- Segunda pessoa ("você")
+- Chamar de "amada" para criar proximidade
+- Termos em inglês: manter entre parênteses na primeira vez, depois usar português
+- Evitar linguagem robótica ou acadêmica
+
+**Formatação para PDF**:
+- Títulos de seção em destaque
+- Parágrafos separados com linhas em branco
+- Listas com marcadores claros
+- Evitar linhas soltas ou itens numéricos sem explicação
+
+**Regras de Conteúdo**:
+- NUNCA inventar dados
+- Sempre incluir pontos fortes + pontos de atenção para cada elemento
+- Não usar listas enormes de bullets teóricos
+- Evitar soar como laudo médico ou manual técnico
+- Encerrar com mensagem afetuosa: "Com carinho, Luciana Belenton"
+
+---
+
+## PARTE 2: Texto Teórico Fixo (Camada 1)
+
+### Novo Arquivo: `src/data/humanDesignTheory.ts`
+
+Este arquivo conterá o texto teórico que aparece igual em todos os relatórios:
+
+**Seções do Texto Teórico**:
+
+1. **Introdução ao Desenho Humano**
+   - O que é Human Design
+   - Origens (astrologia, I Ching, Cabala, chakras, física quântica, genética)
+   - Propósito do sistema
+
+2. **Os 9 Centros Energéticos**
+   - Centro da Cabeça: inspiração e pressão mental
+   - Centro de Ajna: processamento mental e consciência
+   - Centro da Garganta: manifestação e comunicação
+   - Centro G: identidade, amor e direção
+   - Centro do Coração (Ego): vontade, ego e materialidade
+   - Centro Sacral: energia vital e força de trabalho
+   - Centro Raiz: pressão e adrenalina
+   - Centro do Plexo Solar: emoções e consciência emocional
+   - Centro do Baço: intuição, bem-estar e imunidade
+
+3. **Estrutura do Human Design**
+   - Type (Tipo)
+   - Strategy (Estratégia)
+   - Inner Authority (Autoridade Interna)
+   - Definition (Definição)
+   - Profile (Perfil)
+   - Incarnation Cross (Cruz de Encarnação)
+   - Signature (Assinatura)
+   - Not-Self Theme (Tema do Não-Eu)
+   - Digestion (Digestão)
+   - Design Sense (Sentido do Design)
+   - Motivation (Motivação)
+   - Environment (Ambiente)
+   - Gates (Portões)
+   - Channels (Canais)
+
+---
+
+## PARTE 3: Modificação do Gerador de PDF
+
+### Arquivo: `src/utils/generateHDReport.ts`
+
+**Nova Estrutura do PDF**:
+
+| Página | Conteúdo |
+|--------|----------|
+| 1 | Capa + Dados de Nascimento + Perfil Energético |
+| 2 | Bodygraph Visual |
+| 3 | Texto Teórico: Introdução ao Desenho Humano |
+| 4-7 | Texto Teórico: Os 9 Centros (com marcação de quais estão definidos) |
+| 8-9 | Texto Teórico: Estrutura do Human Design (elementos) |
+| 10+ | Análise Personalizada IA (Camada 2) |
+| Última | Conclusão + Assinatura |
+
+**Mudanças Específicas**:
+
+1. **Adicionar função para renderizar teoria fixa**:
+   - Importar texto de `humanDesignTheory.ts`
+   - Renderizar com formatação consistente
+   - Marcar centros definidos com "(*)" no texto
+
+2. **Ajustar fluxo de páginas**:
+   - Teoria fixa vem ANTES da análise IA
+   - Análise IA começa com "Ponte com a teoria" (gancho)
+
+3. **Header da seção de análise IA**:
+   - Mudar de "ANÁLISE PERSONALIZADA COMPLETA" para "SEU MAPA NA PRÁTICA"
+   - Adicionar subtítulo: "Leitura personalizada do seu mapa"
+
+---
+
+## Detalhes Técnicos
+
+### Novo SYSTEM_PROMPT (analyze-human-design/index.ts)
+
+```text
+Você é uma analista de Desenho Humano especializada em mulheres adultas.
+
+Você está dentro de um aplicativo que já calculou automaticamente o mapa de Desenho Humano da usuária. Você TEM acesso a todos esses dados estruturados pelo sistema.
+
+# 0. Escopo do seu texto
+
+O relatório em PDF tem duas partes:
+
+1. Parte teórica fixa (já pronta no app): o que é Desenho Humano, explicação geral dos 9 centros e de todos os elementos.
+2. Parte personalizada (esta que você vai escrever): leitura aplicada do mapa específico da usuária.
+
+Você NÃO deve repetir a teoria geral. Sua missão é escrever APENAS a parte personalizada, conectando a teoria já explicada ao mapa real da usuária, em linguagem simples, humana e prática, como uma mentora experiente conversando com sua mentorada.
+
+Comece o texto fazendo um gancho com a parte teórica: "Agora que você já viu a visão geral do Desenho Humano, vamos olhar para o que o seu mapa específico revela sobre você e sobre a sua vida na prática."
+
+# 1. Papel, idioma e tom de voz
+
+[... restante do prompt conforme documento fornecido ...]
+```
+
+### Estrutura do buildUserPrompt
+
+Manter a estrutura atual, que já envia:
+- Nome da pessoa
+- Centros definidos
+- Tipo, Estratégia, Autoridade
+- Definição, Perfil, Cruz de Encarnação
+- Portões e Canais ativados
+- Variáveis avançadas (Digestão, Ambiente, Motivação, Perspectiva)
 
 ---
 
 ## Resumo das Ações
 
-1. **Traduzir variáveis avançadas para português**: Modificar `humanDesignVariables.ts` para usar termos 100% em português
-2. **Verificar se o bug "0, 1, 2..." persiste**: Após a correção das variáveis, verificar se o problema ainda ocorre
-3. **Prompts serão atualizados depois**: Conforme solicitado, os prompts da edge function serão substituídos pelo usuário posteriormente
+1. **Criar `src/data/humanDesignTheory.ts`**: Texto teórico fixo extraído do documento de exemplo
+2. **Atualizar `supabase/functions/analyze-human-design/index.ts`**: Substituir SYSTEM_PROMPT pelo novo prompt
+3. **Atualizar `src/utils/generateHDReport.ts`**: Adicionar renderização da teoria fixa antes da análise IA
 
 ---
 
-## Impacto das Mudanças
+## Benefícios da Nova Arquitetura
 
-- **UI**: Os termos das variáveis avançadas aparecerão em português na página de resultados
-- **PDF**: Os termos aparecerão em português no PDF
-- **Edge Function**: Os dados enviados para a IA também estarão em português (já que a edge function usa os mesmos dados)
+- **Consistência**: Teoria é igual para todas as usuárias
+- **Economia**: IA gera menos texto (apenas a parte personalizada)
+- **Qualidade**: Análise IA foca em interpretação prática, não em explicar conceitos
+- **Manutenção**: Texto teórico pode ser atualizado sem regenerar análises existentes
 
-Isso resolve o problema de mistura de idiomas em toda a aplicação.
+---
+
+## Próximos Passos
+
+Após aprovação:
+1. Você envia o texto teórico completo para a Camada 1 (se ainda não enviou)
+2. Implemento as mudanças no código
+3. Testamos um novo relatório para validar
 
