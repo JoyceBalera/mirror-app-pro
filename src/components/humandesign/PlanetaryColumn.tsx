@@ -1,4 +1,4 @@
-import { GATES_DATA } from "@/data/humanDesignGates";
+import { useTranslation } from "react-i18next";
 
 interface Activation {
   planet: string;
@@ -41,6 +41,7 @@ const PLANET_ORDER = [
 ];
 
 const PlanetaryColumn = ({ title, activations, variant }: PlanetaryColumnProps) => {
+  const { t } = useTranslation();
   const isDesign = variant === 'design';
   
   // Ordenar ativações pela ordem dos planetas
@@ -50,12 +51,17 @@ const PlanetaryColumn = ({ title, activations, variant }: PlanetaryColumnProps) 
     return indexA - indexB;
   });
 
+  // Get translated title
+  const translatedTitle = variant === 'personality' 
+    ? t('planetaryColumn.personality') 
+    : t('planetaryColumn.design');
+
   return (
     <div className="flex flex-col">
       {/* Header */}
       <div className="text-center mb-3">
         <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-          {title}
+          {translatedTitle}
         </h3>
       </div>
 
@@ -63,6 +69,8 @@ const PlanetaryColumn = ({ title, activations, variant }: PlanetaryColumnProps) 
       <div className="space-y-1.5">
         {sortedActivations.map((activation, idx) => {
           const symbol = PLANET_SYMBOLS[activation.planet] || activation.planetLabel;
+          // Get translated planet name
+          const planetName = t(`planets.${activation.planet}`, { defaultValue: activation.planetLabel });
           
           // Determinar seta de direção baseada na linha
           let arrow = '';
@@ -78,7 +86,7 @@ const PlanetaryColumn = ({ title, activations, variant }: PlanetaryColumnProps) 
             >
               {/* Símbolo + Gate.Linha */}
               <div className="flex items-center gap-2">
-                <span className="text-base opacity-70" title={activation.planetLabel}>
+                <span className="text-base opacity-70" title={planetName}>
                   {symbol}
                 </span>
                 <span className="font-medium text-foreground">

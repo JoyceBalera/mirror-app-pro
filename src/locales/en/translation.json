@@ -207,5 +207,231 @@
     "designDate": "Design Date",
     "sunDesign": "Sun (Design)",
     "moonMercuryVerification": "Moon and Mercury (Verification)"
+  },
+  "analysisSections": {
+    "readingProgress": "Reading Progress",
+    "sections": "sections",
+    "foundational": "Foundations",
+    "advanced": "Advanced",
+    "success": "Success",
+    "introTitle": "Introduction to Your Design",
+    "introDescription": "Personal Architecture is a system that combines astrology, I Ching, Kabbalah, and the chakra system to reveal your unique energetic nature. Your map shows how you were designed to interact with the world.",
+    "aboutYou": "About You",
+    "typeStrategy": "Type & Strategy",
+    "yourStrategy": "Your Strategy",
+    "notSelfTheme": "Not-Self Theme",
+    "notSelfDescription": "When you're not living your strategy, you tend to experience {{theme}}. This is a sign that something is misaligned.",
+    "yourStrengths": "Your Strengths",
+    "innerAuthority": "Inner Authority",
+    "howToUseAuthority": "How to Use Your Authority",
+    "practicalTips": "Practical Tips",
+    "profileTitle": "Profile",
+    "profileInfoSoon": "Information about profile {{profile}} coming soon.",
+    "conscious": "Conscious",
+    "unconscious": "Unconscious",
+    "definitionTitle": "Definition",
+    "definitionMeaning": "What this means",
+    "definitionDescription": "Your definition shows how your energy centers are connected. This affects how you process information and interact with others.",
+    "pathToSuccess": "Path to Success",
+    "commonChallenges": "Common Challenges",
+    "tipsForLiving": "Tips for Living Your Design",
+    "remember": "Remember",
+    "rememberText": "As a {{type}}, your strategy is \"{{strategy}}\". When you live according to your design, you experience natural satisfaction and alignment."
+  },
+  "hdTypes": {
+    "Generator": {
+      "name": "Generator",
+      "summary": "You are the life force of the planet! Generators are the builders, the masters of sustainable work. With powerful sacral energy, you have the capacity to work with pleasure and satisfaction when doing what you love.",
+      "strategy": "Wait to Respond",
+      "strategyDescription": "Your strategy is to wait for life to bring things for you to respond to. Don't initiate - respond! When something arises in your field, your sacral will respond with an \"uh-huh\" (yes) or \"un-un\" (no). Trust that gut response.",
+      "notSelfTheme": "Frustration",
+      "strengths": ["Sustainable energy for work", "Ability to master skills", "Reliable sacral response", "Natural magnetism - attracts opportunities", "Deep satisfaction when aligned"],
+      "challenges": ["Tendency to initiate instead of respond", "Difficulty saying no", "Can feel trapped in wrong commitments", "Frustration when forced to do what you don't like"],
+      "tips": ["Practice listening to your \"uh-huh\" and \"un-un\"", "Don't commit immediately - sleep on important decisions", "Do what you love and the money will follow", "Your aura is always seeking what's right for you"]
+    },
+    "Manifesting Generator": {
+      "name": "Manifesting Generator",
+      "summary": "You are a powerful hybrid! You combine the sustainable energy of the Generator with the ability to manifest. You're faster than the pure Generator and can initiate after responding.",
+      "strategy": "Wait to Respond, then Inform",
+      "strategyDescription": "Like the Generator, you wait to respond. But unlike the pure Generator, after the sacral response, you can act quickly. Inform people around you about your actions to avoid resistance.",
+      "notSelfTheme": "Frustration and Anger",
+      "strengths": ["Speed and efficiency", "Multi-passionate - many interests", "Can skip steps when responding correctly", "Powerful and magnetic energy", "Ability to manifest quickly"],
+      "challenges": ["Can be impatient", "Tendency to start many things", "May forget to inform others", "Difficulty completing long projects"],
+      "tips": ["Wait for the sacral response before acting", "Inform people about your plans", "It's okay to change interests - follow your response", "Use your energy for what satisfies you"]
+    },
+    "Projector": {
+      "name": "Projector",
+      "summary": "You are a natural guide! Projectors have the unique ability to see and understand others deeply. Your role is to manage, direct, and guide the energy of others.",
+      "strategy": "Wait for the Invitation",
+      "strategyDescription": "Wait to be recognized and invited to the big areas of life: career, love, where to live. When you're truly invited, your wisdom is received and valued.",
+      "notSelfTheme": "Bitterness",
+      "strengths": ["Natural wisdom about systems and people", "Ability to see potential in others", "Efficiency - does more with less", "Natural guide and mentor", "Penetrates deeply into matters"],
+      "challenges": ["May give unsolicited advice", "Risk of burnout if working like a Generator", "May feel invisible if not recognized", "Bitterness when not valued"],
+      "tips": ["Wait for genuine invitations for what matters", "Study what you love - become an expert", "Rest frequently - you don't have sacral energy", "Your value is in wisdom, not quantity of work"]
+    },
+    "Manifestor": {
+      "name": "Manifestor",
+      "summary": "You are a born initiator! Manifestors are the only ones who can truly initiate action. Your aura is closed and repelling, protecting your independence.",
+      "strategy": "Inform before Acting",
+      "strategyDescription": "You can initiate, but you must inform people affected by your actions BEFORE acting. This isn't asking permission - it's a courtesy that removes resistance from your path.",
+      "notSelfTheme": "Anger",
+      "strengths": ["Ability to initiate and impact", "Natural independence", "Power to make things happen", "Doesn't need to wait for anyone", "Aura that creates space"],
+      "challenges": ["Can seem controlling or scary", "Difficulty informing - feels like asking permission", "May encounter much resistance", "Energy isn't sustainable - needs rest"],
+      "tips": ["Inform, don't ask permission", "Find peace in solitude", "Your anger indicates where you're not being free", "Accept that not everyone will understand you"]
+    },
+    "Reflector": {
+      "name": "Reflector",
+      "summary": "You are a mirror of the community! Reflectors are the rarest (~1% of population) and reflect the health of the environment around them. Without defined centers, you experience life uniquely.",
+      "strategy": "Wait a Lunar Cycle (28 days)",
+      "strategyDescription": "For important decisions, wait a complete lunar cycle. During those 28 days, you'll experience different perspectives as the Moon transits through all gates.",
+      "notSelfTheme": "Disappointment",
+      "strengths": ["Wisdom about community health", "Ability to experience all types", "Unique and valuable perspective", "Potential for great wisdom", "Reflects what's working (or not)"],
+      "challenges": ["Can get lost in others' energies", "Difficulty knowing who you really are", "Needs a lot of time for decisions", "Sensitive to environment"],
+      "tips": ["Choose healthy environments - you reflect them", "Use the lunar cycle for big decisions", "You're not here to be like others", "Your difference is your gift"]
+    }
+  },
+  "hdAuthorities": {
+    "Emotional": {
+      "name": "Emotional Authority (Solar Plexus)",
+      "description": "You have an emotional wave that rises and falls. Never make decisions at the peak or valley of the wave.",
+      "howToUse": "Wait for emotional clarity. Sleep on important decisions and observe how you feel about them at different times of day and on different days.",
+      "tips": ["There's no truth in the moment - wait", "Observe the pattern of your wave", "Clarity comes when you feel neutral about the decision", "Say \"I need time\" when pressured"]
+    },
+    "Sacral": {
+      "name": "Sacral Authority",
+      "description": "Your sacral center responds with guttural sounds - \"uh-huh\" (yes) or \"un-un\" (no). This is the most immediate and reliable response.",
+      "howToUse": "Ask yourself yes or no questions or have others ask you. Observe your body's response - it happens before thought.",
+      "tips": ["Practice responding to simple questions", "The response comes from the gut, not the mind", "If you don't have a response, it's not the time", "Sounds and grunts are valid!"]
+    },
+    "Splenic": {
+      "name": "Splenic Authority",
+      "description": "You have instant intuition that speaks once, very softly. It's the oldest survival instinct.",
+      "howToUse": "Pay attention to the subtle whispers of the body. Splenic intuition is instant and doesn't repeat - if you missed it, you'll have to wait for a new situation.",
+      "tips": ["The message is subtle and doesn't repeat", "Trust the chills, shivers, sensations", "Your intuition is about safety and well-being", "Don't rationalize - act in the moment"]
+    },
+    "Ego": {
+      "name": "Ego/Heart Authority",
+      "description": "Your willpower and personal commitments guide your decisions. What do you want to do?",
+      "howToUse": "Ask yourself: \"What do I want?\" and \"Is it worth it to ME?\". Your commitments must serve you first.",
+      "tips": ["Be selfish in the good sense - honor your desires", "Don't make promises you can't keep", "Your word is your law", "What's good for you will be good for others"]
+    },
+    "Self-Projected": {
+      "name": "Self-Projected Authority",
+      "description": "You need to talk about your decisions to hear your own truth. The voice reveals the direction.",
+      "howToUse": "Talk about your options with trusted people. Don't ask for advice - just talk and listen to what comes out of you.",
+      "tips": ["Find \"sounding boards\" - people who just listen", "Record yourself talking about decisions", "The truth is in the sound of your voice", "Don't let others influence - just listen to yourself"]
+    },
+    "Lunar": {
+      "name": "Lunar Authority",
+      "description": "As a Reflector, you need a complete lunar cycle (28 days) for important decisions.",
+      "howToUse": "Mark it on the calendar. During 28 days, talk about the decision, observe how you feel on different days, and wait for clarity to emerge.",
+      "tips": ["The Moon transits all gates in 28 days", "You'll experience different perspectives", "Don't rush - your wisdom is worth the wait", "Big decisions deserve a complete cycle"]
+    },
+    "None": {
+      "name": "Mental/Environmental Authority",
+      "description": "You need the right environments and people to process decisions. You don't decide alone.",
+      "howToUse": "Talk with different people in different places. Observe where you feel good to think and who helps you clarify.",
+      "tips": ["Your environment affects your clarity", "Find trusted advisors", "The mind isn't your authority - it's for others", "Observe what emerges in conversations"]
+    }
+  },
+  "hdProfiles": {
+    "1/3": {
+      "name": "Investigator/Martyr",
+      "description": "You need a solid foundation of knowledge (1) and learn through practical experiences, including mistakes (3). You're a natural researcher who tests everything in practice.",
+      "conscious": "Line 1 - The Investigator: Seeks security through deep knowledge. Needs to understand foundations before acting.",
+      "unconscious": "Line 3 - The Martyr: Learns through trial and error. Life is a continuous experiment."
+    },
+    "1/4": {
+      "name": "Investigator/Opportunist",
+      "description": "You combine deep knowledge (1) with influence through personal networks (4). You share your expertise with those you know.",
+      "conscious": "Line 1 - The Investigator: Seeks solid foundations of knowledge.",
+      "unconscious": "Line 4 - The Opportunist: Influences through close relationships and established networks."
+    },
+    "2/4": {
+      "name": "Hermit/Opportunist",
+      "description": "You have natural talents that others recognize (2), and influence through personal connections (4). You need time alone to develop your gifts.",
+      "conscious": "Line 2 - The Hermit: Possesses natural talents that need to be called out.",
+      "unconscious": "Line 4 - The Opportunist: Opportunities come through the relationship network."
+    },
+    "2/5": {
+      "name": "Hermit/Heretic",
+      "description": "You have natural gifts (2) and are projected as a savior or solution to others' problems (5). You need isolation to recharge.",
+      "conscious": "Line 2 - The Hermit: Innate talents that emerge when called.",
+      "unconscious": "Line 5 - The Heretic: Attracts projections of being the \"savior\" - must deliver practical solutions."
+    },
+    "3/5": {
+      "name": "Martyr/Heretic",
+      "description": "You learn through experience (3) and have the potential to offer practical solutions that work (5). Your wisdom comes from what you've lived.",
+      "conscious": "Line 3 - The Martyr: Discovers what works (and what doesn't) through direct experience.",
+      "unconscious": "Line 5 - The Heretic: Others project on them the ability to solve problems."
+    },
+    "3/6": {
+      "name": "Martyr/Role Model",
+      "description": "You experience intensely in the first part of life (3), then go up to the \"roof\" to observe, and eventually become a role model (6).",
+      "conscious": "Line 3 - The Martyr: First phase of life full of experimentation.",
+      "unconscious": "Line 6 - The Role Model: After 50, emerges as authentic example of life lived."
+    },
+    "4/6": {
+      "name": "Opportunist/Role Model",
+      "description": "You influence through personal networks (4) and eventually become a role model for others (6). Relationships are fundamental.",
+      "conscious": "Line 4 - The Opportunist: Opportunities flow through established connections.",
+      "unconscious": "Line 6 - The Role Model: After maturing, becomes an example of life well-lived."
+    },
+    "4/1": {
+      "name": "Opportunist/Investigator",
+      "description": "You share deep knowledge (1) through your relationship network (4). You're an influencer with a solid foundation.",
+      "conscious": "Line 4 - The Opportunist: Life happens through who you know.",
+      "unconscious": "Line 1 - The Investigator: Unconscious base of research and foundation."
+    },
+    "5/1": {
+      "name": "Heretic/Investigator",
+      "description": "You're seen as someone who can solve problems (5), supported by deep knowledge (1). You project as a universalizer.",
+      "conscious": "Line 5 - The Heretic: Attracts projections of being the savior or solution.",
+      "unconscious": "Line 1 - The Investigator: Solid foundation that sustains your practical ability."
+    },
+    "5/2": {
+      "name": "Heretic/Hermit",
+      "description": "You have the projection of problem-solver (5) with natural talents that you prefer to exercise in privacy (2).",
+      "conscious": "Line 5 - The Heretic: Called to offer practical solutions.",
+      "unconscious": "Line 2 - The Hermit: Natural talents that need space to flourish."
+    },
+    "6/2": {
+      "name": "Role Model/Hermit",
+      "description": "You're destined to be a role model (6), with natural talents that emerge when called (2). You live in three distinct phases.",
+      "conscious": "Line 6 - The Role Model: Three life phases - experimentation, observation, and role model.",
+      "unconscious": "Line 2 - The Hermit: Natural gifts that others recognize in you."
+    },
+    "6/3": {
+      "name": "Role Model/Martyr",
+      "description": "You experience intensely in all phases of life (3+6). Your wisdom as a role model comes from lived experiences.",
+      "conscious": "Line 6 - The Role Model: Destined to be an example after maturation.",
+      "unconscious": "Line 3 - The Martyr: Continuous experimentation that feeds wisdom."
+    }
+  },
+  "hdDefinitions": {
+    "Single": "Single Definition: All your defined centers are connected. You're energetically self-sufficient and don't need others to feel complete.",
+    "Split": "Split Definition: You have two groups of defined centers that aren't connected. You may feel attraction to people who \"connect\" your parts.",
+    "Triple Split": "Triple Split Definition: Three separate areas of definition. You may need multiple people or environments to feel integrated.",
+    "Quadruple Split": "Quadruple Split Definition: Four separate areas. Very rare. You need time and diverse interactions to process.",
+    "No Definition": "No Definition (Reflector): No defined centers. You're completely open and reflect the world around you."
+  },
+  "planets": {
+    "sun": "Sun",
+    "earth": "Earth",
+    "moon": "Moon",
+    "north_node": "North Node",
+    "south_node": "South Node",
+    "mercury": "Mercury",
+    "venus": "Venus",
+    "mars": "Mars",
+    "jupiter": "Jupiter",
+    "saturn": "Saturn",
+    "uranus": "Uranus",
+    "neptune": "Neptune",
+    "pluto": "Pluto"
+  },
+  "planetaryColumn": {
+    "personality": "Personality",
+    "design": "Design"
   }
 }
