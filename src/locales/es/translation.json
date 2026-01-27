@@ -207,5 +207,231 @@
     "designDate": "Design Date",
     "sunDesign": "Sol (Design)",
     "moonMercuryVerification": "Luna y Mercurio (Verificación)"
+  },
+  "analysisSections": {
+    "readingProgress": "Progreso de Lectura",
+    "sections": "secciones",
+    "foundational": "Fundamentos",
+    "advanced": "Avanzado",
+    "success": "Éxito",
+    "introTitle": "Introducción a Tu Diseño",
+    "introDescription": "La Arquitectura Personal es un sistema que combina astrología, I Ching, Kabbalah y el sistema de chakras para revelar tu naturaleza energética única. Tu mapa muestra cómo fuiste diseñada para interactuar con el mundo.",
+    "aboutYou": "Sobre Ti",
+    "typeStrategy": "Tipo y Estrategia",
+    "yourStrategy": "Tu Estrategia",
+    "notSelfTheme": "Tema del No-Ser",
+    "notSelfDescription": "Cuando no estás viviendo tu estrategia, tiendes a experimentar {{theme}}. Esta es una señal de que algo está desalineado.",
+    "yourStrengths": "Tus Fortalezas",
+    "innerAuthority": "Autoridad Interior",
+    "howToUseAuthority": "Cómo Usar Tu Autoridad",
+    "practicalTips": "Consejos Prácticos",
+    "profileTitle": "Perfil",
+    "profileInfoSoon": "Información sobre el perfil {{profile}} próximamente.",
+    "conscious": "Consciente",
+    "unconscious": "Inconsciente",
+    "definitionTitle": "Definición",
+    "definitionMeaning": "Qué significa esto",
+    "definitionDescription": "Tu definición muestra cómo están conectados tus centros energéticos. Esto afecta cómo procesas información e interactúas con los demás.",
+    "pathToSuccess": "Camino al Éxito",
+    "commonChallenges": "Desafíos Comunes",
+    "tipsForLiving": "Consejos para Vivir Tu Diseño",
+    "remember": "Recuerda",
+    "rememberText": "Como {{type}}, tu estrategia es \"{{strategy}}\". Cuando vives de acuerdo con tu diseño, experimentas satisfacción y alineación naturales."
+  },
+  "hdTypes": {
+    "Generator": {
+      "name": "Generador",
+      "summary": "¡Eres la fuerza vital del planeta! Los Generadores son los constructores, los maestros del trabajo sostenible. Con una poderosa energía sacral, tienes la capacidad de trabajar con placer y satisfacción cuando haces lo que amas.",
+      "strategy": "Esperar para Responder",
+      "strategyDescription": "Tu estrategia es esperar a que la vida te traiga cosas para responder. ¡No inicies - responde! Cuando algo surge en tu campo, tu sacral responderá con un \"uh-huh\" (sí) o \"un-un\" (no). Confía en esa respuesta visceral.",
+      "notSelfTheme": "Frustración",
+      "strengths": ["Energía sostenible para el trabajo", "Capacidad de dominar habilidades", "Respuesta sacral confiable", "Magnetismo natural - atrae oportunidades", "Satisfacción profunda cuando está alineado"],
+      "challenges": ["Tendencia a iniciar en lugar de responder", "Dificultad para decir no", "Puede sentirse atrapado en compromisos incorrectos", "Frustración cuando se ve obligado a hacer lo que no le gusta"],
+      "tips": ["Practica escuchar tu \"uh-huh\" y \"un-un\"", "No te comprometas inmediatamente - duerme sobre decisiones importantes", "Haz lo que amas y el dinero seguirá", "Tu aura siempre está buscando lo correcto para ti"]
+    },
+    "Manifesting Generator": {
+      "name": "Generador Manifestante",
+      "summary": "¡Eres un híbrido poderoso! Combinas la energía sostenible del Generador con la capacidad de manifestar. Eres más rápido que el Generador puro y puedes iniciar después de responder.",
+      "strategy": "Esperar para Responder, luego Informar",
+      "strategyDescription": "Como el Generador, esperas para responder. Pero a diferencia del Generador puro, después de la respuesta sacral, puedes actuar rápidamente. Informa a las personas a tu alrededor sobre tus acciones para evitar resistencia.",
+      "notSelfTheme": "Frustración e Ira",
+      "strengths": ["Velocidad y eficiencia", "Multi-apasionado - muchos intereses", "Puede saltar pasos cuando responde correctamente", "Energía poderosa y magnética", "Capacidad de manifestar rápidamente"],
+      "challenges": ["Puede ser impaciente", "Tendencia a comenzar muchas cosas", "Puede olvidar informar a otros", "Dificultad para completar proyectos largos"],
+      "tips": ["Espera la respuesta sacral antes de actuar", "Informa a las personas sobre tus planes", "Está bien cambiar de interés - sigue tu respuesta", "Usa tu energía para lo que te satisface"]
+    },
+    "Projector": {
+      "name": "Proyector",
+      "summary": "¡Eres un guía natural! Los Proyectores tienen la capacidad única de ver y entender a los demás profundamente. Tu papel es gestionar, dirigir y guiar la energía de otros.",
+      "strategy": "Esperar la Invitación",
+      "strategyDescription": "Espera a ser reconocido e invitado para las grandes áreas de la vida: carrera, amor, dónde vivir. Cuando eres verdaderamente invitado, tu sabiduría es recibida y valorada.",
+      "notSelfTheme": "Amargura",
+      "strengths": ["Sabiduría natural sobre sistemas y personas", "Capacidad de ver el potencial en otros", "Eficiencia - hace más con menos", "Guía y mentor natural", "Penetra profundamente en los asuntos"],
+      "challenges": ["Puede dar consejos no solicitados", "Riesgo de burnout si trabaja como Generador", "Puede sentirse invisible si no es reconocido", "Amargura cuando no es valorado"],
+      "tips": ["Espera invitaciones genuinas para lo que importa", "Estudia lo que amas - conviértete en experto", "Descansa frecuentemente - no tienes energía sacral", "Tu valor está en la sabiduría, no en la cantidad de trabajo"]
+    },
+    "Manifestor": {
+      "name": "Manifestador",
+      "summary": "¡Eres un iniciador nato! Los Manifestadores son los únicos que pueden verdaderamente iniciar acción. Tu aura es cerrada y repelente, protegiendo tu independencia.",
+      "strategy": "Informar antes de Actuar",
+      "strategyDescription": "Puedes iniciar, pero debes informar a las personas afectadas por tus acciones ANTES de actuar. Esto no es pedir permiso - es una cortesía que elimina resistencia de tu camino.",
+      "notSelfTheme": "Ira",
+      "strengths": ["Capacidad de iniciar e impactar", "Independencia natural", "Poder de hacer que las cosas sucedan", "No necesita esperar a nadie", "Aura que crea espacio"],
+      "challenges": ["Puede parecer controlador o aterrador", "Dificultad para informar - parece pedir permiso", "Puede encontrar mucha resistencia", "Energía no es sostenible - necesita descanso"],
+      "tips": ["Informa, no pidas permiso", "Encuentra paz en la soledad", "Tu ira indica dónde no estás siendo libre", "Acepta que no todos te entenderán"]
+    },
+    "Reflector": {
+      "name": "Reflector",
+      "summary": "¡Eres un espejo de la comunidad! Los Reflectores son los más raros (~1% de la población) y reflejan la salud del ambiente a su alrededor. Sin centros definidos, experimentas la vida de forma única.",
+      "strategy": "Esperar un Ciclo Lunar (28 días)",
+      "strategyDescription": "Para decisiones importantes, espera un ciclo lunar completo. Durante esos 28 días, experimentarás diferentes perspectivas conforme la Luna transita por todas las puertas.",
+      "notSelfTheme": "Decepción",
+      "strengths": ["Sabiduría sobre la salud de la comunidad", "Capacidad de experimentar todos los tipos", "Perspectiva única y valiosa", "Potencial para gran sabiduría", "Refleja lo que está funcionando (o no)"],
+      "challenges": ["Puede perderse en las energías de otros", "Dificultad para saber quién realmente es", "Necesita mucho tiempo para decisiones", "Sensible al ambiente"],
+      "tips": ["Elige ambientes saludables - los reflejas", "Usa el ciclo lunar para grandes decisiones", "No estás aquí para ser como los demás", "Tu diferencia es tu don"]
+    }
+  },
+  "hdAuthorities": {
+    "Emotional": {
+      "name": "Autoridad Emocional (Plexo Solar)",
+      "description": "Tienes una ola emocional que sube y baja. Nunca tomes decisiones en el pico o el valle de la ola.",
+      "howToUse": "Espera la claridad emocional. Duerme sobre decisiones importantes y observa cómo te sientes sobre ellas en diferentes momentos del día y en diferentes días.",
+      "tips": ["No existe verdad en el momento - espera", "Observa el patrón de tu ola", "La claridad viene cuando te sientes neutral sobre la decisión", "Di \"necesito tiempo\" cuando te presionen"]
+    },
+    "Sacral": {
+      "name": "Autoridad Sacral",
+      "description": "Tu centro sacral responde con sonidos guturales - \"uh-huh\" (sí) o \"un-un\" (no). Esta es la respuesta más inmediata y confiable.",
+      "howToUse": "Hazte preguntas de sí o no o pide a otros que te las hagan. Observa la respuesta de tu cuerpo - sucede antes del pensamiento.",
+      "tips": ["Practica responder preguntas simples", "La respuesta viene del intestino, no de la mente", "Si no tienes respuesta, no es el momento", "¡Los sonidos y gruñidos son válidos!"]
+    },
+    "Splenic": {
+      "name": "Autoridad Esplénica",
+      "description": "Tienes intuición instantánea que habla una vez, muy suavemente. Es el instinto de supervivencia más antiguo.",
+      "howToUse": "Presta atención a los susurros sutiles del cuerpo. La intuición esplénica es instantánea y no se repite - si la perdiste, tendrás que esperar una nueva situación.",
+      "tips": ["El mensaje es sutil y no se repite", "Confía en los escalofríos, estremecimientos, sensaciones", "Tu intuición es sobre seguridad y bienestar", "No racionalices - actúa en el momento"]
+    },
+    "Ego": {
+      "name": "Autoridad del Ego/Corazón",
+      "description": "Tu fuerza de voluntad y compromisos personales guían tus decisiones. ¿Qué quieres hacer?",
+      "howToUse": "Pregúntate: \"¿Qué YO quiero?\" y \"¿Vale la pena para MÍ?\". Tus compromisos deben servirte primero.",
+      "tips": ["Sé egoísta en el buen sentido - honra tus deseos", "No hagas promesas que no puedas cumplir", "Tu palabra es tu ley", "Lo que es bueno para ti será bueno para otros"]
+    },
+    "Self-Projected": {
+      "name": "Autoridad Auto-Proyectada",
+      "description": "Necesitas hablar sobre tus decisiones para escuchar tu propia verdad. La voz revela la dirección.",
+      "howToUse": "Habla sobre tus opciones con personas de confianza. No pidas consejos - solo habla y escucha lo que sale de ti.",
+      "tips": ["Encuentra \"cajas de resonancia\" - personas que solo escuchan", "Grábate hablando sobre decisiones", "La verdad está en el sonido de tu voz", "No dejes que otros influyan - solo escúchate a ti mismo"]
+    },
+    "Lunar": {
+      "name": "Autoridad Lunar",
+      "description": "Como Reflector, necesitas un ciclo lunar completo (28 días) para decisiones importantes.",
+      "howToUse": "Márcalo en el calendario. Durante 28 días, conversa sobre la decisión, observa cómo te sientes en diferentes días, y espera que emerja la claridad.",
+      "tips": ["La Luna transita todas las puertas en 28 días", "Experimentarás diferentes perspectivas", "No tengas prisa - tu sabiduría vale la espera", "Las grandes decisiones merecen un ciclo completo"]
+    },
+    "None": {
+      "name": "Autoridad Mental/Ambiental",
+      "description": "Necesitas ambientes y personas correctas para procesar decisiones. No decides solo.",
+      "howToUse": "Conversa con diferentes personas en diferentes lugares. Observa dónde te sientes bien para pensar y quién te ayuda a aclarar.",
+      "tips": ["Tu ambiente afecta tu claridad", "Encuentra consejeros de confianza", "La mente no es tu autoridad - es para los demás", "Observa lo que emerge en las conversaciones"]
+    }
+  },
+  "hdProfiles": {
+    "1/3": {
+      "name": "Investigador/Mártir",
+      "description": "Necesitas una base sólida de conocimiento (1) y aprendes a través de experiencias prácticas, incluidos los errores (3). Eres un investigador nato que prueba todo en la práctica.",
+      "conscious": "Línea 1 - El Investigador: Busca seguridad a través del conocimiento profundo. Necesita entender los fundamentos antes de actuar.",
+      "unconscious": "Línea 3 - El Mártir: Aprende a través de ensayo y error. La vida es un experimento continuo."
+    },
+    "1/4": {
+      "name": "Investigador/Oportunista",
+      "description": "Combinas conocimiento profundo (1) con influencia a través de redes personales (4). Compartes tu experiencia con quienes conoces.",
+      "conscious": "Línea 1 - El Investigador: Busca fundamentos sólidos de conocimiento.",
+      "unconscious": "Línea 4 - El Oportunista: Influye a través de relaciones cercanas y redes establecidas."
+    },
+    "2/4": {
+      "name": "Ermitaño/Oportunista",
+      "description": "Tienes talentos naturales que otros reconocen (2), e influyes a través de conexiones personales (4). Necesitas tiempo a solas para desarrollar tus dones.",
+      "conscious": "Línea 2 - El Ermitaño: Posee talentos naturales que necesitan ser llamados hacia afuera.",
+      "unconscious": "Línea 4 - El Oportunista: Las oportunidades vienen a través de la red de relaciones."
+    },
+    "2/5": {
+      "name": "Ermitaño/Hereje",
+      "description": "Tienes dones naturales (2) y eres proyectado como salvador o solución para los problemas de otros (5). Necesitas aislamiento para recargar.",
+      "conscious": "Línea 2 - El Ermitaño: Talentos innatos que emergen cuando son llamados.",
+      "unconscious": "Línea 5 - El Hereje: Atrae proyecciones de ser el \"salvador\" - debe entregar soluciones prácticas."
+    },
+    "3/5": {
+      "name": "Mártir/Hereje",
+      "description": "Aprendes a través de la experiencia (3) y tienes el potencial de ofrecer soluciones prácticas que funcionan (5). Tu sabiduría viene de lo que has vivido.",
+      "conscious": "Línea 3 - El Mártir: Descubre lo que funciona (y lo que no) a través de la experiencia directa.",
+      "unconscious": "Línea 5 - El Hereje: Otros proyectan en él la capacidad de resolver problemas."
+    },
+    "3/6": {
+      "name": "Mártir/Modelo a Seguir",
+      "description": "Experimentas intensamente en la primera parte de la vida (3), luego subes al \"techo\" para observar, y eventualmente te conviertes en un modelo (6).",
+      "conscious": "Línea 3 - El Mártir: Primera fase de vida llena de experimentación.",
+      "unconscious": "Línea 6 - El Modelo: Después de los 50, emerge como ejemplo auténtico de vida vivida."
+    },
+    "4/6": {
+      "name": "Oportunista/Modelo a Seguir",
+      "description": "Influyes a través de redes personales (4) y eventualmente te conviertes en un modelo para otros (6). Las relaciones son fundamentales.",
+      "conscious": "Línea 4 - El Oportunista: Las oportunidades fluyen a través de conexiones establecidas.",
+      "unconscious": "Línea 6 - El Modelo: Después de madurar, se convierte en ejemplo de vida bien vivida."
+    },
+    "4/1": {
+      "name": "Oportunista/Investigador",
+      "description": "Compartes conocimiento profundo (1) a través de tu red de relaciones (4). Eres un influenciador con base sólida.",
+      "conscious": "Línea 4 - El Oportunista: La vida sucede a través de quién conoces.",
+      "unconscious": "Línea 1 - El Investigador: Base inconsciente de investigación y fundamento."
+    },
+    "5/1": {
+      "name": "Hereje/Investigador",
+      "description": "Eres visto como alguien que puede resolver problemas (5), apoyado por profundo conocimiento (1). Te proyectas como universalizador.",
+      "conscious": "Línea 5 - El Hereje: Atrae proyecciones de ser el salvador o solución.",
+      "unconscious": "Línea 1 - El Investigador: Fundamento sólido que sustenta tu capacidad práctica."
+    },
+    "5/2": {
+      "name": "Hereje/Ermitaño",
+      "description": "Tienes la proyección de solucionador (5) con talentos naturales que prefieres ejercer en privacidad (2).",
+      "conscious": "Línea 5 - El Hereje: Llamado a ofrecer soluciones prácticas.",
+      "unconscious": "Línea 2 - El Ermitaño: Talentos naturales que necesitan espacio para florecer."
+    },
+    "6/2": {
+      "name": "Modelo a Seguir/Ermitaño",
+      "description": "Estás destinado a ser un modelo (6), con talentos naturales que emergen cuando son llamados (2). Vives en tres fases distintas.",
+      "conscious": "Línea 6 - El Modelo: Tres fases de vida - experimentación, observación, y modelo.",
+      "unconscious": "Línea 2 - El Ermitaño: Dones naturales que otros reconocen en ti."
+    },
+    "6/3": {
+      "name": "Modelo a Seguir/Mártir",
+      "description": "Experimentas intensamente en todas las fases de la vida (3+6). Tu sabiduría como modelo viene de experiencias vividas.",
+      "conscious": "Línea 6 - El Modelo: Destinado a ser ejemplo después de la maduración.",
+      "unconscious": "Línea 3 - El Mártir: Experimentación continua que alimenta la sabiduría."
+    }
+  },
+  "hdDefinitions": {
+    "Single": "Definición Única: Todos tus centros definidos están conectados. Eres autosuficiente energéticamente y no necesitas de otros para sentirte completo.",
+    "Split": "Definición Dividida: Tienes dos grupos de centros definidos que no están conectados. Puedes sentir atracción por personas que \"conectan\" tus partes.",
+    "Triple Split": "Definición Triple: Tres áreas de definición separadas. Puedes necesitar de varias personas o ambientes para sentirte integrado.",
+    "Quadruple Split": "Definición Cuádruple: Cuatro áreas separadas. Muy raro. Necesitas tiempo y diversas interacciones para procesar.",
+    "No Definition": "Sin Definición (Reflector): Ningún centro definido. Eres completamente abierto y reflejas el mundo a tu alrededor."
+  },
+  "planets": {
+    "sun": "Sol",
+    "earth": "Tierra",
+    "moon": "Luna",
+    "north_node": "Nodo Norte",
+    "south_node": "Nodo Sur",
+    "mercury": "Mercurio",
+    "venus": "Venus",
+    "mars": "Marte",
+    "jupiter": "Júpiter",
+    "saturn": "Saturno",
+    "uranus": "Urano",
+    "neptune": "Neptuno",
+    "pluto": "Plutón"
+  },
+  "planetaryColumn": {
+    "personality": "Personalidad",
+    "design": "Diseño"
   }
 }
