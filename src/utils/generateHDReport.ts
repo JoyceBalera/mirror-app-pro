@@ -28,7 +28,7 @@ const COLORS = {
   goldLight: [232, 205, 125] as [number, number, number],
   offWhite: [247, 243, 239] as [number, number, number],
   dustyMauve: [191, 175, 178] as [number, number, number],
-  darkText: [51, 51, 51] as [number, number, number],
+  darkText: [45, 45, 45] as [number, number, number],
   lightText: [120, 120, 120] as [number, number, number],
   white: [255, 255, 255] as [number, number, number],
   success: [34, 139, 34] as [number, number, number],
@@ -472,8 +472,7 @@ export async function generateHDReport(data: HDReportData): Promise<void> {
     renderVariable('Ambiente', data.variables.environment);
     renderVariable('Motivação', data.variables.motivation);
     renderVariable('Perspectiva', data.variables.perspective);
-    renderVariable('Sentido (Personality)', data.variables.sense);
-    renderVariable('Sentido (Design)', data.variables.designSense);
+    renderVariable('Sentido', data.variables.designSense);
   }
   
   // ============ PÁGINAS: ANÁLISE IA ============
