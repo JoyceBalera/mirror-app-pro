@@ -433,5 +433,185 @@
   "planetaryColumn": {
     "personality": "Personality",
     "design": "Design"
+  },
+  "hdPdf": {
+    "pageOf": "Page {{current}} of {{total}}",
+    "createdBy": "Created by Luciana Belenton",
+    "headerTitle": "PERSONAL ARCHITECTURE",
+    "headerSubtitle": "Personalized Human Design",
+    "introText": "This report presents your complete Personal Architecture, a unique map of your vital energy based on the Human Design System. Discover how you were designed to make decisions, interact with the world, and live authentically.",
+    "birthDataTitle": "BIRTH DATA",
+    "birthDate": "Date",
+    "birthTime": "Time",
+    "birthLocation": "Location",
+    "profileTitle": "YOUR ENERGY PROFILE",
+    "energyType": "Energy Type",
+    "strategy": "Strategy",
+    "authority": "Authority",
+    "profile": "Profile",
+    "definition": "Definition",
+    "incarnationCross": "Incarnation Cross",
+    "bodygraphTitle": "YOUR VISUAL BODYGRAPH",
+    "bodygraphFallback": "Your Bodygraph is available on the online platform.",
+    "summaryTemplate": "{{defined}} defined center(s)  |  {{open}} open center(s)  |  {{channels}} active channel(s)",
+    "centersIntroTitle": "INTRODUCTION TO HUMAN DESIGN",
+    "centersTitle": "THE 9 ENERGY CENTERS",
+    "centersIntro": "Within Human Design, the centers represent different areas of energy and influence various facets of our life and personality. Below, you will find the meaning of each of the centers with a special focus on women.",
+    "functionLabel": "Function",
+    "importanceLabel": "Importance for women",
+    "centersNote": "(*) Indicates centers that are defined in your personal map.",
+    "structureTitle": "HUMAN DESIGN STRUCTURE",
+    "advancedVariablesTheory": "Advanced Variables",
+    "yourCentersTitle": "YOUR ENERGY CENTERS",
+    "definedCenters": "Defined Centers",
+    "definedCentersDesc": "(Sources of Consistent Energy)",
+    "openCenters": "Open Centers",
+    "openCentersDesc": "(Areas of Wisdom and Learning)",
+    "noCentersDefined": "No defined centers (Reflector)",
+    "allCentersDefined": "All centers defined",
+    "powerChannels": "Your Power Channels",
+    "noChannels": "No complete channels defined",
+    "yourVariablesTitle": "YOUR ADVANCED VARIABLES",
+    "digestion": "Digestion",
+    "environment": "Environment",
+    "motivation": "Motivation",
+    "perspective": "Perspective",
+    "sense": "Sense",
+    "analysisTitle": "YOUR MAP IN PRACTICE",
+    "analysisSubtitle": "Personalized reading of your design",
+    "fileName": "Personal_Architecture",
+    "centers": {
+      "head": "Head",
+      "ajna": "Ajna",
+      "throat": "Throat",
+      "g": "G (Identity)",
+      "heart": "Heart (Ego)",
+      "sacral": "Sacral",
+      "spleen": "Spleen",
+      "solar": "Solar Plexus",
+      "root": "Root"
+    },
+    "theory": {
+      "intro": {
+        "title": "What is Human Design?",
+        "content": "Human Design is a self-knowledge system that combines elements from various ancient traditions (astrology, I Ching, Kabbalah, chakra system) and modern ones (quantum physics and genetics) to help people better understand who they are and how they function in the world. It's like a personal map that shows us our unique characteristics and how we can live more aligned with our true nature.\n\nThe Centers in Human Design are similar to chakras and represent different aspects of human experience. They can be defined (colored) or undefined (white). Within Human Design, the centers represent different areas of energy and influence various facets of our life and personality."
+      },
+      "centersTheory": [
+        {
+          "id": "head",
+          "name": "Head Center",
+          "function": "A center of inspiration and mental pressure.",
+          "importance": "This center can influence how women process ideas and connect with inspiration. It's a starting point for questioning and doubts, frequently impacting how they perceive reality and seek meaning in their daily experiences."
+        },
+        {
+          "id": "ajna",
+          "name": "Ajna Center",
+          "function": "Mental processing and consciousness.",
+          "importance": "Women with a defined Ajna may present a consistent way of thinking and forming opinions, while those with an undefined Ajna may be more open to new ideas and external influences. Consciousness here manifests in how they make decisions and interpret information."
+        },
+        {
+          "id": "throat",
+          "name": "Throat Center",
+          "function": "Manifestation and communication.",
+          "importance": "This center influences how women express their thoughts and feelings. The presence of a defined throat center may indicate a more consistent ability to communicate, while an undefined center may lead to adapting to others' communicative expectations."
+        },
+        {
+          "id": "g",
+          "name": "G Center",
+          "function": "Identity, love, and direction.",
+          "importance": "This center is deeply connected to the sense of identity and purpose. For many women, it reflects how they see themselves in relation to love and the direction they wish to follow in life. A defined G center can provide a strong sense of personal identity, while an undefined one may result in seeking direction through others' experiences."
+        },
+        {
+          "id": "heart",
+          "name": "Heart Center (Ego)",
+          "function": "Will, ego, and materiality.",
+          "importance": "This center impacts women's relationship with self-esteem and personal value. When defined, it may indicate strong willpower and commitment to goals, while an undefined center may make women feel challenged to prove their worth."
+        },
+        {
+          "id": "sacral",
+          "name": "Sacral Center",
+          "function": "Source of vital energy and work force.",
+          "importance": "This is the center of vital energy, influencing work capacity and general vitality. Women with a defined Sacral may have sustained energy for work and projects, while those with an undefined Sacral may need more time for rest and recovery."
+        },
+        {
+          "id": "spleen",
+          "name": "Spleen Center",
+          "function": "Intuition, well-being, and immunity.",
+          "importance": "This center is linked to intuition and sense of well-being. A defined spleen center can provide a strong connection with intuition and health, while an undefined one may result in greater sensitivity to external health and well-being conditions."
+        },
+        {
+          "id": "solar",
+          "name": "Solar Plexus Center",
+          "function": "Emotions and emotional consciousness.",
+          "importance": "This center is crucial in managing emotions. Women with a defined Solar Plexus may experience a consistent range of emotions, while those with an undefined center may be more susceptible to others' emotions and emotional fluctuations."
+        },
+        {
+          "id": "root",
+          "name": "Root Center",
+          "function": "Pressure and adrenaline.",
+          "importance": "How women deal with stress and pressure can be influenced by this center. A defined root center can provide a more constant approach to pressure management, while an undefined one may result in variations in stress response."
+        }
+      ],
+      "elements": [
+        {
+          "title": "Type",
+          "content": "Types are the first and most fundamental classification in Human Design. They determine how you interact with the world and how your energy flows. There are five main types: Manifestor (natural initiators, here to start things and act independently), Generator (builders, with sustained energy to work on projects they love), Manifesting Generator (a combination of both, with the ability to initiate and work sustainably), Projector (natural guides, here to guide others and need to be recognized and invited), and Reflector (mirrors of the environment, extremely sensitive and benefit from complete lunar cycles for decision-making)."
+        },
+        {
+          "title": "Strategy",
+          "content": "Strategy is related to type and is the most aligned way to interact with the world. Each type has its own strategy that, when followed, leads to its signature (satisfaction, peace, success, or surprise)."
+        },
+        {
+          "title": "Inner Authority",
+          "content": "It's the internal guide for making decisions more aligned with your true nature. Each person has a specific authority that serves as a compass for correct decisions."
+        },
+        {
+          "title": "Definition",
+          "content": "Refers to how your centers in the chart are connected. This influences how a person processes information and energies, as well as interacts with others."
+        },
+        {
+          "title": "Profile",
+          "content": "There are 12 different profiles. The profile is the combination of two numbers that reflect your role in life and how you see yourself and are seen by others."
+        },
+        {
+          "title": "Incarnation Cross",
+          "content": "In the Human Design system, there are 192 different Incarnation Crosses. It reflects your life purpose, a combination of four gates that highlight main themes you will live."
+        },
+        {
+          "title": "Signature",
+          "content": "There is a specific Signature for each of the five main Types. The Signature is the state of being that a person experiences when living according to their design, in alignment with their true nature, and provides a sense of fulfillment and well-being."
+        },
+        {
+          "title": "Not-Self Theme",
+          "content": "Each of the five main types has a Not-Self Theme, which is the negative emotion or state a person experiences when not living according to their design. This theme indicates a misalignment with your true nature and serves as a warning sign."
+        }
+      ],
+      "variables": [
+        {
+          "title": "Digestion",
+          "content": "Refers to the best way to process food, affects, and information, optimizing physical and mental well-being."
+        },
+        {
+          "title": "Design Sense",
+          "content": "Refers to the predominant senses through which a person perceives and interacts with the world."
+        },
+        {
+          "title": "Motivation",
+          "content": "Refers to the internal impulses that guide a person in how they perceive and interact with the world. It provides a lens through which a person can better understand their actions and decisions."
+        },
+        {
+          "title": "Environment",
+          "content": "Refers to the ideal type of environment where a person can thrive and function more aligned with their design. Understanding your Environment type can help you choose environments that support your physical and mental well-being."
+        }
+      ],
+      "gatesChannels": {
+        "title": "Gates and Channels",
+        "content": "Gates represent a specific energetic characteristic or potential. Each gate represents a characteristic that may be activated in your Human Design chart. The 64 gates are distributed among the nine body centers in the chart. When two activated gates connect, they form a Channel, which links two centers.\n\nChannels are 36 in total. These channels are formed by the connection of two Gates between two of the nine centers. Each channel represents a flow of energy and information between centers, influencing how a person processes experiences and interacts with the world.\n\nWhen a channel is defined in your chart, it indicates a consistent way of operating that energy. Channels play a significant role in determining your Type, as they influence which centers are defined."
+      },
+      "closing": {
+        "title": "How to Use Your Human Design",
+        "content": "All these elements of Human Design help compose a detailed map of your individuality, offering insights on how to live more authentically and satisfyingly.\n\nHuman Design suggests that by understanding your type, strategy, authority, and other aspects of your personal chart, you can make more authentic choices and live more fluidly. It's a system that invites us to experiment with its guidance in daily life, observing how we feel more aligned and fulfilled.\n\nUnderstanding Human Design can help you live according to your true nature, respecting your unique energy and potential. It's a powerful tool for self-knowledge and personal development."
+      }
+    }
   }
 }

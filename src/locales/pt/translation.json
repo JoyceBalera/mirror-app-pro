@@ -433,5 +433,185 @@
   "planetaryColumn": {
     "personality": "Personalidade",
     "design": "Design"
+  },
+  "hdPdf": {
+    "pageOf": "Página {{current}} de {{total}}",
+    "createdBy": "Criado por Luciana Belenton",
+    "headerTitle": "ARQUITETURA PESSOAL",
+    "headerSubtitle": "Desenho Humano Personalizado",
+    "introText": "Este relatório apresenta sua Arquitetura Pessoal completa, um mapa único da sua energia vital baseado no Sistema Human Design. Descubra como você foi desenhada para tomar decisões, interagir com o mundo e viver com autenticidade.",
+    "birthDataTitle": "DADOS DE NASCIMENTO",
+    "birthDate": "Data",
+    "birthTime": "Horário",
+    "birthLocation": "Local",
+    "profileTitle": "SEU PERFIL ENERGÉTICO",
+    "energyType": "Tipo Energético",
+    "strategy": "Estratégia",
+    "authority": "Autoridade",
+    "profile": "Perfil",
+    "definition": "Definição",
+    "incarnationCross": "Cruz de Encarnação",
+    "bodygraphTitle": "SEU BODYGRAPH VISUAL",
+    "bodygraphFallback": "Seu Bodygraph está disponível na plataforma online.",
+    "summaryTemplate": "{{defined}} centro(s) definido(s)  |  {{open}} centro(s) aberto(s)  |  {{channels}} canal(is) ativo(s)",
+    "centersIntroTitle": "INTRODUÇÃO AO DESENHO HUMANO",
+    "centersTitle": "OS 9 CENTROS ENERGÉTICOS",
+    "centersIntro": "Dentro do Desenho Humano, os centros representam diferentes áreas de energia e influenciam várias facetas de nossa vida e personalidade. A seguir, você encontra o significado de cada um dos centros com foco especial nas mulheres.",
+    "functionLabel": "Função",
+    "importanceLabel": "Importância para mulheres",
+    "centersNote": "(*) Indica os centros que estão definidos no seu mapa pessoal.",
+    "structureTitle": "ESTRUTURA DO HUMAN DESIGN",
+    "advancedVariablesTheory": "Variáveis Avançadas",
+    "yourCentersTitle": "SEUS CENTROS ENERGÉTICOS",
+    "definedCenters": "Centros Definidos",
+    "definedCentersDesc": "(Fontes de Energia Consistente)",
+    "openCenters": "Centros Abertos",
+    "openCentersDesc": "(Áreas de Sabedoria e Aprendizado)",
+    "noCentersDefined": "Nenhum centro definido (Reflector)",
+    "allCentersDefined": "Todos os centros definidos",
+    "powerChannels": "Seus Canais de Poder",
+    "noChannels": "Nenhum canal completo definido",
+    "yourVariablesTitle": "SUAS VARIÁVEIS AVANÇADAS",
+    "digestion": "Digestão",
+    "environment": "Ambiente",
+    "motivation": "Motivação",
+    "perspective": "Perspectiva",
+    "sense": "Sentido",
+    "analysisTitle": "SEU MAPA NA PRÁTICA",
+    "analysisSubtitle": "Leitura personalizada do seu desenho",
+    "fileName": "Arquitetura_Pessoal",
+    "centers": {
+      "head": "Cabeça",
+      "ajna": "Ajna",
+      "throat": "Garganta",
+      "g": "G (Identidade)",
+      "heart": "Coração (Ego)",
+      "sacral": "Sacral",
+      "spleen": "Baço",
+      "solar": "Plexo Solar",
+      "root": "Raiz"
+    },
+    "theory": {
+      "intro": {
+        "title": "O que é o Desenho Humano?",
+        "content": "O Human Design é um sistema de autoconhecimento que combina elementos de diversas tradições antigas (astrologia, do I Ching, da Cabala, do sistema de chakras) e modernas (física quântica e genética) para ajudar as pessoas a entenderem melhor quem são e como funcionam no mundo. É como um mapa pessoal que nos mostra nossas características únicas e como podemos viver de forma mais alinhada com nossa verdadeira natureza.\n\nOs Centros no Desenho Humano são semelhantes aos chakras e representam diferentes aspectos da experiência humana. Eles podem ser definidos (coloridos) ou indefinidos (brancos). Dentro do Desenho Humano, os centros representam diferentes áreas de energia e influenciam várias facetas de nossa vida e personalidade."
+      },
+      "centersTheory": [
+        {
+          "id": "head",
+          "name": "Centro da Cabeça",
+          "function": "É um centro de inspiração e pressão mental.",
+          "importance": "Este centro pode influenciar a maneira como as mulheres processam ideias e se conectam com a inspiração. É um ponto de partida para questionamentos e dúvidas, frequentemente impactando a forma como percebem a realidade e buscam significado em suas experiências diárias."
+        },
+        {
+          "id": "ajna",
+          "name": "Centro de Ajna",
+          "function": "Processamento mental e consciência.",
+          "importance": "As mulheres com um Ajna definido podem apresentar uma forma consistente de pensar e de formar opiniões, enquanto aquelas com um Ajna indefinido podem ser mais abertas a novas ideias e influências externas. A consciência aqui se manifesta na maneira como elas tomam decisões e interpretam informações."
+        },
+        {
+          "id": "throat",
+          "name": "Centro da Garganta",
+          "function": "Manifestação e comunicação.",
+          "importance": "Este centro influencia como as mulheres expressam seus pensamentos e sentimentos. A presença de um centro da garganta definido pode indicar uma habilidade mais consistente de se comunicar, enquanto um centro indefinido pode levar a uma adaptação às expectativas comunicativas dos outros."
+        },
+        {
+          "id": "g",
+          "name": "Centro G",
+          "function": "Identidade, amor e direção.",
+          "importance": "Este centro está profundamente ligado à sensação de identidade e propósito. Para muitas mulheres, reflete como elas se veem em relação ao amor e à direção que desejam seguir na vida. Um centro G definido pode proporcionar uma forte sensação de identidade pessoal, enquanto um indefinido pode resultar em uma busca por direção através das experiências dos outros."
+        },
+        {
+          "id": "heart",
+          "name": "Centro do Coração (Ego)",
+          "function": "Vontade, ego e materialidade.",
+          "importance": "Este centro impacta a relação das mulheres com a autoestima e o valor pessoal. Quando definido, pode indicar uma forte vontade e compromisso com objetivos, enquanto um centro indefinido pode fazer com que as mulheres se sintam desafiadas a provar seu valor."
+        },
+        {
+          "id": "sacral",
+          "name": "Centro Sacral",
+          "function": "Fonte de energia vital e força de trabalho.",
+          "importance": "Este é o centro da energia vital, influenciando a capacidade de trabalho e a vitalidade geral. As mulheres com um Sacral definido podem ter uma energia sustentada para o trabalho e projetos, enquanto aquelas com um Sacral indefinido podem precisar de mais tempo para descanso e recuperação."
+        },
+        {
+          "id": "spleen",
+          "name": "Centro do Baço",
+          "function": "Intuição, bem-estar e imunidade.",
+          "importance": "Este centro está ligado à intuição e ao senso de bem-estar. Um centro do baço definido pode proporcionar uma forte conexão com a intuição e a saúde, enquanto um indefinido pode resultar em uma sensibilidade maior às condições externas de saúde e bem-estar."
+        },
+        {
+          "id": "solar",
+          "name": "Centro do Plexo Solar",
+          "function": "Emoções e consciência emocional.",
+          "importance": "Este centro é crucial na gestão das emoções. As mulheres com um Plexo Solar definido podem experimentar uma gama consistente de emoções, enquanto aquelas com um centro indefinido podem ser mais suscetíveis às emoções dos outros e às flutuações emocionais."
+        },
+        {
+          "id": "root",
+          "name": "Centro Raiz",
+          "function": "Pressão e adrenalina.",
+          "importance": "A maneira como as mulheres lidam com o estresse e a pressão pode ser influenciada por este centro. Um centro da raiz definido pode proporcionar uma abordagem mais constante ao gerenciamento de pressão, enquanto um indefinido pode resultar em variações na resposta ao estresse."
+        }
+      ],
+      "elements": [
+        {
+          "title": "Tipo (Type)",
+          "content": "Os Tipos são a primeira e mais fundamental classificação no Desenho Humano. Eles determinam a maneira como você interage com o mundo e como sua energia flui. Existem cinco tipos principais: Manifestador (iniciadores naturais, estão aqui para começar coisas e agir de forma independente), Gerador (são construtores, com energia sustentada para trabalhar em projetos que amam), Manifestador-Gerador (uma combinação dos dois, com a habilidade de iniciar e trabalhar de forma sustentada), Projetor (guias naturais, estão aqui para orientar os outros e precisam ser reconhecidos e convidados) e Refletor (espelhos do ambiente, são extremamente sensíveis e se beneficiam de ciclos lunares completos para tomar decisões)."
+        },
+        {
+          "title": "Estratégia (Strategy)",
+          "content": "A estratégia está relacionada ao tipo e é a maneira mais alinhada de interagir com o mundo. Cada tipo tem sua própria estratégia que, quando seguida, leva à sua assinatura (satisfação, paz, sucesso ou surpresa)."
+        },
+        {
+          "title": "Autoridade Interna (Inner Authority)",
+          "content": "É o guia interno para tomar decisões de forma mais alinhada com a sua verdadeira natureza. Cada pessoa tem uma autoridade específica que serve como bússola para decisões corretas."
+        },
+        {
+          "title": "Definição (Definition)",
+          "content": "Refere-se à forma como seus centros no gráfico estão conectados. Isso influencia como uma pessoa processa informações e energias, bem como interage com os outros."
+        },
+        {
+          "title": "Perfil (Profile)",
+          "content": "Existem 12 perfis diferentes. O perfil é a combinação de dois números que refletem seu papel na vida e como você se vê e é visto pelos outros."
+        },
+        {
+          "title": "Cruz de Encarnação (Incarnation Cross)",
+          "content": "No sistema de Human Design, existem 192 Cruzes de Encarnação diferentes. Ela reflete o seu propósito de vida, uma combinação de quatro portões que destacam temas principais que você viverá."
+        },
+        {
+          "title": "Assinatura (Signature)",
+          "content": "Há uma Assinatura específica para cada um dos cinco Tipos principais. A Assinatura é o estado de ser que uma pessoa experimenta quando está vivendo de acordo com seu design, em alinhamento com sua verdadeira natureza, e fornece uma sensação de realização e bem-estar."
+        },
+        {
+          "title": "Tema do Não-Eu (Not-Self Theme)",
+          "content": "Cada um dos cinco tipos principais tem um Tema do Não-Eu, que é a emoção ou estado negativo que uma pessoa experimenta quando não está vivendo de acordo com seu design. Este tema indica um desalinhamento com a sua verdadeira natureza e serve como sinal de alerta."
+        }
+      ],
+      "variables": [
+        {
+          "title": "Digestão (Digestion)",
+          "content": "Refere-se à melhor maneira de processar alimentos, afetos e informações, otimizando o bem-estar físico e mental."
+        },
+        {
+          "title": "Sentido do Design (Design Sense)",
+          "content": "Refere-se aos sentidos predominantes através dos quais uma pessoa percebe e interage com o mundo."
+        },
+        {
+          "title": "Motivação (Motivation)",
+          "content": "Refere-se aos impulsos internos que guiam uma pessoa na forma como ela percebe e interage com o mundo. Ela fornece uma lente através da qual uma pessoa pode entender melhor suas ações e decisões."
+        },
+        {
+          "title": "Ambiente (Environment)",
+          "content": "Refere-se ao tipo ideal de ambiente onde uma pessoa pode prosperar e funcionar de maneira mais alinhada com seu design. Compreender o seu tipo de Ambiente pode ajudá-la a escolher ambientes que apoiem seu bem-estar físico e mental."
+        }
+      ],
+      "gatesChannels": {
+        "title": "Portões e Canais",
+        "content": "Os Portões (Gates) representam uma característica ou potencial energético específico. Cada portão representa uma característica que pode estar ativada no seu gráfico de Human Design. Os 64 portões estão distribuídos entre os nove centros do corpo no gráfico. Quando dois portões ativados se conectam, formam um Canal, que liga dois centros.\n\nOs Canais (Channels) são 36 no total. Esses canais são formados pela conexão de dois Portões entre dois dos nove centros. Cada canal representa um fluxo de energia e informação entre os centros, influenciando a forma como uma pessoa processa experiências e interage com o mundo.\n\nQuando um canal está definido no seu gráfico, ele indica uma forma consistente de operar essa energia. Os canais desempenham um papel significativo na determinação do seu Tipo, pois influenciam quais centros são definidos."
+      },
+      "closing": {
+        "title": "Como usar seu Desenho Humano",
+        "content": "Todos esses elementos do Human Design ajudam a compor um mapa detalhado da sua individualidade, oferecendo insights sobre como viver de forma mais autêntica e satisfatória.\n\nO Human Design sugere que, ao entender seu tipo, estratégia, autoridade e outros aspectos do seu gráfico pessoal, você pode fazer escolhas mais autênticas e viver de forma mais fluida. É um sistema que nos convida a experimentar suas orientações na vida diária, observando como nos sentimos mais alinhados e realizados.\n\nCompreender o Desenho Humano pode ajudar a viver de acordo com sua verdadeira natureza, respeitando sua energia e potencial únicos. É uma ferramenta poderosa para o autoconhecimento e o desenvolvimento pessoal."
+      }
+    }
   }
 }

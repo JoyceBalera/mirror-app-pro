@@ -433,5 +433,185 @@
   "planetaryColumn": {
     "personality": "Personalidad",
     "design": "Diseño"
+  },
+  "hdPdf": {
+    "pageOf": "Página {{current}} de {{total}}",
+    "createdBy": "Creado por Luciana Belenton",
+    "headerTitle": "ARQUITECTURA PERSONAL",
+    "headerSubtitle": "Diseño Humano Personalizado",
+    "introText": "Este informe presenta tu Arquitectura Personal completa, un mapa único de tu energía vital basado en el Sistema Human Design. Descubre cómo fuiste diseñada para tomar decisiones, interactuar con el mundo y vivir con autenticidad.",
+    "birthDataTitle": "DATOS DE NACIMIENTO",
+    "birthDate": "Fecha",
+    "birthTime": "Hora",
+    "birthLocation": "Lugar",
+    "profileTitle": "TU PERFIL ENERGÉTICO",
+    "energyType": "Tipo Energético",
+    "strategy": "Estrategia",
+    "authority": "Autoridad",
+    "profile": "Perfil",
+    "definition": "Definición",
+    "incarnationCross": "Cruz de Encarnación",
+    "bodygraphTitle": "TU BODYGRAPH VISUAL",
+    "bodygraphFallback": "Tu Bodygraph está disponible en la plataforma online.",
+    "summaryTemplate": "{{defined}} centro(s) definido(s)  |  {{open}} centro(s) abierto(s)  |  {{channels}} canal(es) activo(s)",
+    "centersIntroTitle": "INTRODUCCIÓN AL DISEÑO HUMANO",
+    "centersTitle": "LOS 9 CENTROS ENERGÉTICOS",
+    "centersIntro": "Dentro del Diseño Humano, los centros representan diferentes áreas de energía e influyen en varias facetas de nuestra vida y personalidad. A continuación, encontrarás el significado de cada uno de los centros con enfoque especial en las mujeres.",
+    "functionLabel": "Función",
+    "importanceLabel": "Importancia para mujeres",
+    "centersNote": "(*) Indica los centros que están definidos en tu mapa personal.",
+    "structureTitle": "ESTRUCTURA DEL HUMAN DESIGN",
+    "advancedVariablesTheory": "Variables Avanzadas",
+    "yourCentersTitle": "TUS CENTROS ENERGÉTICOS",
+    "definedCenters": "Centros Definidos",
+    "definedCentersDesc": "(Fuentes de Energía Consistente)",
+    "openCenters": "Centros Abiertos",
+    "openCentersDesc": "(Áreas de Sabiduría y Aprendizaje)",
+    "noCentersDefined": "Ningún centro definido (Reflector)",
+    "allCentersDefined": "Todos los centros definidos",
+    "powerChannels": "Tus Canales de Poder",
+    "noChannels": "Ningún canal completo definido",
+    "yourVariablesTitle": "TUS VARIABLES AVANZADAS",
+    "digestion": "Digestión",
+    "environment": "Ambiente",
+    "motivation": "Motivación",
+    "perspective": "Perspectiva",
+    "sense": "Sentido",
+    "analysisTitle": "TU MAPA EN LA PRÁCTICA",
+    "analysisSubtitle": "Lectura personalizada de tu diseño",
+    "fileName": "Arquitectura_Personal",
+    "centers": {
+      "head": "Cabeza",
+      "ajna": "Ajna",
+      "throat": "Garganta",
+      "g": "G (Identidad)",
+      "heart": "Corazón (Ego)",
+      "sacral": "Sacral",
+      "spleen": "Bazo",
+      "solar": "Plexo Solar",
+      "root": "Raíz"
+    },
+    "theory": {
+      "intro": {
+        "title": "¿Qué es el Diseño Humano?",
+        "content": "El Human Design es un sistema de autoconocimiento que combina elementos de diversas tradiciones antiguas (astrología, del I Ching, de la Cábala, del sistema de chakras) y modernas (física cuántica y genética) para ayudar a las personas a entender mejor quiénes son y cómo funcionan en el mundo. Es como un mapa personal que nos muestra nuestras características únicas y cómo podemos vivir de forma más alineada con nuestra verdadera naturaleza.\n\nLos Centros en el Diseño Humano son similares a los chakras y representan diferentes aspectos de la experiencia humana. Pueden ser definidos (coloreados) o indefinidos (blancos). Dentro del Diseño Humano, los centros representan diferentes áreas de energía e influyen en varias facetas de nuestra vida y personalidad."
+      },
+      "centersTheory": [
+        {
+          "id": "head",
+          "name": "Centro de la Cabeza",
+          "function": "Es un centro de inspiración y presión mental.",
+          "importance": "Este centro puede influir en la manera en que las mujeres procesan ideas y se conectan con la inspiración. Es un punto de partida para cuestionamientos y dudas, frecuentemente impactando la forma en que perciben la realidad y buscan significado en sus experiencias diarias."
+        },
+        {
+          "id": "ajna",
+          "name": "Centro de Ajna",
+          "function": "Procesamiento mental y consciencia.",
+          "importance": "Las mujeres con un Ajna definido pueden presentar una forma consistente de pensar y de formar opiniones, mientras que aquellas con un Ajna indefinido pueden ser más abiertas a nuevas ideas e influencias externas. La consciencia aquí se manifiesta en la manera en que toman decisiones e interpretan informaciones."
+        },
+        {
+          "id": "throat",
+          "name": "Centro de la Garganta",
+          "function": "Manifestación y comunicación.",
+          "importance": "Este centro influye en cómo las mujeres expresan sus pensamientos y sentimientos. La presencia de un centro de la garganta definido puede indicar una habilidad más consistente de comunicarse, mientras que un centro indefinido puede llevar a una adaptación a las expectativas comunicativas de los otros."
+        },
+        {
+          "id": "g",
+          "name": "Centro G",
+          "function": "Identidad, amor y dirección.",
+          "importance": "Este centro está profundamente ligado a la sensación de identidad y propósito. Para muchas mujeres, refleja cómo se ven en relación al amor y la dirección que desean seguir en la vida. Un centro G definido puede proporcionar una fuerte sensación de identidad personal, mientras que uno indefinido puede resultar en una búsqueda de dirección a través de las experiencias de los otros."
+        },
+        {
+          "id": "heart",
+          "name": "Centro del Corazón (Ego)",
+          "function": "Voluntad, ego y materialidad.",
+          "importance": "Este centro impacta la relación de las mujeres con la autoestima y el valor personal. Cuando está definido, puede indicar una fuerte voluntad y compromiso con objetivos, mientras que un centro indefinido puede hacer que las mujeres se sientan desafiadas a probar su valor."
+        },
+        {
+          "id": "sacral",
+          "name": "Centro Sacral",
+          "function": "Fuente de energía vital y fuerza de trabajo.",
+          "importance": "Este es el centro de la energía vital, influyendo en la capacidad de trabajo y la vitalidad general. Las mujeres con un Sacral definido pueden tener una energía sostenida para el trabajo y proyectos, mientras que aquellas con un Sacral indefinido pueden necesitar más tiempo para descanso y recuperación."
+        },
+        {
+          "id": "spleen",
+          "name": "Centro del Bazo",
+          "function": "Intuición, bienestar e inmunidad.",
+          "importance": "Este centro está ligado a la intuición y al sentido de bienestar. Un centro del bazo definido puede proporcionar una fuerte conexión con la intuición y la salud, mientras que uno indefinido puede resultar en una sensibilidad mayor a las condiciones externas de salud y bienestar."
+        },
+        {
+          "id": "solar",
+          "name": "Centro del Plexo Solar",
+          "function": "Emociones y consciencia emocional.",
+          "importance": "Este centro es crucial en la gestión de las emociones. Las mujeres con un Plexo Solar definido pueden experimentar una gama consistente de emociones, mientras que aquellas con un centro indefinido pueden ser más susceptibles a las emociones de los otros y a las fluctuaciones emocionales."
+        },
+        {
+          "id": "root",
+          "name": "Centro Raíz",
+          "function": "Presión y adrenalina.",
+          "importance": "La manera en que las mujeres lidian con el estrés y la presión puede ser influenciada por este centro. Un centro de la raíz definido puede proporcionar un enfoque más constante en el manejo de presión, mientras que uno indefinido puede resultar en variaciones en la respuesta al estrés."
+        }
+      ],
+      "elements": [
+        {
+          "title": "Tipo (Type)",
+          "content": "Los Tipos son la primera y más fundamental clasificación en el Diseño Humano. Determinan la manera en que interactúas con el mundo y cómo fluye tu energía. Existen cinco tipos principales: Manifestador (iniciadores naturales, están aquí para comenzar cosas y actuar de forma independiente), Generador (son constructores, con energía sostenida para trabajar en proyectos que aman), Generador Manifestante (una combinación de los dos, con la habilidad de iniciar y trabajar de forma sostenida), Proyector (guías naturales, están aquí para orientar a los otros y necesitan ser reconocidos e invitados) y Reflector (espejos del ambiente, son extremadamente sensibles y se benefician de ciclos lunares completos para tomar decisiones)."
+        },
+        {
+          "title": "Estrategia (Strategy)",
+          "content": "La estrategia está relacionada con el tipo y es la manera más alineada de interactuar con el mundo. Cada tipo tiene su propia estrategia que, cuando se sigue, lleva a su firma (satisfacción, paz, éxito o sorpresa)."
+        },
+        {
+          "title": "Autoridad Interna (Inner Authority)",
+          "content": "Es la guía interna para tomar decisiones de forma más alineada con tu verdadera naturaleza. Cada persona tiene una autoridad específica que sirve como brújula para decisiones correctas."
+        },
+        {
+          "title": "Definición (Definition)",
+          "content": "Se refiere a la forma en que tus centros en el gráfico están conectados. Esto influye en cómo una persona procesa informaciones y energías, así como interactúa con los otros."
+        },
+        {
+          "title": "Perfil (Profile)",
+          "content": "Existen 12 perfiles diferentes. El perfil es la combinación de dos números que reflejan tu papel en la vida y cómo te ves y eres visto por los otros."
+        },
+        {
+          "title": "Cruz de Encarnación (Incarnation Cross)",
+          "content": "En el sistema de Human Design, existen 192 Cruces de Encarnación diferentes. Refleja tu propósito de vida, una combinación de cuatro puertas que destacan temas principales que vivirás."
+        },
+        {
+          "title": "Firma (Signature)",
+          "content": "Hay una Firma específica para cada uno de los cinco Tipos principales. La Firma es el estado de ser que una persona experimenta cuando está viviendo de acuerdo con su diseño, en alineación con su verdadera naturaleza, y proporciona una sensación de realización y bienestar."
+        },
+        {
+          "title": "Tema del No-Ser (Not-Self Theme)",
+          "content": "Cada uno de los cinco tipos principales tiene un Tema del No-Ser, que es la emoción o estado negativo que una persona experimenta cuando no está viviendo de acuerdo con su diseño. Este tema indica un desalineamiento con tu verdadera naturaleza y sirve como señal de alerta."
+        }
+      ],
+      "variables": [
+        {
+          "title": "Digestión (Digestion)",
+          "content": "Se refiere a la mejor manera de procesar alimentos, afectos e informaciones, optimizando el bienestar físico y mental."
+        },
+        {
+          "title": "Sentido del Diseño (Design Sense)",
+          "content": "Se refiere a los sentidos predominantes a través de los cuales una persona percibe e interactúa con el mundo."
+        },
+        {
+          "title": "Motivación (Motivation)",
+          "content": "Se refiere a los impulsos internos que guían a una persona en la forma en que percibe e interactúa con el mundo. Proporciona una lente a través de la cual una persona puede entender mejor sus acciones y decisiones."
+        },
+        {
+          "title": "Ambiente (Environment)",
+          "content": "Se refiere al tipo ideal de ambiente donde una persona puede prosperar y funcionar de manera más alineada con su diseño. Comprender tu tipo de Ambiente puede ayudarte a elegir ambientes que apoyen tu bienestar físico y mental."
+        }
+      ],
+      "gatesChannels": {
+        "title": "Puertas y Canales",
+        "content": "Las Puertas (Gates) representan una característica o potencial energético específico. Cada puerta representa una característica que puede estar activada en tu gráfico de Human Design. Las 64 puertas están distribuidas entre los nueve centros del cuerpo en el gráfico. Cuando dos puertas activadas se conectan, forman un Canal, que conecta dos centros.\n\nLos Canales (Channels) son 36 en total. Estos canales se forman por la conexión de dos Puertas entre dos de los nueve centros. Cada canal representa un flujo de energía e información entre los centros, influenciando la forma en que una persona procesa experiencias e interactúa con el mundo.\n\nCuando un canal está definido en tu gráfico, indica una forma consistente de operar esa energía. Los canales desempeñan un papel significativo en la determinación de tu Tipo, pues influyen en cuáles centros están definidos."
+      },
+      "closing": {
+        "title": "Cómo usar tu Diseño Humano",
+        "content": "Todos estos elementos del Human Design ayudan a componer un mapa detallado de tu individualidad, ofreciendo insights sobre cómo vivir de forma más auténtica y satisfactoria.\n\nEl Human Design sugiere que, al entender tu tipo, estrategia, autoridad y otros aspectos de tu gráfico personal, puedes hacer elecciones más auténticas y vivir de forma más fluida. Es un sistema que nos invita a experimentar sus orientaciones en la vida diaria, observando cómo nos sentimos más alineados y realizados.\n\nComprender el Diseño Humano puede ayudar a vivir de acuerdo con tu verdadera naturaleza, respetando tu energía y potencial únicos. Es una herramienta poderosa para el autoconocimiento y el desarrollo personal."
+      }
+    }
   }
 }

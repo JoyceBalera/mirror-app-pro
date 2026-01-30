@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -68,6 +69,7 @@ const UserDetails = () => {
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { i18n } = useTranslation();
   const [user, setUser] = useState<any>(null);
   const [results, setResults] = useState<TestResult[]>([]);
   const [hdResults, setHdResults] = useState<HDResult[]>([]);
@@ -271,7 +273,11 @@ const UserDetails = () => {
 
   const handleDownloadHDPDF = async (hdResult: HDResult) => {
     try {
+      // Get current language
+      const currentLanguage = (i18n.language?.split('-')[0] || 'pt') as 'pt' | 'es' | 'en';
+      
       const reportData: HDReportData = {
+        language: currentLanguage,
         birth_date: hdResult.birth_date,
         birth_time: hdResult.birth_time,
         birth_location: hdResult.birth_location,
