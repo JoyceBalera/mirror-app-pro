@@ -1,6 +1,17 @@
 import jsPDF from 'jspdf';
 import type { AdvancedVariables } from './humanDesignVariables';
 import { 
+  type HDPdfTranslations,
+  type PDFLanguage,
+  DATE_LOCALES,
+  getCenterNames,
+  getIntroSection,
+  getCentersTheory,
+  getElementsTheory,
+  getAdvancedVariablesTheory,
+  getGatesChannelsTheory,
+  getClosingTheory,
+  // Legacy imports for fallback
   INTRO_SECTION, 
   CENTERS_THEORY, 
   ELEMENTS_THEORY, 
@@ -9,7 +20,13 @@ import {
   CLOSING_THEORY
 } from '../data/humanDesignTheory';
 
+// Import translations directly for PDF generation (avoiding React hooks)
+import ptTranslations from '../locales/pt/translation.json';
+import esTranslations from '../locales/es/translation.json';
+import enTranslations from '../locales/en/translation.json';
+
 export interface HDReportData {
+  language?: PDFLanguage;
   user_name?: string;
   birth_date: string;
   birth_time: string;
@@ -29,6 +46,16 @@ export interface HDReportData {
   bodygraph_image?: string;
 }
 
+// Get translations for specific language
+const getTranslations = (language: PDFLanguage): HDPdfTranslations => {
+  const translationMap = {
+    pt: ptTranslations,
+    es: esTranslations,
+    en: enTranslations
+  };
+  return (translationMap[language] as any).hdPdf as HDPdfTranslations;
+};
+
 // Cores da paleta Luciana - Sincronizadas com pdfGenerator
 const COLORS = {
   carmim: [123, 25, 43] as [number, number, number],
@@ -42,19 +69,6 @@ const COLORS = {
   white: [255, 255, 255] as [number, number, number],
   success: [34, 139, 34] as [number, number, number],
   warning: [205, 133, 63] as [number, number, number],
-};
-
-// Nomes dos centros em português
-const CENTER_NAMES: Record<string, string> = {
-  head: 'Cabeça',
-  ajna: 'Ajna',
-  throat: 'Garganta',
-  g: 'G (Identidade)',
-  heart: 'Coração (Ego)',
-  sacral: 'Sacral',
-  spleen: 'Baço',
-  solar: 'Plexo Solar',
-  root: 'Raiz',
 };
 
 // Função para limpar markdown
@@ -74,6 +88,11 @@ const cleanMarkdown = (text: string): string => {
 };
 
 export async function generateHDReport(data: HDReportData): Promise<void> {
+  const language = data.language || 'pt';
+  const t = getTranslations(language);
+  const centerNames = getCenterNames(t);
+  const dateLocale = DATE_LOCALES[language];
+  
   const doc = new jsPDF({
     orientation: 'portrait',
     unit: 'mm',
@@ -107,11 +126,12 @@ export async function generateHDReport(data: HDReportData): Promise<void> {
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(...COLORS.lightText);
-    doc.text(`Página ${pageNum} de ${totalPages}`, pageWidth / 2, pageHeight - 10, { align: 'center' });
+    const pageText = t.pageOf.replace('{{current}}', String(pageNum)).replace('{{total}}', String(totalPages));
+    doc.text(pageText, pageWidth / 2, pageHeight - 10, { align: 'center' });
     
     doc.setFontSize(9);
     doc.setTextColor(...COLORS.carmim);
-    doc.text('Criado por Luciana Belenton', pageWidth / 2, pageHeight - 5, { align: 'center' });
+    doc.text(t.createdBy, pageWidth / 2, pageHeight - 5, { align: 'center' });
   };
 
   // ============ HELPER: Header com gradiente ============
@@ -193,8 +213,16 @@ export async function generateHDReport(data: HDReportData): Promise<void> {
     return yPos + 5;
   };
 
+  // Get theory content from translations
+  const introSection = getIntroSection(t);
+  const centersTheory = getCentersTheory(t);
+  const elementsTheory = getElementsTheory(t);
+  const advancedVariablesTheory = getAdvancedVariablesTheory(t);
+  const gatesChannelsTheory = getGatesChannelsTheory(t);
+  const closingTheory = getClosingTheory(t);
+
   // ============ PÁGINA 1 - CAPA ============
-  let yPos = drawGradientHeader("ARQUITETURA PESSOAL", "Desenho Humano Personalizado");
+  let yPos = drawGradientHeader(t.headerTitle, t.headerSubtitle);
   
   // Nome da usuária (se disponível)
   if (data.user_name) {
@@ -213,8 +241,7 @@ export async function generateHDReport(data: HDReportData): Promise<void> {
   doc.setTextColor(...COLORS.darkText);
   doc.setFont('helvetica', 'normal');
   
-  const introText = "Este relatorio apresenta sua Arquitetura Pessoal completa, um mapa unico da sua energia vital baseado no Sistema Human Design. Descubra como voce foi desenhado para tomar decisoes, interagir com o mundo e viver com autenticidade.";
-  const introLines = doc.splitTextToSize(introText, contentWidth - 20);
+  const introLines = doc.splitTextToSize(t.introText, contentWidth - 20);
   doc.text(introLines, margin + 10, yPos + 12);
   
   yPos += 45;
@@ -228,16 +255,16 @@ export async function generateHDReport(data: HDReportData): Promise<void> {
   doc.setFontSize(11);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...COLORS.carmim);
-  doc.text('DADOS DE NASCIMENTO', margin + 10, yPos + 10);
+  doc.text(t.birthDataTitle, margin + 10, yPos + 10);
   
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(...COLORS.darkText);
   doc.setFontSize(10);
   
-  const birthDate = new Date(data.birth_date).toLocaleDateString('pt-BR');
-  doc.text(`Data: ${birthDate}`, margin + 10, yPos + 20);
-  doc.text(`Horário: ${data.birth_time}`, margin + 10, yPos + 28);
-  doc.text(`Local: ${data.birth_location}`, margin + 10, yPos + 36);
+  const birthDate = new Date(data.birth_date).toLocaleDateString(dateLocale);
+  doc.text(`${t.birthDate}: ${birthDate}`, margin + 10, yPos + 20);
+  doc.text(`${t.birthTime}: ${data.birth_time}`, margin + 10, yPos + 28);
+  doc.text(`${t.birthLocation}: ${data.birth_location}`, margin + 10, yPos + 36);
   
   yPos += 50;
   
@@ -247,17 +274,17 @@ export async function generateHDReport(data: HDReportData): Promise<void> {
   doc.setTextColor(...COLORS.white);
   doc.setFontSize(11);
   doc.setFont('helvetica', 'bold');
-  doc.text('SEU PERFIL ENERGÉTICO', margin + 5, yPos + 7);
+  doc.text(t.profileTitle, margin + 5, yPos + 7);
   yPos += 18;
   
   // Grid de informações (2 colunas)
   const infoItems = [
-    { label: 'Tipo Energético', value: data.energy_type },
-    { label: 'Estratégia', value: data.strategy || 'N/A' },
-    { label: 'Autoridade', value: data.authority || 'N/A' },
-    { label: 'Perfil', value: data.profile || 'N/A' },
-    { label: 'Definição', value: data.definition || 'N/A' },
-    { label: 'Cruz de Encarnação', value: data.incarnation_cross || 'N/A' },
+    { label: t.energyType, value: data.energy_type },
+    { label: t.strategy, value: data.strategy || 'N/A' },
+    { label: t.authority, value: data.authority || 'N/A' },
+    { label: t.profile, value: data.profile || 'N/A' },
+    { label: t.definition, value: data.definition || 'N/A' },
+    { label: t.incarnationCross, value: data.incarnation_cross || 'N/A' },
   ];
   
   const colWidth = contentWidth / 2;
@@ -287,7 +314,7 @@ export async function generateHDReport(data: HDReportData): Promise<void> {
   // ============ PÁGINA 2 - BODYGRAPH ============
   doc.addPage();
   currentPage++;
-  yPos = drawGradientHeader("SEU BODYGRAPH VISUAL");
+  yPos = drawGradientHeader(t.bodygraphTitle);
   
   // Imagem do Bodygraph
   if (data.bodygraph_image) {
@@ -305,7 +332,7 @@ export async function generateHDReport(data: HDReportData): Promise<void> {
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
       doc.setTextColor(...COLORS.darkText);
-      doc.text('Seu Bodygraph está disponível na plataforma online.', margin + 10, yPos);
+      doc.text(t.bodygraphFallback, margin + 10, yPos);
       yPos += 25;
     }
   } else {
@@ -315,7 +342,7 @@ export async function generateHDReport(data: HDReportData): Promise<void> {
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(...COLORS.darkText);
-    doc.text('Seu Bodygraph está disponível na plataforma online.', margin + 10, yPos);
+    doc.text(t.bodygraphFallback, margin + 10, yPos);
     yPos += 25;
   }
   
@@ -323,31 +350,34 @@ export async function generateHDReport(data: HDReportData): Promise<void> {
   doc.setFontSize(10);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...COLORS.gold);
-  doc.text(`${definedCenters.length} centro(s) definido(s)  |  ${openCenters.length} centro(s) aberto(s)  |  ${activeChannels.length} canal(is) ativo(s)`, pageWidth / 2, yPos, { align: 'center' });
+  const summaryText = t.summaryTemplate
+    .replace('{{defined}}', String(definedCenters.length))
+    .replace('{{open}}', String(openCenters.length))
+    .replace('{{channels}}', String(activeChannels.length));
+  doc.text(summaryText, pageWidth / 2, yPos, { align: 'center' });
 
   // ============ PÁGINAS 3+ - TEORIA FIXA (CAMADA 1) ============
   
   // Página: Introdução ao Desenho Humano
   doc.addPage();
   currentPage++;
-  yPos = drawGradientHeader("INTRODUÇÃO AO DESENHO HUMANO");
-  yPos = renderTheorySection(INTRO_SECTION.title, INTRO_SECTION.content, yPos);
+  yPos = drawGradientHeader(t.centersIntroTitle);
+  yPos = renderTheorySection(introSection.title, introSection.content, yPos);
   
   // Os 9 Centros Energéticos
   doc.addPage();
   currentPage++;
-  yPos = drawGradientHeader("OS 9 CENTROS ENERGÉTICOS");
+  yPos = drawGradientHeader(t.centersTitle);
   
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(...COLORS.darkText);
-  const centersIntro = "Dentro do Desenho Humano, os centros representam diferentes áreas de energia e influenciam várias facetas de nossa vida e personalidade. A seguir, você encontra o significado de cada um dos centros com foco especial nas mulheres.";
-  const centersIntroLines = doc.splitTextToSize(centersIntro, contentWidth);
+  const centersIntroLines = doc.splitTextToSize(t.centersIntro, contentWidth);
   doc.text(centersIntroLines, margin, yPos);
   yPos += centersIntroLines.length * 5 + 10;
   
   // Renderizar cada centro
-  CENTERS_THEORY.forEach((center) => {
+  centersTheory.forEach((center) => {
     // Verificar se o centro está definido no mapa da usuária
     const isDefined = definedCenters.includes(center.id);
     const definedMarker = isDefined ? ' (*)' : '';
@@ -373,7 +403,7 @@ export async function generateHDReport(data: HDReportData): Promise<void> {
     doc.setFontSize(9);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...COLORS.lightText);
-    doc.text('Funcao:', margin + 5, yPos + 16);
+    doc.text(`${t.functionLabel}:`, margin + 5, yPos + 16);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(...COLORS.darkText);
     doc.text(center.function, margin + 25, yPos + 16);
@@ -382,7 +412,7 @@ export async function generateHDReport(data: HDReportData): Promise<void> {
     doc.setFontSize(9);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...COLORS.lightText);
-    doc.text('Importancia para mulheres:', margin + 5, yPos + 24);
+    doc.text(`${t.importanceLabel}:`, margin + 5, yPos + 24);
     
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(...COLORS.darkText);
@@ -400,15 +430,15 @@ export async function generateHDReport(data: HDReportData): Promise<void> {
   doc.setFontSize(9);
   doc.setFont('helvetica', 'italic');
   doc.setTextColor(...COLORS.lightText);
-  doc.text('(*) Indica os centros que estão definidos no seu mapa pessoal.', margin, yPos);
+  doc.text(t.centersNote, margin, yPos);
   yPos += 15;
   
   // Estrutura do Human Design
   doc.addPage();
   currentPage++;
-  yPos = drawGradientHeader("ESTRUTURA DO HUMAN DESIGN");
+  yPos = drawGradientHeader(t.structureTitle);
   
-  ELEMENTS_THEORY.forEach((element) => {
+  elementsTheory.forEach((element) => {
     yPos = renderTheorySection(element.title, element.content, yPos);
   });
   
@@ -417,10 +447,10 @@ export async function generateHDReport(data: HDReportData): Promise<void> {
   doc.setFontSize(13);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...COLORS.carmim);
-  doc.text('Variáveis Avançadas', margin, yPos);
+  doc.text(t.advancedVariablesTheory, margin, yPos);
   yPos += 10;
   
-  ADVANCED_VARIABLES_THEORY.forEach((variable) => {
+  advancedVariablesTheory.forEach((variable) => {
     yPos = checkAddPage(20, yPos);
     doc.setFontSize(10);
     doc.setFont('helvetica', 'bold');
@@ -440,15 +470,15 @@ export async function generateHDReport(data: HDReportData): Promise<void> {
   });
   
   // Portões e Canais
-  yPos = renderTheorySection(GATES_CHANNELS_THEORY.title, GATES_CHANNELS_THEORY.content, yPos);
+  yPos = renderTheorySection(gatesChannelsTheory.title, gatesChannelsTheory.content, yPos);
   
   // Fechamento da teoria
-  yPos = renderTheorySection(CLOSING_THEORY.title, CLOSING_THEORY.content, yPos);
+  yPos = renderTheorySection(closingTheory.title, closingTheory.content, yPos);
 
   // ============ SEUS CENTROS ENERGÉTICOS (dados do usuário) ============
   doc.addPage();
   currentPage++;
-  yPos = drawGradientHeader("SEUS CENTROS ENERGÉTICOS");
+  yPos = drawGradientHeader(t.yourCentersTitle);
   
   // Centros Definidos
   doc.setDrawColor(...COLORS.gold);
@@ -457,11 +487,11 @@ export async function generateHDReport(data: HDReportData): Promise<void> {
   doc.setFontSize(12);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...COLORS.success);
-  doc.text('Centros Definidos', margin, yPos + 8);
+  doc.text(t.definedCenters, margin, yPos + 8);
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(...COLORS.lightText);
-  doc.text('(Fontes de Energia Consistente)', margin + 52, yPos + 8);
+  doc.text(t.definedCentersDesc, margin + 52, yPos + 8);
   yPos += 15;
   
   if (definedCenters.length > 0) {
@@ -482,13 +512,13 @@ export async function generateHDReport(data: HDReportData): Promise<void> {
       doc.setTextColor(...COLORS.darkText);
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
-      doc.text(CENTER_NAMES[centerId] || centerId, cardX + 15, cardY + 9);
+      doc.text(centerNames[centerId] || centerId, cardX + 15, cardY + 9);
     });
     yPos += Math.ceil(definedCenters.length / 2) * 18 + 10;
   } else {
     doc.setTextColor(...COLORS.darkText);
     doc.setFontSize(10);
-    doc.text('Nenhum centro definido (Reflector)', margin, yPos);
+    doc.text(t.noCentersDefined, margin, yPos);
     yPos += 15;
   }
   
@@ -498,11 +528,11 @@ export async function generateHDReport(data: HDReportData): Promise<void> {
   doc.setFontSize(12);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...COLORS.warning);
-  doc.text('Centros Abertos', margin, yPos + 8);
+  doc.text(t.openCenters, margin, yPos + 8);
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(...COLORS.lightText);
-  doc.text('(Áreas de Sabedoria e Aprendizado)', margin + 48, yPos + 8);
+  doc.text(t.openCentersDesc, margin + 48, yPos + 8);
   yPos += 15;
   
   if (openCenters.length > 0) {
@@ -523,13 +553,13 @@ export async function generateHDReport(data: HDReportData): Promise<void> {
       doc.setTextColor(...COLORS.darkText);
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
-      doc.text(CENTER_NAMES[centerId] || centerId, cardX + 15, cardY + 9);
+      doc.text(centerNames[centerId] || centerId, cardX + 15, cardY + 9);
     });
     yPos += Math.ceil(openCenters.length / 2) * 18 + 15;
   } else {
     doc.setTextColor(...COLORS.darkText);
     doc.setFontSize(10);
-    doc.text('Todos os centros definidos', margin, yPos);
+    doc.text(t.allCentersDefined, margin, yPos);
     yPos += 15;
   }
   
@@ -541,7 +571,7 @@ export async function generateHDReport(data: HDReportData): Promise<void> {
   doc.setFontSize(12);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...COLORS.carmim);
-  doc.text('Seus Canais de Poder', margin, yPos + 8);
+  doc.text(t.powerChannels, margin, yPos + 8);
   yPos += 15;
   
   if (activeChannels.length > 0) {
@@ -570,14 +600,14 @@ export async function generateHDReport(data: HDReportData): Promise<void> {
   } else {
     doc.setTextColor(...COLORS.darkText);
     doc.setFontSize(10);
-    doc.text('Nenhum canal completo definido', margin, yPos);
+    doc.text(t.noChannels, margin, yPos);
     yPos += 10;
   }
   
   // ============ PÁGINA: VARIÁVEIS AVANÇADAS (dados do usuário) ============
   doc.addPage();
   currentPage++;
-  yPos = drawGradientHeader("SUAS VARIÁVEIS AVANÇADAS");
+  yPos = drawGradientHeader(t.yourVariablesTitle);
   
   const renderVariable = (label: string, variable: any) => {
     if (!variable) return;
@@ -613,18 +643,18 @@ export async function generateHDReport(data: HDReportData): Promise<void> {
   };
   
   if (data.variables) {
-    renderVariable('Digestão', data.variables.digestion);
-    renderVariable('Ambiente', data.variables.environment);
-    renderVariable('Motivação', data.variables.motivation);
-    renderVariable('Perspectiva', data.variables.perspective);
-    renderVariable('Sentido', data.variables.designSense);
+    renderVariable(t.digestion, data.variables.digestion);
+    renderVariable(t.environment, data.variables.environment);
+    renderVariable(t.motivation, data.variables.motivation);
+    renderVariable(t.perspective, data.variables.perspective);
+    renderVariable(t.sense, data.variables.designSense);
   }
   
   // ============ PÁGINAS: ANÁLISE PERSONALIZADA IA (CAMADA 2) ============
   if (data.ai_analysis_full) {
     doc.addPage();
     currentPage++;
-    yPos = drawGradientHeader("SEU MAPA NA PRÁTICA", "Leitura personalizada do seu desenho");
+    yPos = drawGradientHeader(t.analysisTitle, t.analysisSubtitle);
     
     const processAnalysis = (text: string) => {
       const cleanedText = cleanMarkdown(text);
@@ -699,8 +729,8 @@ export async function generateHDReport(data: HDReportData): Promise<void> {
   
   // ============ SALVAR PDF ============
   const birthDateFormatted = new Date(data.birth_date)
-    .toLocaleDateString('pt-BR')
+    .toLocaleDateString(dateLocale)
     .replace(/\//g, '-');
-  const fileName = `Arquitetura_Pessoal_${birthDateFormatted}.pdf`;
+  const fileName = `${t.fileName}_${birthDateFormatted}.pdf`;
   doc.save(fileName);
 }

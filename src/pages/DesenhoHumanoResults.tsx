@@ -282,7 +282,11 @@ const DesenhoHumanoResults = () => {
     try {
       const bodygraphImage = await captureBodyGraphAsImage();
       
+      // Get current language
+      const currentLanguage = (i18n.language?.split('-')[0] || 'pt') as 'pt' | 'es' | 'en';
+      
       await generateHDReport({
+        language: currentLanguage,
         user_name: userName,
         birth_date: result.birth_date,
         birth_time: result.birth_time,
