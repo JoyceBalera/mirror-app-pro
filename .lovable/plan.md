@@ -1,91 +1,267 @@
 
-# Plano: Correção dos Bugs de Formatação do PDF de Arquitetura Pessoal
 
-## Problemas Identificados
+# Plano: Internacionalização do PDF de Arquitetura Pessoal
 
-### 1. Pontos Verdes Aleatórios
-Os caracteres `✓` (checkmark) e `○` (círculo) usados nas linhas 465 e 509 de `generateHDReport.ts` não são suportados pela fonte Helvetica do jsPDF. Isso causa renderização incorreta, exibindo caracteres estranhos ou pontos.
+## Visão Geral
 
-**Solução**: Substituir os caracteres Unicode por alternativas que funcionam no jsPDF, como:
-- `✓` → Usar um retângulo colorido simples sem texto, ou usar "D" para Definido
-- `○` → Usar um retângulo colorido simples sem texto, ou usar "A" para Aberto
-
-### 2. Corte no Texto dos Centros Energéticos
-O card de cada centro tem altura fixa de 40px (linha 349), mas o texto de `importanceForWomen` pode ser muito longo. O código atual corta para apenas 2 linhas (linha 375: `importanceLines.slice(0, 2).join(' ')`), causando texto cortado.
-
-**Solução**: Calcular a altura do card dinamicamente baseada no conteúdo, permitindo que todo o texto seja exibido.
-
-### 3. Espaços em Branco Excessivos
-A função `checkAddPage` (linha 151-158) apenas adiciona página quando não há espaço, mas não otimiza o preenchimento do espaço disponível.
-
-**Solução**: Melhorar o algoritmo de quebra de página para:
-- Calcular altura real do conteúdo antes de posicionar
-- Evitar quebras desnecessárias no meio de seções
+O PDF de Arquitetura Pessoal (`generateHDReport.ts`) atualmente está 100% em português, com textos hardcoded. Precisamos:
+1. Receber o idioma selecionado como parâmetro
+2. Criar traduções para todos os textos do PDF (pt, es, en)
+3. Traduzir também o texto teórico fixo (`humanDesignTheory.ts`)
 
 ---
 
 ## Arquivos a Modificar
 
-### Arquivo: `src/utils/generateHDReport.ts`
+| Arquivo | Propósito |
+|---------|-----------|
+| `src/utils/generateHDReport.ts` | Adicionar parâmetro `language`, usar traduções dinâmicas |
+| `src/data/humanDesignTheory.ts` | Refatorar para suportar múltiplos idiomas |
+| `src/pages/DesenhoHumanoResults.tsx` | Passar idioma atual para o gerador de PDF |
+| `src/pages/UserDetails.tsx` | Passar idioma atual para o gerador de PDF (admin) |
 
-| Linha | Problema | Correção |
+---
+
+## Detalhes da Implementação
+
+### 1. Refatorar `humanDesignTheory.ts` para Multi-idioma
+
+**Antes**: Exporta objetos com texto fixo em português
+**Depois**: Exporta funções que retornam o texto no idioma correto
+
+```typescript
+// Nova estrutura
+type Language = 'pt' | 'es' | 'en';
+
+export const getIntroSection = (lang: Language) => ({
+  title: translations[lang].introTitle,
+  content: translations[lang].introContent
+});
+
+export const getCentersTheory = (lang: Language) => [
+  {
+    id: 'head',
+    name: translations[lang].centers.head.name,
+    function: translations[lang].centers.head.function,
+    importanceForWomen: translations[lang].centers.head.importance
+  },
+  // ... demais centros
+];
+```
+
+### 2. Modificar `generateHDReport.ts`
+
+**Interface HDReportData** - Adicionar campo de idioma:
+```typescript
+export interface HDReportData {
+  language?: 'pt' | 'es' | 'en';  // Novo campo
+  user_name?: string;
+  // ... campos existentes
+}
+```
+
+**Textos a traduzir** (todos os textos hardcoded no arquivo):
+
+| Linha | Texto PT | Contexto |
 |-------|----------|----------|
-| 349 | Card altura fixa 40px | Calcular altura dinâmica baseada no texto |
-| 374-375 | `slice(0, 2)` corta texto | Remover limite e exibir texto completo |
-| 461-465 | Caractere `✓` não renderiza | Remover texto do ícone, usar apenas o retângulo verde |
-| 504-509 | Caractere `○` não renderiza | Remover texto do ícone, usar apenas o retângulo laranja |
+| 48-58 | CENTER_NAMES | Nomes dos centros |
+| 110 | "Página X de Y" | Rodapé |
+| 114 | "Criado por Luciana Belenton" | Rodapé |
+| 197 | "ARQUITETURA PESSOAL" | Header capa |
+| 197 | "Desenho Humano Personalizado" | Subtítulo capa |
+| 216 | Texto introdutório | Box de boas-vindas |
+| 231 | "DADOS DE NASCIMENTO" | Seção capa |
+| 237-240 | "Data", "Horário", "Local" | Labels |
+| 250 | "SEU PERFIL ENERGÉTICO" | Seção capa |
+| 255-260 | Labels do grid | Tipo, Estratégia, etc. |
+| 290 | "SEU BODYGRAPH VISUAL" | Header página 2 |
+| 308/318 | Texto fallback bodygraph | Mensagem |
+| 326 | Resumo centros/canais | Contagem |
+| 333 | "INTRODUÇÃO AO DESENHO HUMANO" | Header teoria |
+| 339 | "OS 9 CENTROS ENERGÉTICOS" | Header teoria |
+| 344 | Texto intro centros | Parágrafo |
+| 376/385 | "Funcao", "Importancia para mulheres" | Labels |
+| 403 | Nota sobre centros definidos | Texto |
+| 409 | "ESTRUTURA DO HUMAN DESIGN" | Header |
+| 420 | "Variáveis Avançadas" | Título |
+| 451 | "SEUS CENTROS ENERGÉTICOS" | Header |
+| 460 | "Centros Definidos" | Seção |
+| 464 | "(Fontes de Energia Consistente)" | Descrição |
+| 491 | "Nenhum centro definido (Reflector)" | Fallback |
+| 501 | "Centros Abertos" | Seção |
+| 505 | "(Áreas de Sabedoria e Aprendizado)" | Descrição |
+| 532 | "Todos os centros definidos" | Fallback |
+| 544 | "Seus Canais de Poder" | Título |
+| 573 | "Nenhum canal completo definido" | Fallback |
+| 580 | "SUAS VARIÁVEIS AVANÇADAS" | Header |
+| 616-620 | Labels variáveis | Digestão, Ambiente, etc. |
+| 627 | "SEU MAPA NA PRÁTICA" | Header análise IA |
+| 627 | "Leitura personalizada do seu desenho" | Subtítulo |
+| 701-703 | Nome do arquivo PDF | Template |
 
----
+### 3. Estrutura de Traduções para o PDF
 
-## Mudanças Detalhadas
+Adicionar seção `hdPdf` nos arquivos de tradução:
 
-### 1. Corrigir Ícones (Remover caracteres Unicode)
-
-**Antes (linha 461-465):**
-```typescript
-doc.setFillColor(...COLORS.success);
-doc.roundedRect(cardX + 3, cardY + 3, 8, 8, 1, 1, 'F');
-doc.setTextColor(...COLORS.white);
-doc.setFontSize(7);
-doc.setFont('helvetica', 'bold');
-doc.text('✓', cardX + 5.5, cardY + 8.5);
+```json
+// src/locales/pt/translation.json
+{
+  "hdPdf": {
+    "pageOf": "Página {{current}} de {{total}}",
+    "createdBy": "Criado por Luciana Belenton",
+    "headerTitle": "ARQUITETURA PESSOAL",
+    "headerSubtitle": "Desenho Humano Personalizado",
+    "introText": "Este relatório apresenta sua Arquitetura Pessoal completa...",
+    "birthDataTitle": "DADOS DE NASCIMENTO",
+    "birthDate": "Data",
+    "birthTime": "Horário",
+    "birthLocation": "Local",
+    "profileTitle": "SEU PERFIL ENERGÉTICO",
+    "energyType": "Tipo Energético",
+    "strategy": "Estratégia",
+    "authority": "Autoridade",
+    "profile": "Perfil",
+    "definition": "Definição",
+    "incarnationCross": "Cruz de Encarnação",
+    "bodygraphTitle": "SEU BODYGRAPH VISUAL",
+    "bodygraphFallback": "Seu Bodygraph está disponível na plataforma online.",
+    "centersIntroTitle": "INTRODUÇÃO AO DESENHO HUMANO",
+    "centersTitle": "OS 9 CENTROS ENERGÉTICOS",
+    "centersIntro": "Dentro do Desenho Humano, os centros representam...",
+    "functionLabel": "Função",
+    "importanceLabel": "Importância para mulheres",
+    "centersNote": "(*) Indica os centros que estão definidos no seu mapa pessoal.",
+    "structureTitle": "ESTRUTURA DO HUMAN DESIGN",
+    "advancedVariablesTheory": "Variáveis Avançadas",
+    "yourCentersTitle": "SEUS CENTROS ENERGÉTICOS",
+    "definedCenters": "Centros Definidos",
+    "definedCentersDesc": "(Fontes de Energia Consistente)",
+    "openCenters": "Centros Abertos",
+    "openCentersDesc": "(Áreas de Sabedoria e Aprendizado)",
+    "noCentersDefined": "Nenhum centro definido (Reflector)",
+    "allCentersDefined": "Todos os centros definidos",
+    "powerChannels": "Seus Canais de Poder",
+    "noChannels": "Nenhum canal completo definido",
+    "yourVariablesTitle": "SUAS VARIÁVEIS AVANÇADAS",
+    "digestion": "Digestão",
+    "environment": "Ambiente",
+    "motivation": "Motivação",
+    "perspective": "Perspectiva",
+    "sense": "Sentido",
+    "analysisTitle": "SEU MAPA NA PRÁTICA",
+    "analysisSubtitle": "Leitura personalizada do seu desenho",
+    "summaryTemplate": "{{defined}} centro(s) definido(s)  |  {{open}} centro(s) aberto(s)  |  {{channels}} canal(is) ativo(s)",
+    "centers": {
+      "head": "Cabeça",
+      "ajna": "Ajna",
+      "throat": "Garganta",
+      "g": "G (Identidade)",
+      "heart": "Coração (Ego)",
+      "sacral": "Sacral",
+      "spleen": "Baço",
+      "solar": "Plexo Solar",
+      "root": "Raiz"
+    },
+    "theory": {
+      "intro": {
+        "title": "O que é o Desenho Humano?",
+        "content": "O Human Design é um sistema de autoconhecimento..."
+      },
+      "centersTheory": [
+        {
+          "id": "head",
+          "name": "Centro da Cabeça",
+          "function": "É um centro de inspiração e pressão mental.",
+          "importance": "Este centro pode influenciar a maneira como as mulheres..."
+        }
+        // ... outros centros
+      ],
+      "elements": [
+        { "title": "Tipo (Type)", "content": "Os Tipos são a primeira..." }
+        // ... outros elementos
+      ],
+      "variables": [
+        { "title": "Digestão (Digestion)", "content": "Refere-se à melhor maneira..." }
+        // ... outras variáveis
+      ],
+      "gatesChannels": {
+        "title": "Portões e Canais",
+        "content": "Os Portões (Gates) representam..."
+      },
+      "closing": {
+        "title": "Como usar seu Desenho Humano",
+        "content": "Todos esses elementos do Human Design..."
+      }
+    }
+  }
+}
 ```
 
-**Depois:**
+### 4. Passar Idioma ao Gerar PDF
+
+**`DesenhoHumanoResults.tsx`** (linha ~285):
 ```typescript
-doc.setFillColor(...COLORS.success);
-doc.roundedRect(cardX + 3, cardY + 3, 8, 8, 1, 1, 'F');
-// Apenas o retângulo verde serve como indicador visual - sem texto
+await generateHDReport({
+  language: i18n.language?.split('-')[0] as 'pt' | 'es' | 'en' || 'pt',
+  user_name: userName,
+  // ... demais campos
+});
 ```
 
-### 2. Card com Altura Dinâmica para Centros
+**`UserDetails.tsx`** (admin):
+```typescript
+await generateHDReport({
+  language: i18n.language?.split('-')[0] as 'pt' | 'es' | 'en' || 'pt',
+  // ... demais campos
+});
+```
 
-**Antes (linhas 340-377):**
-- Altura fixa de 40px
-- Texto cortado em 2 linhas
+### 5. Formato de Data Localizado
 
-**Depois:**
-- Calcular número de linhas do texto `importanceForWomen`
-- Altura mínima de 40px, aumentando conforme necessário
-- Exibir texto completo
+```typescript
+// Dentro de generateHDReport.ts
+const dateLocales = {
+  pt: 'pt-BR',
+  es: 'es-ES',
+  en: 'en-US'
+};
 
-### 3. Otimizar Espaçamento
+const birthDate = new Date(data.birth_date).toLocaleDateString(
+  dateLocales[language], 
+  { day: '2-digit', month: '2-digit', year: 'numeric' }
+);
+```
 
-- Adicionar verificação de espaço antes de cada seção de centro
-- Garantir que não haja páginas quase vazias
+### 6. Nome do Arquivo PDF Traduzido
+
+```typescript
+const fileNames = {
+  pt: 'Arquitetura_Pessoal',
+  es: 'Arquitectura_Personal',
+  en: 'Personal_Architecture'
+};
+
+const fileName = `${fileNames[language]}_${birthDateFormatted}.pdf`;
+```
 
 ---
 
-## Resumo das Correções
+## Resumo das Mudanças
 
-1. **Ícones**: Remover caracteres `✓` e `○` que não renderizam - manter apenas os quadrados coloridos
-2. **Cards dos Centros**: Altura dinâmica para acomodar todo o texto
-3. **Espaçamento**: Ajustar `checkAddPage` para considerar altura real do conteúdo
+1. **Traduções**: Adicionar seção `hdPdf` completa nos 3 arquivos JSON de tradução
+2. **humanDesignTheory.ts**: Refatorar para exportar funções que recebem idioma
+3. **generateHDReport.ts**: 
+   - Adicionar `language` na interface
+   - Importar e usar traduções dinamicamente
+   - Formatar datas conforme locale
+   - Nomear arquivo no idioma correto
+4. **Páginas de resultado**: Passar `i18n.language` ao chamar o gerador
 
 ---
 
-## Impacto Visual Esperado
+## Benefícios
 
-- Sem mais pontos verdes/laranjas aleatórios - apenas quadrados coloridos sólidos
-- Texto dos centros completo e legível
-- Melhor distribuição de conteúdo nas páginas, menos espaço em branco
+- PDF gerado no idioma selecionado pelo usuário
+- Consistência entre a UI e o relatório baixado
+- Suporte para português, espanhol e inglês
+- Datas formatadas corretamente para cada locale
