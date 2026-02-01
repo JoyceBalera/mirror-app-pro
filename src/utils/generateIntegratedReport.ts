@@ -6,6 +6,10 @@ export interface IntegratedReportData {
   // Language
   language?: PDFLanguage;
   
+  // User data
+  userName?: string;
+  testDate?: Date;
+  
   // Big Five data - flexible format
   traitScores: Record<string, number>;
   traitClassifications: Record<string, string>;
@@ -28,22 +32,19 @@ export interface IntegratedReportData {
   bodygraph_image?: string;
 }
 
-// Cores da paleta Luciana (refinada)
+// Cores da paleta Luciana (padronizada com pdfGenerator.ts)
 const COLORS = {
   carmim: [123, 25, 43] as [number, number, number],
-  carmimLight: [163, 65, 83] as [number, number, number],
+  carmimDark: [90, 18, 32] as [number, number, number],
   gold: [212, 175, 55] as [number, number, number],
-  goldLight: [232, 205, 115] as [number, number, number],
+  goldLight: [232, 205, 125] as [number, number, number],
   offWhite: [247, 243, 239] as [number, number, number],
   dustyMauve: [191, 175, 178] as [number, number, number],
   darkText: [45, 45, 45] as [number, number, number],
   lightText: [100, 100, 100] as [number, number, number],
-  accent: [128, 45, 100] as [number, number, number], // Purple mais elegante
-  accentLight: [168, 85, 140] as [number, number, number],
   white: [255, 255, 255] as [number, number, number],
-  bgLight: [252, 250, 248] as [number, number, number],
-  success: [76, 175, 80] as [number, number, number],
-  warning: [255, 152, 0] as [number, number, number],
+  success: [34, 139, 34] as [number, number, number],
+  warning: [205, 133, 63] as [number, number, number],
 };
 
 const DATE_LOCALES: Record<PDFLanguage, string> = {
@@ -56,10 +57,11 @@ const DATE_LOCALES: Record<PDFLanguage, string> = {
 const getTranslations = (lang: PDFLanguage) => {
   const translations = {
     pt: {
-      headerTitle1: 'BLUEPRINT',
-      headerTitle2: 'PESSOAL',
-      subtitle: 'Mapa de Personalidade + Arquitetura Pessoal',
+      headerTitle: 'BLUEPRINT PESSOAL',
+      headerSubtitle: 'Mapa de Personalidade + Arquitetura Pessoal',
       introText: 'Este relatório apresenta uma visão integrada do seu perfil, cruzando os resultados do Mapa de Personalidade (Cinco Grandes Fatores) com a sua Arquitetura Pessoal.',
+      participantLabel: 'Participante',
+      dateLabel: 'Data',
       personalityMapTitle: 'MAPA DE PERSONALIDADE',
       personalArchitectureTitle: 'ARQUITETURA PESSOAL',
       bodygraphTitle: 'SEU BODYGRAPH',
@@ -67,7 +69,8 @@ const getTranslations = (lang: PDFLanguage) => {
       activeChannels: 'Canais Ativos',
       noChannels: 'Nenhum canal completo',
       analysisTitle: 'ANÁLISE INTEGRADA',
-      pageOf: '{{current}} / {{total}}',
+      analysisSubtitle: 'Interpretação Detalhada do Seu Perfil',
+      pageOf: 'Página {{current}} de {{total}}',
       createdBy: 'Criado por Luciana Belenton',
       fileName: 'Blueprint_Pessoal',
       hdLabels: {
@@ -97,10 +100,11 @@ const getTranslations = (lang: PDFLanguage) => {
       }
     },
     es: {
-      headerTitle1: 'BLUEPRINT',
-      headerTitle2: 'PERSONAL',
-      subtitle: 'Mapa de Personalidad + Arquitectura Personal',
+      headerTitle: 'BLUEPRINT PERSONAL',
+      headerSubtitle: 'Mapa de Personalidad + Arquitectura Personal',
       introText: 'Este informe presenta una visión integrada de tu perfil, cruzando los resultados del Mapa de Personalidad (Cinco Grandes Factores) con tu Arquitectura Personal.',
+      participantLabel: 'Participante',
+      dateLabel: 'Fecha',
       personalityMapTitle: 'MAPA DE PERSONALIDAD',
       personalArchitectureTitle: 'ARQUITECTURA PERSONAL',
       bodygraphTitle: 'TU BODYGRAPH',
@@ -108,7 +112,8 @@ const getTranslations = (lang: PDFLanguage) => {
       activeChannels: 'Canales Activos',
       noChannels: 'Ningún canal completo',
       analysisTitle: 'ANÁLISIS INTEGRADO',
-      pageOf: '{{current}} / {{total}}',
+      analysisSubtitle: 'Interpretación Detallada de Tu Perfil',
+      pageOf: 'Página {{current}} de {{total}}',
       createdBy: 'Creado por Luciana Belenton',
       fileName: 'Blueprint_Personal',
       hdLabels: {
@@ -138,10 +143,11 @@ const getTranslations = (lang: PDFLanguage) => {
       }
     },
     en: {
-      headerTitle1: 'PERSONAL',
-      headerTitle2: 'BLUEPRINT',
-      subtitle: 'Personality Map + Personal Architecture',
+      headerTitle: 'PERSONAL BLUEPRINT',
+      headerSubtitle: 'Personality Map + Personal Architecture',
       introText: 'This report presents an integrated view of your profile, combining the results of the Personality Map (Big Five Factors) with your Personal Architecture.',
+      participantLabel: 'Participant',
+      dateLabel: 'Date',
       personalityMapTitle: 'PERSONALITY MAP',
       personalArchitectureTitle: 'PERSONAL ARCHITECTURE',
       bodygraphTitle: 'YOUR BODYGRAPH',
@@ -149,7 +155,8 @@ const getTranslations = (lang: PDFLanguage) => {
       activeChannels: 'Active Channels',
       noChannels: 'No complete channels',
       analysisTitle: 'INTEGRATED ANALYSIS',
-      pageOf: '{{current}} / {{total}}',
+      analysisSubtitle: 'Detailed Interpretation of Your Profile',
+      pageOf: 'Page {{current}} of {{total}}',
       createdBy: 'Created by Luciana Belenton',
       fileName: 'Personal_Blueprint',
       hdLabels: {
@@ -232,53 +239,78 @@ export async function generateIntegratedReport(data: IntegratedReportData): Prom
     return false;
   };
 
-  // Helper: Draw rounded rectangle with gradient effect
-  const drawGradientHeader = (y: number, height: number, color1: [number, number, number], color2: [number, number, number]) => {
+  // Helper: Draw gradient header (padronizado com Big Five)
+  const drawGradientHeader = (title: string, subtitle?: string): number => {
+    const headerHeight = subtitle ? 45 : 35;
     const steps = 20;
-    const stepHeight = height / steps;
+    
+    // Gradiente carmim → carmimDark (mesmo padrão do Big Five)
     for (let i = 0; i < steps; i++) {
-      const r = color1[0] + ((color2[0] - color1[0]) * i) / steps;
-      const g = color1[1] + ((color2[1] - color1[1]) * i) / steps;
-      const b = color1[2] + ((color2[2] - color1[2]) * i) / steps;
+      const ratio = i / steps;
+      const r = Math.round(COLORS.carmim[0] + (COLORS.carmimDark[0] - COLORS.carmim[0]) * ratio);
+      const g = Math.round(COLORS.carmim[1] + (COLORS.carmimDark[1] - COLORS.carmim[1]) * ratio);
+      const b = Math.round(COLORS.carmim[2] + (COLORS.carmimDark[2] - COLORS.carmim[2]) * ratio);
       doc.setFillColor(r, g, b);
-      doc.rect(0, y + i * stepHeight, pageWidth, stepHeight + 0.5, 'F');
+      doc.rect(0, i * (headerHeight / steps), pageWidth, headerHeight / steps + 0.5, 'F');
     }
+    
+    // Título: 18px bold branco
+    doc.setFontSize(18);
+    doc.setTextColor(...COLORS.white);
+    doc.setFont('helvetica', 'bold');
+    doc.text(title, pageWidth / 2, subtitle ? 22 : 20, { align: 'center' });
+    
+    // Subtítulo: 11px normal goldLight
+    if (subtitle) {
+      doc.setFontSize(11);
+      doc.setTextColor(...COLORS.goldLight);
+      doc.setFont('helvetica', 'normal');
+      doc.text(subtitle, pageWidth / 2, 34, { align: 'center' });
+    }
+    
+    // Linha dourada: 80px centralizada
+    doc.setDrawColor(...COLORS.gold);
+    doc.setLineWidth(0.8);
+    doc.line(pageWidth / 2 - 40, headerHeight - 2, pageWidth / 2 + 40, headerHeight - 2);
+    
+    return headerHeight + 5;
   };
 
-  // =================== PÁGINA 1 - CAPA ELEGANTE ===================
-  // Header gradient
-  drawGradientHeader(0, 70, COLORS.carmim, COLORS.accent);
-
-  // Decorative line
-  doc.setDrawColor(...COLORS.gold);
-  doc.setLineWidth(0.8);
-  doc.line(margin + 20, 55, pageWidth - margin - 20, 55);
-
-  // Título principal
-  doc.setTextColor(...COLORS.white);
-  doc.setFontSize(32);
-  doc.setFont('helvetica', 'bold');
-  doc.text(t.headerTitle1, pageWidth / 2, 30, { align: 'center' });
-  doc.text(t.headerTitle2, pageWidth / 2, 45, { align: 'center' });
-
-  // Subtítulo na barra
-  doc.setFontSize(12);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(...COLORS.goldLight);
-  doc.text(t.subtitle, pageWidth / 2, 63, { align: 'center' });
-
-  yPosition = 85;
-
-  // Descrição introdutória
-  doc.setFillColor(...COLORS.bgLight);
-  doc.roundedRect(margin, yPosition, contentWidth, 20, 3, 3, 'F');
-  doc.setFontSize(10);
-  doc.setFont('helvetica', 'italic');
-  doc.setTextColor(...COLORS.lightText);
-  const introLines = doc.splitTextToSize(t.introText, contentWidth - 10);
-  doc.text(introLines, margin + 5, yPosition + 8);
+  // =================== PÁGINA 1 - CAPA ===================
+  yPosition = drawGradientHeader(t.headerTitle, t.headerSubtitle);
   
-  yPosition += 30;
+  yPosition += 5;
+
+  // Box introdutório (padronizado com Big Five)
+  doc.setFillColor(...COLORS.offWhite);
+  doc.roundedRect(margin, yPosition, contentWidth, 35, 3, 3, 'F');
+  
+  // Linha dourada decorativa no topo do box
+  doc.setDrawColor(...COLORS.gold);
+  doc.setLineWidth(0.5);
+  doc.line(margin + 10, yPosition + 0.5, pageWidth - margin - 10, yPosition + 0.5);
+  
+  doc.setFontSize(10);
+  doc.setTextColor(...COLORS.darkText);
+  doc.setFont('helvetica', 'normal');
+  
+  const introLines = doc.splitTextToSize(t.introText, contentWidth - 20);
+  doc.text(introLines, margin + 10, yPosition + 12);
+  
+  // Informações do participante (padronizado com Big Five)
+  if (data.userName) {
+    doc.setFontSize(9);
+    doc.setTextColor(...COLORS.carmim);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`${t.participantLabel}: ${data.userName}`, margin + 10, yPosition + 28);
+  }
+  
+  const testDate = data.testDate || new Date();
+  doc.setTextColor(...COLORS.lightText);
+  doc.setFont('helvetica', 'normal');
+  doc.text(`${t.dateLabel}: ${testDate.toLocaleDateString(dateLocale)}`, data.userName ? margin + 100 : margin + 10, yPosition + 28);
+  
+  yPosition += 45;
 
   // =================== SEÇÃO BIG FIVE ===================
   // Header da seção
@@ -355,13 +387,13 @@ export async function generateIntegratedReport(data: IntegratedReportData): Prom
 
   // =================== SEÇÃO DESENHO HUMANO ===================
   // Header da seção
-  doc.setFillColor(...COLORS.accent);
+  doc.setFillColor(...COLORS.carmimDark);
   doc.roundedRect(margin, yPosition, contentWidth, 12, 2, 2, 'F');
   
   // Ícone decorativo
   doc.setFillColor(...COLORS.gold);
   doc.circle(margin + 8, yPosition + 6, 4, 'F');
-  doc.setTextColor(...COLORS.accent);
+  doc.setTextColor(...COLORS.carmimDark);
   doc.setFontSize(8);
   doc.setFont('helvetica', 'bold');
   doc.text('HD', margin + 4.5, yPosition + 8);
@@ -413,7 +445,7 @@ export async function generateIntegratedReport(data: IntegratedReportData): Prom
     if (item.highlight) {
       doc.setTextColor(...COLORS.white);
     } else {
-      doc.setTextColor(...COLORS.accent);
+      doc.setTextColor(...COLORS.carmim);
     }
     
     // Truncar texto longo
@@ -428,7 +460,7 @@ export async function generateIntegratedReport(data: IntegratedReportData): Prom
   yPosition += (cardHeight + 4) * 3 + 8;
 
   // Centros - Layout horizontal com badges
-  doc.setFillColor(...COLORS.bgLight);
+  doc.setFillColor(...COLORS.offWhite);
   doc.roundedRect(margin, yPosition, contentWidth, 28, 3, 3, 'F');
   
   const definedCenters = data.definedCenters || [];
@@ -461,17 +493,7 @@ export async function generateIntegratedReport(data: IntegratedReportData): Prom
   // =================== PÁGINA 2 - BODYGRAPH VISUAL ===================
   if (data.bodygraph_image) {
     doc.addPage();
-    yPosition = 15;
-
-    // Header elegante
-    drawGradientHeader(0, 25, COLORS.accent, COLORS.carmim);
-    
-    doc.setTextColor(...COLORS.white);
-    doc.setFontSize(16);
-    doc.setFont('helvetica', 'bold');
-    doc.text(t.bodygraphTitle, pageWidth / 2, 16, { align: 'center' });
-    
-    yPosition = 35;
+    yPosition = drawGradientHeader(t.bodygraphTitle);
 
     // BodyGraph image centered
     const imgWidth = 85;
@@ -490,7 +512,7 @@ export async function generateIntegratedReport(data: IntegratedReportData): Prom
     }
 
     // Summary section below bodygraph
-    doc.setFillColor(...COLORS.bgLight);
+    doc.setFillColor(...COLORS.offWhite);
     doc.roundedRect(margin, yPosition, contentWidth, 40, 3, 3, 'F');
     
     // Channels summary
@@ -521,17 +543,7 @@ export async function generateIntegratedReport(data: IntegratedReportData): Prom
   // =================== PÁGINA 3+ - ANÁLISE INTEGRADA ===================
   if (data.ai_analysis) {
     doc.addPage();
-    yPosition = 15;
-
-    // Header elegante
-    drawGradientHeader(0, 25, COLORS.carmim, COLORS.accent);
-    
-    doc.setTextColor(...COLORS.white);
-    doc.setFontSize(16);
-    doc.setFont('helvetica', 'bold');
-    doc.text(t.analysisTitle, pageWidth / 2, 16, { align: 'center' });
-    
-    yPosition = 35;
+    yPosition = drawGradientHeader(t.analysisTitle, t.analysisSubtitle);
 
     // Processar análise
     const processAnalysis = (text: string) => {
@@ -606,36 +618,37 @@ export async function generateIntegratedReport(data: IntegratedReportData): Prom
     processAnalysis(data.ai_analysis);
   }
 
-  // =================== RODAPÉ EM TODAS AS PÁGINAS ===================
+  // =================== RODAPÉ EM TODAS AS PÁGINAS (padronizado) ===================
   const totalPages = doc.getNumberOfPages();
   for (let i = 1; i <= totalPages; i++) {
     doc.setPage(i);
 
-    // Fundo do rodapé
-    doc.setFillColor(...COLORS.bgLight);
-    doc.rect(0, pageHeight - 20, pageWidth, 20, 'F');
-    
-    // Linha decorativa
+    // Linha dourada
     doc.setDrawColor(...COLORS.gold);
-    doc.setLineWidth(0.5);
-    doc.line(margin, pageHeight - 20, pageWidth - margin, pageHeight - 20);
+    doc.setLineWidth(0.3);
+    doc.line(margin, pageHeight - 18, pageWidth - margin, pageHeight - 18);
+    
+    // Fundo offWhite do rodapé
+    doc.setFillColor(...COLORS.offWhite);
+    doc.rect(0, pageHeight - 17, pageWidth, 17, 'F');
 
-    // Número da página
+    // Número da página: "Página X de Y"
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(...COLORS.lightText);
     const pageText = t.pageOf.replace('{{current}}', String(i)).replace('{{total}}', String(totalPages));
-    doc.text(pageText, pageWidth / 2, pageHeight - 12, { align: 'center' });
+    doc.text(pageText, pageWidth / 2, pageHeight - 10, { align: 'center' });
 
-    // Crédito
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'bold');
+    // Crédito: 8px normal carmim
+    doc.setFontSize(8);
     doc.setTextColor(...COLORS.carmim);
-    doc.text(t.createdBy, pageWidth / 2, pageHeight - 6, { align: 'center' });
+    doc.text(t.createdBy, pageWidth / 2, pageHeight - 5, { align: 'center' });
   }
 
   // =================== SALVAR PDF ===================
   const today = new Date().toLocaleDateString(dateLocale).replace(/\//g, '-');
-  const fileName = `${t.fileName}_${today}.pdf`;
+  const fileName = data.userName 
+    ? `${t.fileName}_${data.userName.toLowerCase().replace(/\s+/g, '-')}_${today}.pdf`
+    : `${t.fileName}_${today}.pdf`;
   doc.save(fileName);
 }

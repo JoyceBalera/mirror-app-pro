@@ -56,7 +56,7 @@ const getTranslations = (language: PDFLanguage): HDPdfTranslations => {
   return (translationMap[language] as any).hdPdf as HDPdfTranslations;
 };
 
-// Cores da paleta Luciana - Sincronizadas com pdfGenerator
+// Cores da paleta Luciana - Padronizada com pdfGenerator.ts
 const COLORS = {
   carmim: [123, 25, 43] as [number, number, number],
   carmimDark: [90, 18, 32] as [number, number, number],
@@ -65,7 +65,7 @@ const COLORS = {
   offWhite: [247, 243, 239] as [number, number, number],
   dustyMauve: [191, 175, 178] as [number, number, number],
   darkText: [45, 45, 45] as [number, number, number],
-  lightText: [120, 120, 120] as [number, number, number],
+  lightText: [100, 100, 100] as [number, number, number], // Padronizado
   white: [255, 255, 255] as [number, number, number],
   success: [34, 139, 34] as [number, number, number],
   warning: [205, 133, 63] as [number, number, number],
@@ -87,11 +87,22 @@ const cleanMarkdown = (text: string): string => {
     .trim();
 };
 
+// Participant label translations (not in HDPdfTranslations interface)
+const getParticipantLabel = (language: PDFLanguage): string => {
+  const labels: Record<PDFLanguage, string> = {
+    pt: 'Participante',
+    es: 'Participante',
+    en: 'Participant'
+  };
+  return labels[language] || labels.pt;
+};
+
 export async function generateHDReport(data: HDReportData): Promise<void> {
   const language = data.language || 'pt';
   const t = getTranslations(language);
   const centerNames = getCenterNames(t);
   const dateLocale = DATE_LOCALES[language];
+  const participantLabel = getParticipantLabel(language);
   
   const doc = new jsPDF({
     orientation: 'portrait',
@@ -114,58 +125,65 @@ export async function generateHDReport(data: HDReportData): Promise<void> {
     .map(([centerId]) => centerId);
   const activeChannels = (data.channels || []).filter((ch: any) => ch.isComplete);
 
-  // ============ HELPER: Rodapé elegante ============
+  // ============ HELPER: Rodapé elegante (padronizado com Big Five) ============
   const addFooter = (pageNum: number, totalPages: number) => {
+    // Linha dourada
     doc.setDrawColor(...COLORS.gold);
-    doc.setLineWidth(0.5);
-    doc.line(margin, pageHeight - 20, pageWidth - margin, pageHeight - 20);
+    doc.setLineWidth(0.3);
+    doc.line(margin, pageHeight - 18, pageWidth - margin, pageHeight - 18);
     
+    // Fundo offWhite do rodapé
     doc.setFillColor(...COLORS.offWhite);
-    doc.rect(0, pageHeight - 18, pageWidth, 18, 'F');
+    doc.rect(0, pageHeight - 17, pageWidth, 17, 'F');
     
+    // Número da página: "Página X de Y"
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(...COLORS.lightText);
     const pageText = t.pageOf.replace('{{current}}', String(pageNum)).replace('{{total}}', String(totalPages));
     doc.text(pageText, pageWidth / 2, pageHeight - 10, { align: 'center' });
     
-    doc.setFontSize(9);
+    // Crédito: 8px normal carmim
+    doc.setFontSize(8);
     doc.setTextColor(...COLORS.carmim);
     doc.text(t.createdBy, pageWidth / 2, pageHeight - 5, { align: 'center' });
   };
 
-  // ============ HELPER: Header com gradiente ============
+  // ============ HELPER: Header com gradiente (padronizado com Big Five) ============
   const drawGradientHeader = (title: string, subtitle?: string): number => {
     const headerHeight = subtitle ? 45 : 35;
-    const gradientSteps = 20;
-    const stepHeight = headerHeight / gradientSteps;
+    const steps = 20;
     
-    for (let i = 0; i < gradientSteps; i++) {
-      const ratio = i / gradientSteps;
-      const r = COLORS.carmim[0] + (COLORS.carmimDark[0] - COLORS.carmim[0]) * ratio;
-      const g = COLORS.carmim[1] + (COLORS.carmimDark[1] - COLORS.carmim[1]) * ratio;
-      const b = COLORS.carmim[2] + (COLORS.carmimDark[2] - COLORS.carmim[2]) * ratio;
+    // Gradiente carmim → carmimDark (mesmo padrão do Big Five)
+    for (let i = 0; i < steps; i++) {
+      const ratio = i / steps;
+      const r = Math.round(COLORS.carmim[0] + (COLORS.carmimDark[0] - COLORS.carmim[0]) * ratio);
+      const g = Math.round(COLORS.carmim[1] + (COLORS.carmimDark[1] - COLORS.carmim[1]) * ratio);
+      const b = Math.round(COLORS.carmim[2] + (COLORS.carmimDark[2] - COLORS.carmim[2]) * ratio);
       doc.setFillColor(r, g, b);
-      doc.rect(0, i * stepHeight, pageWidth, stepHeight + 0.5, 'F');
+      doc.rect(0, i * (headerHeight / steps), pageWidth, headerHeight / steps + 0.5, 'F');
     }
     
+    // Título: 18px bold branco
     doc.setTextColor(...COLORS.white);
-    doc.setFontSize(24);
+    doc.setFontSize(18);
     doc.setFont('helvetica', 'bold');
     doc.text(title, pageWidth / 2, subtitle ? 22 : 20, { align: 'center' });
     
+    // Subtítulo: 11px normal goldLight
     if (subtitle) {
-      doc.setFontSize(12);
+      doc.setFontSize(11);
       doc.setFont('helvetica', 'normal');
       doc.setTextColor(...COLORS.goldLight);
-      doc.text(subtitle, pageWidth / 2, 32, { align: 'center' });
+      doc.text(subtitle, pageWidth / 2, 34, { align: 'center' });
     }
     
+    // Linha dourada: 80px centralizada
     doc.setDrawColor(...COLORS.gold);
-    doc.setLineWidth(1);
-    doc.line(margin + 30, headerHeight - 3, pageWidth - margin - 30, headerHeight - 3);
+    doc.setLineWidth(0.8);
+    doc.line(pageWidth / 2 - 40, headerHeight - 2, pageWidth / 2 + 40, headerHeight - 2);
     
-    return headerHeight + 10;
+    return headerHeight + 5;
   };
 
   // ============ HELPER: Verificar nova página ============
@@ -224,18 +242,16 @@ export async function generateHDReport(data: HDReportData): Promise<void> {
   // ============ PÁGINA 1 - CAPA ============
   let yPos = drawGradientHeader(t.headerTitle, t.headerSubtitle);
   
-  // Nome da usuária (se disponível)
-  if (data.user_name) {
-    doc.setFontSize(16);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...COLORS.carmim);
-    doc.text(data.user_name, pageWidth / 2, yPos + 5, { align: 'center' });
-    yPos += 15;
-  }
+  yPos += 5;
   
-  // Box introdutório
+  // Box introdutório (padronizado com Big Five)
   doc.setFillColor(...COLORS.offWhite);
   doc.roundedRect(margin, yPos, contentWidth, 35, 3, 3, 'F');
+  
+  // Linha dourada decorativa no topo do box
+  doc.setDrawColor(...COLORS.gold);
+  doc.setLineWidth(0.5);
+  doc.line(margin + 10, yPos + 0.5, pageWidth - margin - 10, yPos + 0.5);
   
   doc.setFontSize(10);
   doc.setTextColor(...COLORS.darkText);
@@ -243,6 +259,14 @@ export async function generateHDReport(data: HDReportData): Promise<void> {
   
   const introLines = doc.splitTextToSize(t.introText, contentWidth - 20);
   doc.text(introLines, margin + 10, yPos + 12);
+  
+  // Informações do participante (padronizado com Big Five)
+  if (data.user_name) {
+    doc.setFontSize(9);
+    doc.setTextColor(...COLORS.carmim);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`${participantLabel}: ${data.user_name}`, margin + 10, yPos + 28);
+  }
   
   yPos += 45;
   
