@@ -1,6 +1,11 @@
 import jsPDF from 'jspdf';
 
+type PDFLanguage = 'pt' | 'es' | 'en';
+
 export interface IntegratedReportData {
+  // Language
+  language?: PDFLanguage;
+  
   // Big Five data - flexible format
   traitScores: Record<string, number>;
   traitClassifications: Record<string, string>;
@@ -41,13 +46,147 @@ const COLORS = {
   warning: [255, 152, 0] as [number, number, number],
 };
 
-const CLASSIFICATION_LABELS: Record<string, string> = {
-  low: 'Baixo',
-  medium: 'Médio',
-  high: 'Alto',
-  Baixo: 'Baixo',
-  Médio: 'Médio', 
-  Alto: 'Alto',
+const DATE_LOCALES: Record<PDFLanguage, string> = {
+  pt: 'pt-BR',
+  es: 'es-ES',
+  en: 'en-US'
+};
+
+// Translations for PDF
+const getTranslations = (lang: PDFLanguage) => {
+  const translations = {
+    pt: {
+      headerTitle1: 'BLUEPRINT',
+      headerTitle2: 'PESSOAL',
+      subtitle: 'Mapa de Personalidade + Arquitetura Pessoal',
+      introText: 'Este relatório apresenta uma visão integrada do seu perfil, cruzando os resultados do Mapa de Personalidade (Cinco Grandes Fatores) com a sua Arquitetura Pessoal.',
+      personalityMapTitle: 'MAPA DE PERSONALIDADE',
+      personalArchitectureTitle: 'ARQUITETURA PESSOAL',
+      bodygraphTitle: 'SEU BODYGRAPH',
+      bodygraphFallback: 'Imagem do Bodygraph não disponível',
+      activeChannels: 'Canais Ativos',
+      noChannels: 'Nenhum canal completo',
+      analysisTitle: 'ANÁLISE INTEGRADA',
+      pageOf: '{{current}} / {{total}}',
+      createdBy: 'Criado por Luciana Belenton',
+      fileName: 'Blueprint_Pessoal',
+      hdLabels: {
+        energyType: 'Tipo Energético',
+        strategy: 'Estratégia',
+        authority: 'Autoridade',
+        profile: 'Perfil',
+        definition: 'Definição',
+        incarnationCross: 'Cruz de Encarnação'
+      },
+      centersSection: {
+        defined: 'Definidos',
+        open: 'Abertos',
+        none: 'Nenhum'
+      },
+      classifications: {
+        low: 'Baixo',
+        medium: 'Médio',
+        high: 'Alto'
+      },
+      traits: {
+        'Neuroticismo': 'Neuroticismo',
+        'Extroversão': 'Extroversão',
+        'Abertura à Experiência': 'Abertura à Experiência',
+        'Amabilidade': 'Amabilidade',
+        'Conscienciosidade': 'Conscienciosidade'
+      }
+    },
+    es: {
+      headerTitle1: 'BLUEPRINT',
+      headerTitle2: 'PERSONAL',
+      subtitle: 'Mapa de Personalidad + Arquitectura Personal',
+      introText: 'Este informe presenta una visión integrada de tu perfil, cruzando los resultados del Mapa de Personalidad (Cinco Grandes Factores) con tu Arquitectura Personal.',
+      personalityMapTitle: 'MAPA DE PERSONALIDAD',
+      personalArchitectureTitle: 'ARQUITECTURA PERSONAL',
+      bodygraphTitle: 'TU BODYGRAPH',
+      bodygraphFallback: 'Imagen del Bodygraph no disponible',
+      activeChannels: 'Canales Activos',
+      noChannels: 'Ningún canal completo',
+      analysisTitle: 'ANÁLISIS INTEGRADO',
+      pageOf: '{{current}} / {{total}}',
+      createdBy: 'Creado por Luciana Belenton',
+      fileName: 'Blueprint_Personal',
+      hdLabels: {
+        energyType: 'Tipo Energético',
+        strategy: 'Estrategia',
+        authority: 'Autoridad',
+        profile: 'Perfil',
+        definition: 'Definición',
+        incarnationCross: 'Cruz de Encarnación'
+      },
+      centersSection: {
+        defined: 'Definidos',
+        open: 'Abiertos',
+        none: 'Ninguno'
+      },
+      classifications: {
+        low: 'Bajo',
+        medium: 'Medio',
+        high: 'Alto'
+      },
+      traits: {
+        'Neuroticismo': 'Neuroticismo',
+        'Extroversão': 'Extraversión',
+        'Abertura à Experiência': 'Apertura a la Experiencia',
+        'Amabilidade': 'Amabilidad',
+        'Conscienciosidade': 'Responsabilidad'
+      }
+    },
+    en: {
+      headerTitle1: 'PERSONAL',
+      headerTitle2: 'BLUEPRINT',
+      subtitle: 'Personality Map + Personal Architecture',
+      introText: 'This report presents an integrated view of your profile, combining the results of the Personality Map (Big Five Factors) with your Personal Architecture.',
+      personalityMapTitle: 'PERSONALITY MAP',
+      personalArchitectureTitle: 'PERSONAL ARCHITECTURE',
+      bodygraphTitle: 'YOUR BODYGRAPH',
+      bodygraphFallback: 'Bodygraph image not available',
+      activeChannels: 'Active Channels',
+      noChannels: 'No complete channels',
+      analysisTitle: 'INTEGRATED ANALYSIS',
+      pageOf: '{{current}} / {{total}}',
+      createdBy: 'Created by Luciana Belenton',
+      fileName: 'Personal_Blueprint',
+      hdLabels: {
+        energyType: 'Energy Type',
+        strategy: 'Strategy',
+        authority: 'Authority',
+        profile: 'Profile',
+        definition: 'Definition',
+        incarnationCross: 'Incarnation Cross'
+      },
+      centersSection: {
+        defined: 'Defined',
+        open: 'Open',
+        none: 'None'
+      },
+      classifications: {
+        low: 'Low',
+        medium: 'Medium',
+        high: 'High'
+      },
+      traits: {
+        'Neuroticismo': 'Neuroticism',
+        'Extroversão': 'Extraversion',
+        'Abertura à Experiência': 'Openness to Experience',
+        'Amabilidade': 'Agreeableness',
+        'Conscienciosidade': 'Conscientiousness'
+      }
+    }
+  };
+  return translations[lang] || translations.pt;
+};
+
+const getClassificationLabel = (classification: string, t: ReturnType<typeof getTranslations>): string => {
+  const normalized = classification.toLowerCase();
+  if (normalized === 'low' || normalized === 'baixo' || normalized === 'bajo') return t.classifications.low;
+  if (normalized === 'high' || normalized === 'alto') return t.classifications.high;
+  return t.classifications.medium;
 };
 
 // Função para limpar markdown
@@ -67,6 +206,10 @@ const cleanMarkdown = (text: string): string => {
 };
 
 export async function generateIntegratedReport(data: IntegratedReportData): Promise<void> {
+  const language = data.language || 'pt';
+  const t = getTranslations(language);
+  const dateLocale = DATE_LOCALES[language];
+
   const doc = new jsPDF({
     orientation: 'portrait',
     unit: 'mm',
@@ -115,14 +258,14 @@ export async function generateIntegratedReport(data: IntegratedReportData): Prom
   doc.setTextColor(...COLORS.white);
   doc.setFontSize(32);
   doc.setFont('helvetica', 'bold');
-  doc.text('BLUEPRINT', pageWidth / 2, 30, { align: 'center' });
-  doc.text('PESSOAL', pageWidth / 2, 45, { align: 'center' });
+  doc.text(t.headerTitle1, pageWidth / 2, 30, { align: 'center' });
+  doc.text(t.headerTitle2, pageWidth / 2, 45, { align: 'center' });
 
   // Subtítulo na barra
   doc.setFontSize(12);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(...COLORS.goldLight);
-  doc.text('Mapa de Personalidade + Arquitetura Pessoal', pageWidth / 2, 63, { align: 'center' });
+  doc.text(t.subtitle, pageWidth / 2, 63, { align: 'center' });
 
   yPosition = 85;
 
@@ -132,8 +275,7 @@ export async function generateIntegratedReport(data: IntegratedReportData): Prom
   doc.setFontSize(10);
   doc.setFont('helvetica', 'italic');
   doc.setTextColor(...COLORS.lightText);
-  const introText = 'Este relatório apresenta uma visão integrada do seu perfil, cruzando os resultados do Mapa de Personalidade (Cinco Grandes Fatores) com a sua Arquitetura Pessoal.';
-  const introLines = doc.splitTextToSize(introText, contentWidth - 10);
+  const introLines = doc.splitTextToSize(t.introText, contentWidth - 10);
   doc.text(introLines, margin + 5, yPosition + 8);
   
   yPosition += 30;
@@ -154,22 +296,23 @@ export async function generateIntegratedReport(data: IntegratedReportData): Prom
   doc.setTextColor(...COLORS.white);
   doc.setFontSize(13);
   doc.setFont('helvetica', 'bold');
-  doc.text('MAPA DE PERSONALIDADE', margin + 18, yPosition + 8);
+  doc.text(t.personalityMapTitle, margin + 18, yPosition + 8);
   yPosition += 20;
 
   // Traços do Big Five com design melhorado
-  const traits = [
-    { key: 'Neuroticismo', icon: '🧠' },
-    { key: 'Extroversão', icon: '🌟' },
-    { key: 'Abertura à Experiência', icon: '🎨' },
-    { key: 'Amabilidade', icon: '❤️' },
-    { key: 'Conscienciosidade', icon: '📋' }
+  const traitKeys = [
+    'Neuroticismo',
+    'Extroversão',
+    'Abertura à Experiência',
+    'Amabilidade',
+    'Conscienciosidade'
   ];
   
-  traits.forEach((trait) => {
-    const score = data.traitScores[trait.key] || 0;
-    const classification = data.traitClassifications[trait.key] || 'medium';
-    const classLabel = CLASSIFICATION_LABELS[classification] || classification;
+  traitKeys.forEach((traitKey) => {
+    const score = data.traitScores[traitKey] || 0;
+    const classification = data.traitClassifications[traitKey] || 'medium';
+    const classLabel = getClassificationLabel(classification, t);
+    const translatedTrait = t.traits[traitKey as keyof typeof t.traits] || traitKey;
     
     // Card background
     doc.setFillColor(...COLORS.offWhite);
@@ -192,7 +335,7 @@ export async function generateIntegratedReport(data: IntegratedReportData): Prom
     doc.setFontSize(10);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...COLORS.darkText);
-    doc.text(trait.key, margin + 5, yPosition + 9);
+    doc.text(translatedTrait, margin + 5, yPosition + 9);
     
     // Score and classification
     doc.setFontSize(10);
@@ -226,17 +369,17 @@ export async function generateIntegratedReport(data: IntegratedReportData): Prom
   doc.setTextColor(...COLORS.white);
   doc.setFontSize(13);
   doc.setFont('helvetica', 'bold');
-  doc.text('ARQUITETURA PESSOAL', margin + 18, yPosition + 8);
+  doc.text(t.personalArchitectureTitle, margin + 18, yPosition + 8);
   yPosition += 18;
 
   // Grid 2x3 de informações HD com cards
   const hdItems = [
-    { label: 'Tipo Energético', value: data.energyType, highlight: true },
-    { label: 'Estratégia', value: data.strategy || 'N/A', highlight: false },
-    { label: 'Autoridade', value: data.authority || 'N/A', highlight: false },
-    { label: 'Perfil', value: data.profile || 'N/A', highlight: false },
-    { label: 'Definição', value: data.definition || 'N/A', highlight: false },
-    { label: 'Cruz de Encarnação', value: data.incarnationCross || 'N/A', highlight: false },
+    { label: t.hdLabels.energyType, value: data.energyType, highlight: true },
+    { label: t.hdLabels.strategy, value: data.strategy || 'N/A', highlight: false },
+    { label: t.hdLabels.authority, value: data.authority || 'N/A', highlight: false },
+    { label: t.hdLabels.profile, value: data.profile || 'N/A', highlight: false },
+    { label: t.hdLabels.definition, value: data.definition || 'N/A', highlight: false },
+    { label: t.hdLabels.incarnationCross, value: data.incarnationCross || 'N/A', highlight: false },
   ];
 
   const cardWidth = (contentWidth - 8) / 2;
@@ -295,23 +438,23 @@ export async function generateIntegratedReport(data: IntegratedReportData): Prom
   doc.setFontSize(9);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...COLORS.gold);
-  doc.text(`● Definidos (${definedCenters.length}):`, margin + 4, yPosition + 8);
+  doc.text(`● ${t.centersSection.defined} (${definedCenters.length}):`, margin + 4, yPosition + 8);
   
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(...COLORS.darkText);
-  const definedText = definedCenters.length > 0 ? definedCenters.join(', ') : 'Nenhum';
+  const definedText = definedCenters.length > 0 ? definedCenters.join(', ') : t.centersSection.none;
   const definedLines = doc.splitTextToSize(definedText, contentWidth - 50);
   doc.text(definedLines, margin + 42, yPosition + 8);
   
   // Centros Abertos
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...COLORS.dustyMauve);
-  doc.text(`○ Abertos (${openCenters.length}):`, margin + 4, yPosition + 20);
+  doc.text(`○ ${t.centersSection.open} (${openCenters.length}):`, margin + 4, yPosition + 20);
   
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(...COLORS.darkText);
-  const openText = openCenters.length > 0 ? openCenters.join(', ') : 'Nenhum';
+  const openText = openCenters.length > 0 ? openCenters.join(', ') : t.centersSection.none;
   const openLines = doc.splitTextToSize(openText, contentWidth - 50);
   doc.text(openLines, margin + 42, yPosition + 20);
 
@@ -326,7 +469,7 @@ export async function generateIntegratedReport(data: IntegratedReportData): Prom
     doc.setTextColor(...COLORS.white);
     doc.setFontSize(16);
     doc.setFont('helvetica', 'bold');
-    doc.text('SEU BODYGRAPH', pageWidth / 2, 16, { align: 'center' });
+    doc.text(t.bodygraphTitle, pageWidth / 2, 16, { align: 'center' });
     
     yPosition = 35;
 
@@ -342,7 +485,7 @@ export async function generateIntegratedReport(data: IntegratedReportData): Prom
       console.error('Erro ao adicionar imagem do Bodygraph:', error);
       doc.setFontSize(10);
       doc.setTextColor(...COLORS.lightText);
-      doc.text('Imagem do Bodygraph não disponível', pageWidth / 2, yPosition + 50, { align: 'center' });
+      doc.text(t.bodygraphFallback, pageWidth / 2, yPosition + 50, { align: 'center' });
       yPosition += 80;
     }
 
@@ -355,7 +498,7 @@ export async function generateIntegratedReport(data: IntegratedReportData): Prom
     doc.setFontSize(10);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...COLORS.carmim);
-    doc.text(`Canais Ativos (${activeChannels.length}):`, margin + 5, yPosition + 10);
+    doc.text(`${t.activeChannels} (${activeChannels.length}):`, margin + 5, yPosition + 10);
     
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(...COLORS.darkText);
@@ -371,7 +514,7 @@ export async function generateIntegratedReport(data: IntegratedReportData): Prom
       const channelLines = doc.splitTextToSize(channelNames, contentWidth - 10);
       doc.text(channelLines, margin + 5, yPosition + 20);
     } else {
-      doc.text('Nenhum canal completo', margin + 5, yPosition + 20);
+      doc.text(t.noChannels, margin + 5, yPosition + 20);
     }
   }
 
@@ -386,7 +529,7 @@ export async function generateIntegratedReport(data: IntegratedReportData): Prom
     doc.setTextColor(...COLORS.white);
     doc.setFontSize(16);
     doc.setFont('helvetica', 'bold');
-    doc.text('ANÁLISE INTEGRADA', pageWidth / 2, 16, { align: 'center' });
+    doc.text(t.analysisTitle, pageWidth / 2, 16, { align: 'center' });
     
     yPosition = 35;
 
@@ -481,17 +624,18 @@ export async function generateIntegratedReport(data: IntegratedReportData): Prom
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(...COLORS.lightText);
-    doc.text(`${i} / ${totalPages}`, pageWidth / 2, pageHeight - 12, { align: 'center' });
+    const pageText = t.pageOf.replace('{{current}}', String(i)).replace('{{total}}', String(totalPages));
+    doc.text(pageText, pageWidth / 2, pageHeight - 12, { align: 'center' });
 
     // Crédito
     doc.setFontSize(9);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...COLORS.carmim);
-    doc.text('Criado por Luciana Belenton', pageWidth / 2, pageHeight - 6, { align: 'center' });
+    doc.text(t.createdBy, pageWidth / 2, pageHeight - 6, { align: 'center' });
   }
 
   // =================== SALVAR PDF ===================
-  const today = new Date().toLocaleDateString('pt-BR').replace(/\//g, '-');
-  const fileName = `Blueprint_Pessoal_${today}.pdf`;
+  const today = new Date().toLocaleDateString(dateLocale).replace(/\//g, '-');
+  const fileName = `${t.fileName}_${today}.pdf`;
   doc.save(fileName);
 }
