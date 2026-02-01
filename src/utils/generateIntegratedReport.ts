@@ -59,7 +59,7 @@ const getTranslations = (lang: PDFLanguage) => {
     pt: {
       headerTitle: 'BLUEPRINT PESSOAL',
       headerSubtitle: 'Mapa de Personalidade + Arquitetura Pessoal',
-      introText: 'Este relatório apresenta uma visão integrada do seu perfil, cruzando os resultados do Mapa de Personalidade (Cinco Grandes Fatores) com a sua Arquitetura Pessoal.',
+      introText: 'Este relatório apresenta uma visão integrada do seu perfil, cruzando os resultados do seu Mapa de Personalidade com a sua Arquitetura Pessoal, revelando padrões únicos de comportamento e tomada de decisão.',
       participantLabel: 'Participante',
       dateLabel: 'Data',
       personalityMapTitle: 'MAPA DE PERSONALIDADE',
@@ -92,9 +92,9 @@ const getTranslations = (lang: PDFLanguage) => {
         high: 'Alto'
       },
       traits: {
-        'Neuroticismo': 'Neuroticismo',
+        'Neuroticismo': 'Estabilidade Emocional',
         'Extroversão': 'Extroversão',
-        'Abertura à Experiência': 'Abertura à Experiência',
+        'Abertura à Experiência': 'Abertura',
         'Amabilidade': 'Amabilidade',
         'Conscienciosidade': 'Conscienciosidade'
       }
@@ -102,7 +102,7 @@ const getTranslations = (lang: PDFLanguage) => {
     es: {
       headerTitle: 'BLUEPRINT PERSONAL',
       headerSubtitle: 'Mapa de Personalidad + Arquitectura Personal',
-      introText: 'Este informe presenta una visión integrada de tu perfil, cruzando los resultados del Mapa de Personalidad (Cinco Grandes Factores) con tu Arquitectura Personal.',
+      introText: 'Este informe presenta una visión integrada de tu perfil, cruzando los resultados de tu Mapa de Personalidad con tu Arquitectura Personal, revelando patrones únicos de comportamiento y toma de decisiones.',
       participantLabel: 'Participante',
       dateLabel: 'Fecha',
       personalityMapTitle: 'MAPA DE PERSONALIDAD',
@@ -135,9 +135,9 @@ const getTranslations = (lang: PDFLanguage) => {
         high: 'Alto'
       },
       traits: {
-        'Neuroticismo': 'Neuroticismo',
+        'Neuroticismo': 'Estabilidad Emocional',
         'Extroversão': 'Extraversión',
-        'Abertura à Experiência': 'Apertura a la Experiencia',
+        'Abertura à Experiência': 'Apertura',
         'Amabilidade': 'Amabilidad',
         'Conscienciosidade': 'Responsabilidad'
       }
@@ -145,7 +145,7 @@ const getTranslations = (lang: PDFLanguage) => {
     en: {
       headerTitle: 'PERSONAL BLUEPRINT',
       headerSubtitle: 'Personality Map + Personal Architecture',
-      introText: 'This report presents an integrated view of your profile, combining the results of the Personality Map (Big Five Factors) with your Personal Architecture.',
+      introText: 'This report presents an integrated view of your profile, combining the results of your Personality Map with your Personal Architecture, revealing unique patterns of behavior and decision-making.',
       participantLabel: 'Participant',
       dateLabel: 'Date',
       personalityMapTitle: 'PERSONALITY MAP',
@@ -178,9 +178,9 @@ const getTranslations = (lang: PDFLanguage) => {
         high: 'High'
       },
       traits: {
-        'Neuroticismo': 'Neuroticism',
+        'Neuroticismo': 'Emotional Stability',
         'Extroversão': 'Extraversion',
-        'Abertura à Experiência': 'Openness to Experience',
+        'Abertura à Experiência': 'Openness',
         'Amabilidade': 'Agreeableness',
         'Conscienciosidade': 'Conscientiousness'
       }
