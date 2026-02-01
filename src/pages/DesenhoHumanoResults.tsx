@@ -159,6 +159,10 @@ const DesenhoHumanoResults = () => {
       const definedCenters = Object.entries(result.centers || {})
         .filter(([_, isDefined]) => isDefined)
         .map(([centerId]) => centerId);
+      
+      const openCenters = Object.entries(result.centers || {})
+        .filter(([_, isDefined]) => !isDefined)
+        .map(([centerId]) => centerId);
 
       // Extract advanced variables for AI
       const advancedVars = extractAdvancedVariables({
@@ -167,8 +171,9 @@ const DesenhoHumanoResults = () => {
       });
 
       const humanDesignData = {
-        userName: 'você',
+        userName: userName || 'você',
         definedCenters,
+        openCenters,
         energyType: result.energy_type,
         strategy: result.strategy,
         authority: result.authority,
