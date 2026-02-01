@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -40,6 +41,7 @@ interface IntegratedData {
 const IntegratedResults = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { i18n } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [downloadingPdf, setDownloadingPdf] = useState(false);
@@ -290,6 +292,7 @@ const IntegratedResults = () => {
       const activeChannels = fullHDData.channels || [];
 
       const reportData: IntegratedReportData = {
+        language: (i18n.language?.split('-')[0] as 'pt' | 'es' | 'en') || 'pt',
         traitScores: traitScores as Record<string, number>,
         traitClassifications,
         energyType: fullHDData.energy_type,
