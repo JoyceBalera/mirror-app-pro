@@ -266,6 +266,7 @@ const BigFiveResults = () => {
       result.facet_scores,
       result.classifications,
       {
+        language: language as 'pt' | 'es' | 'en',
         userName: userName,
         testDate: result.test_sessions.completed_at 
           ? new Date(result.test_sessions.completed_at) 
