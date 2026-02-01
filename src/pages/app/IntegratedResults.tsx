@@ -52,6 +52,7 @@ const IntegratedResults = () => {
   });
   const [analysisText, setAnalysisText] = useState<string | null>(null);
   const [fullHDData, setFullHDData] = useState<any>(null);
+  const [userName, setUserName] = useState<string | null>(null);
 
   useEffect(() => {
     fetchData();
@@ -63,6 +64,17 @@ const IntegratedResults = () => {
       if (!user) {
         navigate("/auth");
         return;
+      }
+
+      // Fetch user profile for name
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("id", user.id)
+        .maybeSingle();
+      
+      if (profile?.full_name) {
+        setUserName(profile.full_name);
       }
 
       // Fetch Big Five completed session with results
@@ -293,6 +305,8 @@ const IntegratedResults = () => {
 
       const reportData: IntegratedReportData = {
         language: (i18n.language?.split('-')[0] as 'pt' | 'es' | 'en') || 'pt',
+        userName: userName || undefined,
+        testDate: new Date(),
         traitScores: traitScores as Record<string, number>,
         traitClassifications,
         energyType: fullHDData.energy_type,
