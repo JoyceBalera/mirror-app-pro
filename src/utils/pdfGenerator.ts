@@ -49,7 +49,7 @@ interface PDFTranslations {
   analysisSubtitle: string;
   aboutHeader: string;
   aboutText: string;
-  pageLabel: string;
+  pageOf: string;
   createdBy: string;
   fileName: string;
   traits: {
@@ -101,7 +101,7 @@ const getTranslations = (lang: PDFLanguage): PDFTranslations => {
 • Conscienciosidade - Organização e autodisciplina
 
 Cada traço é medido em um espectro, e não há pontuações "boas" ou "más" - apenas diferentes perfis de personalidade que refletem suas tendências naturais e preferências comportamentais.`,
-      pageLabel: 'Página',
+      pageOf: 'Página {{current}} de {{total}}',
       createdBy: 'Criado por Luciana Belenton',
       fileName: 'mapa-personalidade',
       traits: {
@@ -155,7 +155,7 @@ Cada traço é medido em um espectro, e não há pontuações "boas" ou "más" -
 • Responsabilidad - Organización y autodisciplina
 
 Cada rasgo se mide en un espectro, y no hay puntuaciones "buenas" o "malas" - solo diferentes perfiles de personalidad que reflejan sus tendencias naturales y preferencias conductuales.`,
-      pageLabel: 'Página',
+      pageOf: 'Página {{current}} de {{total}}',
       createdBy: 'Creado por Luciana Belenton',
       fileName: 'mapa-personalidad',
       traits: {
@@ -209,7 +209,7 @@ Cada rasgo se mide en un espectro, y no hay puntuaciones "buenas" o "malas" - so
 • Conscientiousness - Organization and self-discipline
 
 Each trait is measured on a spectrum, and there are no "good" or "bad" scores - just different personality profiles that reflect your natural tendencies and behavioral preferences.`,
-      pageLabel: 'Page',
+      pageOf: 'Page {{current}} of {{total}}',
       createdBy: 'Created by Luciana Belenton',
       fileName: 'personality-map',
       traits: {
@@ -330,12 +330,12 @@ export const generateTestResultPDF = (
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.width;
   const pageHeight = doc.internal.pageSize.height;
-  const margin = 14;
+  const margin = 20;
   const contentWidth = pageWidth - (margin * 2);
   let currentPage = 1;
 
-  // Função auxiliar para adicionar rodapé
-  const addFooter = () => {
+  // Função auxiliar para adicionar rodapé (padronizada com HD e Integrado)
+  const addFooter = (pageNum: number, totalPages: number) => {
     // Linha dourada no topo do rodapé
     doc.setDrawColor(...COLORS.gold);
     doc.setLineWidth(0.3);
@@ -345,11 +345,12 @@ export const generateTestResultPDF = (
     doc.setFillColor(...COLORS.offWhite);
     doc.rect(0, pageHeight - 17, pageWidth, 17, 'F');
     
-    // Número da página
+    // Número da página: "Página X de Y"
     doc.setFontSize(9);
     doc.setTextColor(...COLORS.lightText);
     doc.setFont("helvetica", "normal");
-    doc.text(`${t.pageLabel} ${currentPage}`, pageWidth / 2, pageHeight - 10, { align: "center" });
+    const pageText = t.pageOf.replace('{{current}}', String(pageNum)).replace('{{total}}', String(totalPages));
+    doc.text(pageText, pageWidth / 2, pageHeight - 10, { align: "center" });
     
     // Crédito
     doc.setFontSize(8);
@@ -393,10 +394,9 @@ export const generateTestResultPDF = (
     return yPos + headerHeight + 5;
   };
 
-  // Função para verificar quebra de página
+  // Função para verificar quebra de página (sem adicionar rodapé durante geração)
   const checkAddPage = (yPos: number, requiredSpace: number = 40): number => {
     if (yPos + requiredSpace > pageHeight - 25) {
-      addFooter();
       doc.addPage();
       currentPage++;
       return 20;
@@ -517,8 +517,6 @@ export const generateTestResultPDF = (
     
     yPos += 20;
   });
-
-  addFooter();
   
   // ============ PÁGINA 2+ - FACETAS DETALHADAS ============
   doc.addPage();
@@ -603,9 +601,6 @@ export const generateTestResultPDF = (
     
     yPos += 5;
   });
-
-  addFooter();
-
   // ============ ANÁLISE DA IA ============
   if (aiAnalysis) {
     doc.addPage();
@@ -676,8 +671,6 @@ export const generateTestResultPDF = (
         }
       }
     });
-
-    addFooter();
   }
 
   // ============ PÁGINA FINAL - SOBRE ============
@@ -701,7 +694,12 @@ export const generateTestResultPDF = (
   const aboutLines = doc.splitTextToSize(t.aboutText, contentWidth - 20);
   doc.text(aboutLines, margin + 10, yPos + 12);
 
-  addFooter();
+  // ============ RODAPÉ EM TODAS AS PÁGINAS (padronizado) ============
+  const totalPages = doc.getNumberOfPages();
+  for (let i = 1; i <= totalPages; i++) {
+    doc.setPage(i);
+    addFooter(i, totalPages);
+  }
 
   // Nome do arquivo localizado
   const dateStr = testDate.toLocaleDateString(DATE_LOCALES[language]).replace(/\//g, '-');
