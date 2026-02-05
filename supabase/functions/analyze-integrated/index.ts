@@ -27,6 +27,12 @@ IMPORTANTE - TOM E ESTILO:
 - Traga exemplos concretos e situações práticas
 - O texto deve fluir naturalmente, sem parecer um relatório técnico
 
+IMPORTANTE - USO DE EXPRESSÕES CARINHOSAS:
+- Use "querida" ou "amada" no MÁXIMO 2-3 vezes em todo o texto
+- Prefira "você" na grande maioria das frases
+- Reserve termos carinhosos para a abertura (início) e fechamento (final)
+- NÃO repita "minha querida" em cada parágrafo - isso torna o texto cansativo
+
 NOMENCLATURA OBRIGATÓRIA:
 - Use "Estabilidade Emocional" em vez de "Neuroticismo"
 - Use "Abertura" em vez de "Abertura à Experiência"
@@ -131,6 +137,12 @@ IMPORTANTE - TONO Y ESTILO:
 - Trae ejemplos concretos y situaciones prácticas
 - El texto debe fluir naturalmente, sin parecer un informe técnico
 
+IMPORTANTE - USO DE EXPRESIONES CARIÑOSAS:
+- Usa "querida" o "amada" como MÁXIMO 2-3 veces en todo el texto
+- Prefiere "tú" en la gran mayoría de las frases
+- Reserva términos cariñosos para la apertura (inicio) y cierre (final)
+- NO repitas "mi querida" en cada párrafo - esto hace el texto cansador
+
 NOMENCLATURA OBLIGATORIA:
 - Usa "Estabilidad Emocional" en vez de "Neuroticismo"
 - Usa "Apertura" en vez de "Apertura a la Experiencia"
@@ -219,6 +231,12 @@ IMPORTANT - TONE AND STYLE:
 - Avoid academic or clinical language - prefer everyday expressions
 - Bring concrete examples and practical situations
 - The text should flow naturally, not like a technical report
+
+IMPORTANT - USE OF ENDEARING TERMS:
+- Use "dear one" or "dear" at MAXIMUM 2-3 times in the entire text
+- Prefer "you" in the vast majority of sentences
+- Reserve endearing terms for the opening (beginning) and closing (end)
+- DO NOT repeat "my dear" in every paragraph - this makes the text tiring
 
 MANDATORY NOMENCLATURE:
 - Use "Emotional Stability" instead of "Neuroticism"
