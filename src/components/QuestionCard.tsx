@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { getQuestionText } from "@/data/bigFiveTranslations";
 
 interface QuestionCardProps {
   question: Question;
@@ -19,7 +20,7 @@ export const QuestionCard = ({
   questionNumber,
   totalQuestions,
 }: QuestionCardProps) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const progress = (questionNumber / totalQuestions) * 100;
 
   const options = [
@@ -46,7 +47,7 @@ export const QuestionCard = ({
 
       <div className="mb-6 sm:mb-8">
         <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-center mb-2">
-          {question.text}
+          {getQuestionText(question.id, question.text, language)}
         </h2>
       </div>
 

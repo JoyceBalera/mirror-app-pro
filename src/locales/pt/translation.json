@@ -613,5 +613,27 @@
         "content": "Todos esses elementos do Human Design ajudam a compor um mapa detalhado da sua individualidade, oferecendo insights sobre como viver de forma mais autêntica e satisfatória.\n\nO Human Design sugere que, ao entender seu tipo, estratégia, autoridade e outros aspectos do seu gráfico pessoal, você pode fazer escolhas mais autênticas e viver de forma mais fluida. É um sistema que nos convida a experimentar suas orientações na vida diária, observando como nos sentimos mais alinhados e realizados.\n\nCompreender o Desenho Humano pode ajudar a viver de acordo com sua verdadeira natureza, respeitando sua energia e potencial únicos. É uma ferramenta poderosa para o autoconhecimento e o desenvolvimento pessoal."
       }
     }
+  },
+  "bigFiveTest": {
+    "title": "📊 Mapa de Personalidade",
+    "subtitle": "Descubra os 5 grandes traços da sua personalidade",
+    "duration": "⏱️ Duração:",
+    "durationValue": "~30 minutos",
+    "questionsLabel": "📝 Perguntas:",
+    "questionsValue": "{{count}} questões",
+    "progress": "💾 Progresso:",
+    "progressValue": "Salvo automaticamente",
+    "description": "Este teste avalia cinco grandes dimensões da personalidade: Abertura à Experiência, Conscienciosidade, Extroversão, Amabilidade e Neuroticismo. Responda com sinceridade para obter resultados mais precisos.",
+    "testInProgress": "📌 Você tem um teste em andamento!",
+    "answeredOf": "{{answered}} de {{total}} perguntas respondidas ({{percent}}%)",
+    "startTest": "Iniciar Teste",
+    "continueTest": "Continuar Teste",
+    "backToDashboard": "Voltar ao Dashboard",
+    "questionLabel": "Pergunta {{current}} de {{total}}",
+    "completed": "{{percent}}% concluído",
+    "testCompleted": "Teste concluído! 🎉",
+    "resultsSaved": "Seus resultados foram salvos com sucesso.",
+    "startError": "Erro ao iniciar teste",
+    "startErrorDesc": "Não foi possível iniciar o teste."
   }
 }

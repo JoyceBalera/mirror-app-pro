@@ -16,10 +16,12 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, PlayCircle, Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 const BigFiveTest = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [screen, setScreen] = useState<"intro" | "test" | "complete">("intro");
@@ -102,8 +104,8 @@ const BigFiveTest = () => {
       setAnswers([]);
     } catch (error: any) {
       toast({
-        title: "Erro ao iniciar teste",
-        description: error.message || "Não foi possível iniciar o teste.",
+        title: t("bigFiveTest.startError"),
+        description: error.message || t("bigFiveTest.startErrorDesc"),
         variant: "destructive",
       });
     }
@@ -212,8 +214,8 @@ const BigFiveTest = () => {
       }
 
       toast({
-        title: "Teste concluído! 🎉",
-        description: "Seus resultados foram salvos com sucesso.",
+        title: t("bigFiveTest.testCompleted"),
+        description: t("bigFiveTest.resultsSaved"),
       });
 
       // Navigate to results
@@ -247,16 +249,16 @@ const BigFiveTest = () => {
           className="mb-6 gap-2"
         >
           <ArrowLeft className="w-4 h-4" />
-          Voltar ao Dashboard
+          {t("bigFiveTest.backToDashboard")}
         </Button>
 
         <Card>
           <CardHeader className="text-center pb-2">
             <h1 className="text-3xl font-bold text-primary">
-              📊 Mapa de Personalidade
+              {t("bigFiveTest.title")}
             </h1>
             <p className="text-muted-foreground mt-2">
-              Descubra os 5 grandes traços da sua personalidade
+              {t("bigFiveTest.subtitle")}
             </p>
           </CardHeader>
           
@@ -264,30 +266,28 @@ const BigFiveTest = () => {
             {resuming && (
               <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
                 <p className="text-primary font-medium">
-                  📌 Você tem um teste em andamento!
+                  {t("bigFiveTest.testInProgress")}
                 </p>
                 <p className="text-sm text-muted-foreground mt-1">
-                  {answers.length} de {questions.length} perguntas respondidas ({Math.round((answers.length / questions.length) * 100)}%)
+                  {t("bigFiveTest.answeredOf", { answered: answers.length, total: questions.length, percent: Math.round((answers.length / questions.length) * 100) })}
                 </p>
               </div>
             )}
 
             <div className="bg-muted/50 rounded-lg p-4 space-y-2">
               <p className="text-sm">
-                <strong>⏱️ Duração:</strong> ~30 minutos
+                <strong>{t("bigFiveTest.duration")}</strong> {t("bigFiveTest.durationValue")}
               </p>
               <p className="text-sm">
-                <strong>📝 Perguntas:</strong> {questions.length} questões
+                <strong>{t("bigFiveTest.questionsLabel")}</strong> {t("bigFiveTest.questionsValue", { count: questions.length })}
               </p>
               <p className="text-sm">
-                <strong>💾 Progresso:</strong> Salvo automaticamente
+                <strong>{t("bigFiveTest.progress")}</strong> {t("bigFiveTest.progressValue")}
               </p>
             </div>
 
             <p className="text-sm text-muted-foreground">
-              Este teste avalia cinco grandes dimensões da personalidade: Abertura à Experiência, 
-              Conscienciosidade, Extroversão, Amabilidade e Neuroticismo. Responda 
-              com sinceridade para obter resultados mais precisos.
+              {t("bigFiveTest.description")}
             </p>
 
             <Button
@@ -296,7 +296,7 @@ const BigFiveTest = () => {
               size="lg"
             >
               <PlayCircle className="w-5 h-5" />
-              {resuming ? "Continuar Teste" : "Iniciar Teste"}
+              {resuming ? t("bigFiveTest.continueTest") : t("bigFiveTest.startTest")}
             </Button>
           </CardContent>
         </Card>
@@ -309,8 +309,8 @@ const BigFiveTest = () => {
       {/* Progress Bar */}
       <div className="max-w-3xl w-full mx-auto mb-4">
         <div className="flex items-center justify-between mb-2 text-sm text-muted-foreground">
-          <span>Pergunta {currentQuestionIndex + 1} de {questions.length}</span>
-          <span>{Math.round(progressPercentage)}% concluído</span>
+          <span>{t("bigFiveTest.questionLabel", { current: currentQuestionIndex + 1, total: questions.length })}</span>
+          <span>{t("bigFiveTest.completed", { percent: Math.round(progressPercentage) })}</span>
         </div>
         <Progress value={progressPercentage} className="h-2" />
       </div>
