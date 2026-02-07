@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, type ReactNode } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent } from "@/components/ui/card";
@@ -13,7 +13,7 @@ import PlanetaryColumn from "@/components/humandesign/PlanetaryColumn";
 import AnalysisSections from "@/components/humandesign/AnalysisSections";
 import { calculateHumanDesignChart } from "@/utils/humanDesignCalculator";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { extractAdvancedVariables, type AdvancedVariables } from "@/utils/humanDesignVariables";
+import { extractAdvancedVariables, type AdvancedVariables, type AdvancedVariable } from "@/utils/humanDesignVariables";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { generateHDReport } from "@/utils/generateHDReport";
 
@@ -464,9 +464,14 @@ const DesenhoHumanoResults = () => {
 
   const typeColors: Record<string, string> = {
     'Gerador': 'bg-red-500',
+    'Generator': 'bg-red-500',
     'Gerador Manifestante': 'bg-orange-500',
+    'Manifesting Generator': 'bg-orange-500',
     'Projetor': 'bg-blue-500',
+    'Projector': 'bg-blue-500',
     'Manifestor': 'bg-yellow-500',
+    'Manifestador': 'bg-yellow-500',
+    'Refletor': 'bg-purple-500',
     'Reflector': 'bg-purple-500',
   };
 
@@ -508,15 +513,15 @@ const DesenhoHumanoResults = () => {
           <Card className="bg-white border-2 border-[#BFAFB2] overflow-hidden">
             <div className={`${typeColors[result.energy_type] || 'bg-gray-500'} p-6 text-white text-center`}>
               <Badge className="bg-white/20 text-white mb-2">{t('humanDesignResults.yourType')}</Badge>
-              <h2 className="text-3xl md:text-4xl font-bold mb-2">{result.energy_type}</h2>
-              <p className="text-lg opacity-90">{t('humanDesignResults.strategy')}: {result.strategy}</p>
+              <h2 className="text-3xl md:text-4xl font-bold mb-2">{tv(result.energy_type)}</h2>
+              <p className="text-lg opacity-90">{t('humanDesignResults.strategy')}: {tv(result.strategy)}</p>
             </div>
             <CardContent className="p-6">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
                 <div className="p-4 bg-[#F7F3EF] rounded-lg">
                   <Brain className="h-6 w-6 mx-auto mb-2 text-[#7B192B]" />
                   <p className="text-xs text-muted-foreground">{t('humanDesignResults.authority')}</p>
-                  <p className="font-semibold text-[#7B192B]">{result.authority}</p>
+                  <p className="font-semibold text-[#7B192B]">{tv(result.authority)}</p>
                 </div>
                 <div className="p-4 bg-[#F7F3EF] rounded-lg">
                   <User className="h-6 w-6 mx-auto mb-2 text-[#7B192B]" />
@@ -526,7 +531,7 @@ const DesenhoHumanoResults = () => {
                 <div className="p-4 bg-[#F7F3EF] rounded-lg">
                   <Zap className="h-6 w-6 mx-auto mb-2 text-[#7B192B]" />
                   <p className="text-xs text-muted-foreground">{t('humanDesignResults.definition')}</p>
-                  <p className="font-semibold text-[#7B192B]">{result.definition}</p>
+                  <p className="font-semibold text-[#7B192B]">{tv(result.definition)}</p>
                 </div>
                 <div className="p-4 bg-[#F7F3EF] rounded-lg">
                   <Target className="h-6 w-6 mx-auto mb-2 text-[#7B192B]" />
@@ -547,193 +552,12 @@ const DesenhoHumanoResults = () => {
                     {t('humanDesignResults.advancedVariables')}
                   </h3>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {variables.digestion && (
-                      <div className="p-4 bg-[#F7F3EF] rounded-lg border border-[#BFAFB2]/50">
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-2">
-                            <Utensils className="h-4 w-4 text-[#7B192B]" />
-                            <p className="text-xs text-muted-foreground font-medium">{t('humanDesignResults.digestion')}</p>
-                          </div>
-                          {variables.digestion.tips && (
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Info className="h-4 w-4 text-[#7B192B]/60 cursor-help hover:text-[#7B192B] transition-colors" />
-                              </TooltipTrigger>
-                              <TooltipContent side="top" className="max-w-xs text-sm">
-                                <p className="font-medium mb-1">💡 {t('humanDesignResults.practicalTip')}:</p>
-                                <p>{variables.digestion.tips}</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          )}
-                        </div>
-                        <p className="font-semibold text-[#7B192B]">
-                          {variables.digestion.primary} ({variables.digestion.level})
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {variables.digestion.description}
-                        </p>
-                        {variables.digestion.subcategory && (
-                          <Badge variant="secondary" className="mt-2 text-xs">
-                            {variables.digestion.subcategory}
-                          </Badge>
-                        )}
-                      </div>
-                    )}
-
-                    {variables.environment && (
-                      <div className="p-4 bg-[#F7F3EF] rounded-lg border border-[#BFAFB2]/50">
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-2">
-                            <MapPin className="h-4 w-4 text-[#7B192B]" />
-                            <p className="text-xs text-muted-foreground font-medium">{t('humanDesignResults.environment')}</p>
-                          </div>
-                          {variables.environment.tips && (
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Info className="h-4 w-4 text-[#7B192B]/60 cursor-help hover:text-[#7B192B] transition-colors" />
-                              </TooltipTrigger>
-                              <TooltipContent side="top" className="max-w-xs text-sm">
-                                <p className="font-medium mb-1">💡 {t('humanDesignResults.practicalTip')}:</p>
-                                <p>{variables.environment.tips}</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          )}
-                        </div>
-                        <p className="font-semibold text-[#7B192B]">
-                          {variables.environment.primary}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {variables.environment.description}
-                        </p>
-                        {variables.environment.subcategory && (
-                          <Badge variant="secondary" className="mt-2 text-xs">
-                            {variables.environment.subcategory}
-                          </Badge>
-                        )}
-                      </div>
-                    )}
-
-                    {variables.motivation && (
-                      <div className="p-4 bg-[#F7F3EF] rounded-lg border border-[#BFAFB2]/50">
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-2">
-                            <Heart className="h-4 w-4 text-[#7B192B]" />
-                            <p className="text-xs text-muted-foreground font-medium">{t('humanDesignResults.motivation')}</p>
-                          </div>
-                          {variables.motivation.tips && (
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Info className="h-4 w-4 text-[#7B192B]/60 cursor-help hover:text-[#7B192B] transition-colors" />
-                              </TooltipTrigger>
-                              <TooltipContent side="top" className="max-w-xs text-sm">
-                                <p className="font-medium mb-1">💡 {t('humanDesignResults.practicalTip')}:</p>
-                                <p>{variables.motivation.tips}</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          )}
-                        </div>
-                        <p className="font-semibold text-[#7B192B]">
-                          {variables.motivation.primary}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {variables.motivation.description}
-                        </p>
-                        {variables.motivation.subcategory && (
-                          <Badge variant="secondary" className="mt-2 text-xs">
-                            {variables.motivation.subcategory}
-                          </Badge>
-                        )}
-                      </div>
-                    )}
-
-                    {variables.perspective && (
-                      <div className="p-4 bg-[#F7F3EF] rounded-lg border border-[#BFAFB2]/50">
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-2">
-                            <Eye className="h-4 w-4 text-[#7B192B]" />
-                            <p className="text-xs text-muted-foreground font-medium">{t('humanDesignResults.perspective')}</p>
-                          </div>
-                          {variables.perspective.tips && (
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Info className="h-4 w-4 text-[#7B192B]/60 cursor-help hover:text-[#7B192B] transition-colors" />
-                              </TooltipTrigger>
-                              <TooltipContent side="top" className="max-w-xs text-sm">
-                                <p className="font-medium mb-1">💡 {t('humanDesignResults.practicalTip')}:</p>
-                                <p>{variables.perspective.tips}</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          )}
-                        </div>
-                        <p className="font-semibold text-[#7B192B]">
-                          {variables.perspective.primary}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {variables.perspective.description}
-                        </p>
-                        {variables.perspective.subcategory && (
-                          <Badge variant="secondary" className="mt-2 text-xs">
-                            {variables.perspective.subcategory}
-                          </Badge>
-                        )}
-                      </div>
-                    )}
-
-                    {variables.sense && (
-                      <div className="p-4 bg-[#F7F3EF] rounded-lg border border-[#BFAFB2]/50">
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-2">
-                            <Hand className="h-4 w-4 text-[#7B192B]" />
-                            <p className="text-xs text-muted-foreground font-medium">{t('humanDesignResults.sense')}</p>
-                          </div>
-                          {variables.sense.tips && (
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Info className="h-4 w-4 text-[#7B192B]/60 cursor-help hover:text-[#7B192B] transition-colors" />
-                              </TooltipTrigger>
-                              <TooltipContent side="top" className="max-w-xs text-sm">
-                                <p className="font-medium mb-1">💡 {t('humanDesignResults.practicalTip')}:</p>
-                                <p>{variables.sense.tips}</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          )}
-                        </div>
-                        <p className="font-semibold text-[#7B192B]">
-                          {variables.sense.primary}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {variables.sense.description}
-                        </p>
-                      </div>
-                    )}
-
-                    {variables.designSense && (
-                      <div className="p-4 bg-[#F7F3EF] rounded-lg border border-[#BFAFB2]/50">
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-2">
-                            <Hand className="h-4 w-4 text-[#7B192B]" />
-                            <p className="text-xs text-muted-foreground font-medium">{t('humanDesignResults.designSense')}</p>
-                          </div>
-                          {variables.designSense.tips && (
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Info className="h-4 w-4 text-[#7B192B]/60 cursor-help hover:text-[#7B192B] transition-colors" />
-                              </TooltipTrigger>
-                              <TooltipContent side="top" className="max-w-xs text-sm">
-                                <p className="font-medium mb-1">💡 {t('humanDesignResults.practicalTip')}:</p>
-                                <p>{variables.designSense.tips}</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          )}
-                        </div>
-                        <p className="font-semibold text-[#7B192B]">
-                          {variables.designSense.primary}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {variables.designSense.description}
-                        </p>
-                      </div>
-                    )}
+                    {renderVariableCard('digestion', variables.digestion, <Utensils className="h-4 w-4 text-[#7B192B]" />, t('humanDesignResults.digestion'), true)}
+                    {renderVariableCard('environment', variables.environment, <MapPin className="h-4 w-4 text-[#7B192B]" />, t('humanDesignResults.environment'))}
+                    {renderVariableCard('motivation', variables.motivation, <Heart className="h-4 w-4 text-[#7B192B]" />, t('humanDesignResults.motivation'))}
+                    {renderVariableCard('perspective', variables.perspective, <Eye className="h-4 w-4 text-[#7B192B]" />, t('humanDesignResults.perspective'))}
+                    {renderVariableCard('sense', variables.sense, <Hand className="h-4 w-4 text-[#7B192B]" />, t('humanDesignResults.sense'))}
+                    {renderVariableCard('sense', variables.designSense, <Hand className="h-4 w-4 text-[#7B192B]" />, t('humanDesignResults.designSense'))}
                   </div>
                 </CardContent>
               </Card>
