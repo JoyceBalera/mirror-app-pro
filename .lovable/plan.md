@@ -1,126 +1,88 @@
 
+# Plano: Atualizar o Prompt do Desenho Humano conforme Documento de Referencia
 
-# Plano: Internacionalizar Blueprint e Formulario de Desenho Humano
+## Problema
 
-## Problema Identificado
+O relatorio de Desenho Humano gerado pela IA nao segue a estrutura e nivel de detalhe definidos nos documentos de referencia que voce enviou. As principais diferencas entre o que esta no codigo e o que voce precisa:
 
-Duas telas inteiras ainda tem todo o texto em portugues hardcoded, sem usar o sistema de traducao (`t()`):
-
-1. **Tela do Blueprint Pessoal** (`src/pages/app/IntegratedResults.tsx`) - ~40 strings em portugues
-2. **Formulario do Desenho Humano** (`src/pages/app/DesenhoHumanoTest.tsx`) - ~25 strings em portugues
-
----
-
-## Mudancas por Arquivo
-
-### 1. Arquivos de traducao (3 arquivos)
-
-**`src/locales/pt/translation.json`** - Adicionar namespace `integratedResults` e `humanDesignForm`
-
-**`src/locales/en/translation.json`** - Mesmas chaves em ingles
-
-**`src/locales/es/translation.json`** - Mesmas chaves em espanhol
-
-Chaves a adicionar para **Blueprint (integratedResults)**:
-- `title` - "Blueprint Pessoal" / "Personal Blueprint" / "Blueprint Personal"
-- `subtitle` - descricao
-- `back` - "Voltar" / "Back" / "Volver"
-- `personalityMap` - "Mapa de Personalidade"
-- `personalArchitecture` - "Arquitetura Pessoal"
-- `testCompleted` - "Teste concluido"
-- `testPending` - "Teste pendente"
-- `mapCalculated` - "Mapa calculado"
-- `mapPending` - "Mapa pendente"
-- `testsIncomplete` - titulo e descricao
-- `goToDashboard` - "Ir para o Dashboard"
-- `yourIntegratedAnalysis` - "Sua Analise Integrada"
-- `downloadPdf` - "Baixar PDF"
-- `regenerate` - "Regenerar"
-- `generateBlueprint` - titulo e descricao do botao de gerar
-- `generating` - "Gerando analise..."
-- `generateReport` - "Gerar Relatorio Integrado"
-- Toast messages (sucesso/erro para geracao e PDF)
-- `dataIncomplete` - mensagem de dados incompletos
-
-Chaves a adicionar para **Formulario HD (humanDesignForm)**:
-- `pageTitle` - "Desenho Humano - Dados de Nascimento"
-- `pageSubtitle` - descricao
-- `requiredData` - "DADOS NECESSARIOS"
-- `birthDate` - "Data de Nascimento"
-- `birthTime` - "Hora de Nascimento"
-- `birthLocation` - "Local de Nascimento"
-- Labels e placeholders dos campos
-- Mensagens de validacao (obrigatorio, futuro, minimo caracteres)
-- `birthCertificateHint` - "Verifique sua certidao de nascimento"
-- `typeYourCity` - "Digite sua cidade..."
-- `selectYourCity` - "Comece a digitar..."
-- `backToDashboard` - "Voltar ao Dashboard"
-- `back` - "Voltar"
-- `calculating` - "Calculando..."
-- `generateMyMap` - "GERAR MEU MAPA"
-- Loading messages (coordenadas, fuso, posicoes, salvando)
-- Toast messages (sucesso, erros de auth, calculo)
-- `demoMode` - mensagem do modo demo
-- `testInProgress` / `finishFirst` - mensagens de bloqueio
+1. **Nivel de detalhe insuficiente** -- O prompt atual gera relatorios curtos (3-4 paginas). O modelo de referencia tem 19 paginas com tratamento profundo de cada elemento.
+2. **Falta de "Acoes para colocar em pratica"** -- O modelo mostra que cada secao deve ter Significado + Pontos Fortes + Pontos de Atencao + Acoes praticas.
+3. **Falta de areas da vida** -- O modelo inclui secoes por area (Intelectual, Socio-afetiva, Profissional, Espiritual, Economica, Saude Fisica, Saude Emocional) para o tipo.
+4. **Falta do "Sentido" (Sense)** -- O prompt nao envia o dado de Sentido para a IA, mesmo que ele ja esteja calculado no sistema.
+5. **Portoes e Canais individuais** -- O modelo mostra cada portao e canal com descricao individual, enquanto o prompt atual pede para agrupar por temas.
+6. **Assinatura e Tema do Nao-Eu** -- O modelo tem secoes dedicadas para esses elementos, ausentes no prompt atual.
+7. **Terminologia** -- O documento usa "Desenho Humano", o prompt atual usa "Arquitetura Pessoal".
 
 ---
 
-### 2. `src/pages/app/IntegratedResults.tsx`
+## Mudancas Planejadas
 
-**O que muda:** Substituir TODOS os textos hardcoded por chamadas `t()`
+### 1. `supabase/functions/analyze-human-design/index.ts` -- Prompt PT (principal)
 
-- Adicionar `const { t } = useTranslation();` (ja tem `i18n` importado)
-- Substituir ~40 strings por `t('integratedResults.xxx')`
+Substituir completamente o prompt em portugues para refletir o documento enviado. Principais adicoes:
 
-Exemplos de substituicoes:
-```
-"Voltar" -> t('integratedResults.back')
-"Blueprint Pessoal" -> t('integratedResults.title')
-"Mapa de Personalidade" -> t('integratedResults.personalityMap')
-"Teste concluído" -> t('integratedResults.testCompleted')
-"Baixar PDF" -> t('integratedResults.downloadPdf')
-"Gerando análise..." -> t('integratedResults.generating')
-```
+**Estrutura de secoes ampliada:**
+- Ponte com a teoria + visao geral
+- Tipo + Estrategia + Autoridade (com subsecoes por area da vida: Intelectual, Socio-afetiva, Profissional, Espiritual, Economica, Saude Fisica, Saude Emocional)
+- Assinatura e Tema do Nao-Eu
+- Autoridade Interna (secao dedicada com acoes praticas)
+- Definicao (secao dedicada com acoes praticas)
+- Perfil (secao dedicada com acoes praticas)
+- Cruz de Encarnacao (secao dedicada com acoes praticas)
+- Centros (com perguntas de mentoria)
+- Variaveis avancadas (Digestao, Sentido, Motivacao, Perspectiva, Ambiente)
+- Portoes (cada um individualmente com descricao breve)
+- Canais (cada um individualmente com descricao)
+- Conclusao e encerramento
+
+**Formato de cada elemento:**
+- Significado (explicacao aplicada, sem rotulos secos)
+- Pontos Fortes
+- Pontos de Atencao
+- Acoes para colocar em pratica (1-2 acoes concretas)
+
+**Tom e estilo:**
+- Mentora experiente conversando com mentorada
+- Usar "amada" com moderacao
+- Exemplos concretos do dia a dia
+- Perguntas de mentoria nos centros ("Voce percebe como, quando... acontece, voce tende a...?")
+- Regras de formatacao para PDF
+
+### 2. `supabase/functions/analyze-human-design/index.ts` -- Prompts ES e EN
+
+Atualizar os prompts em espanhol e ingles para manter o mesmo nivel de detalhe e estrutura do PT.
+
+### 3. `supabase/functions/analyze-human-design/index.ts` -- Dados enviados (buildUserPrompt)
+
+- Adicionar campo **Sentido** (Sense) aos dados enviados para a IA
+- Adicionar campos **Assinatura** (Signature) e **Tema do Nao-Eu** (Not-Self Theme) se disponiveis nos dados
+- Adicionar label localizado para Sentido nas 3 linguas
+
+### 4. `supabase/functions/analyze-human-design/index.ts` -- max_tokens
+
+Aumentar `max_tokens` de 16.000 para 32.000 para comportar o relatorio completo e detalhado (19 paginas no modelo).
+
+### 5. `src/pages/DesenhoHumanoResults.tsx` -- Dados adicionais
+
+Verificar e incluir `signature`, `notSelfTheme` e `sense` no objeto `humanDesignData` enviado ao edge function (se disponiveis no result).
 
 ---
 
-### 3. `src/pages/app/DesenhoHumanoTest.tsx`
-
-**O que muda:** Substituir TODOS os textos hardcoded por chamadas `t()`
-
-- Adicionar `import { useTranslation } from "react-i18next";`
-- Adicionar `const { t } = useTranslation();`
-- Substituir ~25 strings por `t('humanDesignForm.xxx')`
-
-Exemplos de substituicoes:
-```
-"Data de nascimento é obrigatória" -> t('humanDesignForm.birthDateRequired')
-"Calculando..." -> t('humanDesignForm.calculating')
-"GERAR MEU MAPA ✨" -> t('humanDesignForm.generateMyMap')
-"Buscando coordenadas do local..." -> t('humanDesignForm.searchingCoordinates')
-```
-
----
-
-## Resumo
+## Resumo dos Arquivos
 
 | Arquivo | Tipo de Mudanca |
 |---------|----------------|
-| `src/locales/pt/translation.json` | +2 namespaces (~65 chaves) |
-| `src/locales/en/translation.json` | +2 namespaces (~65 chaves) |
-| `src/locales/es/translation.json` | +2 namespaces (~65 chaves) |
-| `src/pages/app/IntegratedResults.tsx` | ~40 strings substituidas por `t()` |
-| `src/pages/app/DesenhoHumanoTest.tsx` | ~25 strings substituidas por `t()` |
+| `supabase/functions/analyze-human-design/index.ts` | Prompt PT reescrito, ES/EN atualizados, Sense adicionado, max_tokens aumentado |
+| `src/pages/DesenhoHumanoResults.tsx` | Adiciona sense/signature/notSelfTheme aos dados enviados |
 
-**Total: 5 arquivos editados, nenhuma migration SQL**
+**Total: 2 arquivos editados, nenhuma migration SQL**
 
 ---
 
 ## O que NAO muda
 
-- Nenhuma logica de negocio e alterada
-- Nenhuma tabela ou edge function e modificada
-- O DesenhoHumanoResults.tsx ja esta internacionalizado (usa `t()`)
-- Os PDFs ja tem internacionalizacao propria
-- O AnalysisSections.tsx ja usa `t()`
-
+- A logica de calculo do Desenho Humano permanece intacta
+- O PDF generator (generateHDReport.ts) nao e alterado nesta etapa
+- A UI de resultados nao muda
+- As demais edge functions (analyze-personality, analyze-integrated) nao sao afetadas
+- O banco de dados nao precisa de alteracao
