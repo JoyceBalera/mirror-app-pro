@@ -484,6 +484,64 @@ const DesenhoHumanoResults = () => {
         .filter(([_, isDefined]) => isDefined)
         .map(([centerId]) => centerId);
 
+  // Translation helpers for HD values
+  const tv = (value: string | null | undefined): string => {
+    if (!value) return 'N/A';
+    const key = `hdValues.${value}`;
+    const translated = t(key);
+    return translated === key ? value : translated;
+  };
+
+  const tvd = (variableType: string, value: string | null | undefined): string => {
+    if (!value) return '';
+    const key = `hdVariableDetails.${variableType}.${value}.description`;
+    const translated = t(key);
+    return translated === key ? '' : translated;
+  };
+
+  const tvt = (variableType: string, value: string | null | undefined): string => {
+    if (!value) return '';
+    const key = `hdVariableDetails.${variableType}.${value}.tip`;
+    const translated = t(key);
+    return translated === key ? '' : translated;
+  };
+
+  const renderVariableCard = (variableType: string, variable: AdvancedVariable | undefined, icon: ReactNode, label: string, showSubCategory?: boolean) => {
+    if (!variable) return null;
+    const description = tvd(variableType, variable.primary) || variable.description;
+    const tip = tvt(variableType, variable.primary) || variable.tips;
+    const translatedValue = tv(variable.primary);
+    const translatedSubCategory = variable.subcategory ? tv(variable.subcategory) : undefined;
+    
+    return (
+      <div className="p-3 bg-[#F7F3EF] rounded-lg border border-[#BFAFB2]/50 hover:border-[#BFAFB2] transition-colors">
+        <div className="flex items-center gap-2 mb-1">
+          {icon}
+          <span className="text-xs text-muted-foreground">{label}</span>
+        </div>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="cursor-help">
+              <p className="font-semibold text-[#7B192B] text-sm">{translatedValue}</p>
+              {showSubCategory && translatedSubCategory && (
+                <p className="text-xs text-muted-foreground mt-0.5">{translatedSubCategory}</p>
+              )}
+              {description && (
+                <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{description}</p>
+              )}
+            </div>
+          </TooltipTrigger>
+          <TooltipContent side="bottom" className="max-w-xs">
+            <p className="text-sm">{description}</p>
+            {tip && (
+              <p className="text-xs text-muted-foreground mt-2 italic">💡 {tip}</p>
+            )}
+          </TooltipContent>
+        </Tooltip>
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
