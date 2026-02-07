@@ -43,7 +43,7 @@ serve(async (req) => {
     }
 
     // Get request body
-    const { userId, email, password, fullName, role, hasBigFive, hasDesenhoHumano } = await req.json();
+    const { userId, email, password, fullName, role, hasBigFive, hasDesenhoHumano, language } = await req.json();
 
     if (!userId || !email || !fullName || !role) {
       throw new Error("Missing required fields");
@@ -71,10 +71,14 @@ serve(async (req) => {
       throw updateError;
     }
 
-    // Update profile with email
+    // Update profile with email and language
+    const profileUpdate: any = { full_name: fullName, email };
+    if (language) {
+      profileUpdate.preferred_language = language;
+    }
     const { error: profileError } = await supabaseAdmin
       .from("profiles")
-      .update({ full_name: fullName, email })
+      .update(profileUpdate)
       .eq("id", userId);
 
     if (profileError) {

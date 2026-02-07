@@ -45,6 +45,7 @@ const AdminDashboard = () => {
     id: string; 
     full_name: string | null; 
     email?: string; 
+    preferred_language?: string;
     role: "user" | "admin";
     test_access?: { has_big_five: boolean; has_desenho_humano: boolean };
   } | null>(null);
@@ -256,10 +257,11 @@ const AdminDashboard = () => {
             <UserCard 
               key={user.id} 
               user={user} 
-              onEdit={() => setEditingUser({ 
+            onEdit={() => setEditingUser({ 
                 id: user.id, 
                 full_name: user.full_name, 
                 email: user.email,
+                preferred_language: (user as any).preferred_language,
                 role: user.role || "user",
                 test_access: user.test_access
               })}
