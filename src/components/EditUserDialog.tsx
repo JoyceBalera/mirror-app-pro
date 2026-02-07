@@ -13,6 +13,7 @@ interface EditUserDialogProps {
     id: string;
     full_name: string | null;
     email?: string;
+    preferred_language?: string;
     test_access?: {
       has_big_five: boolean;
       has_desenho_humano: boolean;
@@ -33,6 +34,7 @@ const EditUserDialog = ({ user, currentRole, open, onOpenChange, onUserEdited }:
   const [role, setRole] = useState<"user" | "admin">(currentRole);
   const [hasBigFive, setHasBigFive] = useState(user.test_access?.has_big_five ?? false);
   const [hasDesenhoHumano, setHasDesenhoHumano] = useState(user.test_access?.has_desenho_humano ?? false);
+  const [language, setLanguage] = useState<"pt" | "en" | "es">((user.preferred_language as "pt" | "en" | "es") || "pt");
 
   useEffect(() => {
     setFullName(user.full_name || "");
@@ -41,6 +43,7 @@ const EditUserDialog = ({ user, currentRole, open, onOpenChange, onUserEdited }:
     setRole(currentRole);
     setHasBigFive(user.test_access?.has_big_five ?? false);
     setHasDesenhoHumano(user.test_access?.has_desenho_humano ?? false);
+    setLanguage((user.preferred_language as "pt" | "en" | "es") || "pt");
   }, [user, currentRole]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -57,6 +60,7 @@ const EditUserDialog = ({ user, currentRole, open, onOpenChange, onUserEdited }:
           role,
           hasBigFive,
           hasDesenhoHumano,
+          language,
         },
       });
 
@@ -136,6 +140,20 @@ const EditUserDialog = ({ user, currentRole, open, onOpenChange, onUserEdited }:
               <SelectContent>
                 <SelectItem value="user">Usuário</SelectItem>
                 <SelectItem value="admin">Administrador</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="language">Idioma Preferido</Label>
+            <Select value={language} onValueChange={(value: "pt" | "en" | "es") => setLanguage(value)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="pt">🇧🇷 Português</SelectItem>
+                <SelectItem value="en">🇺🇸 English</SelectItem>
+                <SelectItem value="es">🇪🇸 Español</SelectItem>
               </SelectContent>
             </Select>
           </div>

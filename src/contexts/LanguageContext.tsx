@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { translations, Language, TranslationKeys } from '@/lib/translations';
+import { supabase } from '@/integrations/supabase/client';
 
 interface LanguageContextType {
   language: Language;
@@ -31,6 +32,39 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     i18n.on('languageChanged', handleLanguageChange);
     return () => {
       i18n.off('languageChanged', handleLanguageChange);
+    };
+  }, [i18n]);
+
+  // Load preferred language from profile on auth
+  useEffect(() => {
+    const loadPreferredLanguage = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('preferred_language')
+          .eq('id', user.id)
+          .single();
+
+        if (profile?.preferred_language) {
+          const lang = profile.preferred_language as Language;
+          if (['pt', 'en', 'es'].includes(lang)) {
+            i18n.changeLanguage(lang);
+          }
+        }
+      }
+    };
+
+    loadPreferredLanguage();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_IN') {
+        loadPreferredLanguage();
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
     };
   }, [i18n]);
 

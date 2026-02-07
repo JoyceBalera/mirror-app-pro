@@ -12,6 +12,7 @@ interface CreateUserRequest {
   password: string;
   fullName: string;
   role: "user" | "admin";
+  language?: "pt" | "en" | "es";
 }
 
 serve(async (req) => {
@@ -50,7 +51,7 @@ serve(async (req) => {
     }
 
     // Create the new user
-    const { email, password, fullName, role }: CreateUserRequest = await req.json();
+    const { email, password, fullName, role, language }: CreateUserRequest = await req.json();
 
     const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
       email,
@@ -58,12 +59,19 @@ serve(async (req) => {
       email_confirm: true,
       user_metadata: {
         full_name: fullName,
+        preferred_language: language || 'pt',
       },
     });
 
     if (createError) {
       throw createError;
     }
+
+    // Update preferred_language in profile (trigger creates profile with metadata)
+    await supabaseAdmin
+      .from("profiles")
+      .update({ preferred_language: language || 'pt' })
+      .eq("id", newUser.user.id);
 
     // The trigger will create the profile and default role
     // Now we need to update the role if it's admin

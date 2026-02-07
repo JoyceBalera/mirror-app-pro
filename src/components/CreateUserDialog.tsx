@@ -19,6 +19,7 @@ const CreateUserDialog = ({ onUserCreated }: CreateUserDialogProps) => {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<"user" | "admin">("user");
+  const [language, setLanguage] = useState<"pt" | "en" | "es">("pt");
   const DEFAULT_PASSWORD = "Temp@2024";
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -33,6 +34,7 @@ const CreateUserDialog = ({ onUserCreated }: CreateUserDialogProps) => {
           password: DEFAULT_PASSWORD,
           fullName,
           role,
+          language,
         },
       });
 
@@ -47,6 +49,7 @@ const CreateUserDialog = ({ onUserCreated }: CreateUserDialogProps) => {
       setFullName("");
       setEmail("");
       setRole("user");
+      setLanguage("pt");
       setOpen(false);
       onUserCreated();
     } catch (error: any) {
@@ -116,6 +119,20 @@ const CreateUserDialog = ({ onUserCreated }: CreateUserDialogProps) => {
               <SelectContent>
                 <SelectItem value="user">Usuário</SelectItem>
                 <SelectItem value="admin">Administrador</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="language">Idioma Preferido</Label>
+            <Select value={language} onValueChange={(value: "pt" | "en" | "es") => setLanguage(value)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="pt">🇧🇷 Português</SelectItem>
+                <SelectItem value="en">🇺🇸 English</SelectItem>
+                <SelectItem value="es">🇪🇸 Español</SelectItem>
               </SelectContent>
             </Select>
           </div>
