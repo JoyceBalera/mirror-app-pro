@@ -156,13 +156,27 @@ const DesenhoHumanoResults = () => {
 
     setGeneratingAnalysis(true);
     try {
-      const definedCenters = Object.entries(result.centers || {})
-        .filter(([_, isDefined]) => isDefined)
-        .map(([centerId]) => centerId);
-      
-      const openCenters = Object.entries(result.centers || {})
-        .filter(([_, isDefined]) => !isDefined)
-        .map(([centerId]) => centerId);
+      // Handle both formats: array of objects OR key-value object
+      let definedCenters: string[];
+      let openCenters: string[];
+
+      if (Array.isArray(result.centers)) {
+        // Array format: [{ id: 'head', defined: true }, ...]
+        definedCenters = result.centers
+          .filter((c: any) => c.defined)
+          .map((c: any) => c.id);
+        openCenters = result.centers
+          .filter((c: any) => !c.defined)
+          .map((c: any) => c.id);
+      } else {
+        // Object format: { head: true, ajna: false, ... }
+        definedCenters = Object.entries(result.centers || {})
+          .filter(([_, isDefined]) => isDefined)
+          .map(([centerId]) => centerId);
+        openCenters = Object.entries(result.centers || {})
+          .filter(([_, isDefined]) => !isDefined)
+          .map(([centerId]) => centerId);
+      }
 
       // Extract advanced variables for AI
       const advancedVars = extractAdvancedVariables({
@@ -458,9 +472,12 @@ const DesenhoHumanoResults = () => {
 
   const personalityGates = result.personality_activations?.map((a: any) => a.gate) || [];
   const designGates = result.design_activations?.map((a: any) => a.gate) || [];
-  const definedCenters = Object.entries(result.centers || {})
-    .filter(([_, isDefined]) => isDefined)
-    .map(([centerId]) => centerId);
+  // Handle both formats: array of objects OR key-value object
+  const definedCenters = Array.isArray(result.centers)
+    ? result.centers.filter((c: any) => c.defined).map((c: any) => c.id)
+    : Object.entries(result.centers || {})
+        .filter(([_, isDefined]) => isDefined)
+        .map(([centerId]) => centerId);
 
   return (
     <div className="min-h-screen bg-background">

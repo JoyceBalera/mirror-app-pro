@@ -158,6 +158,12 @@ const DesenhoHumanoTest = () => {
       
       setLoadingMessage(t('humanDesignForm.savingMap'));
       
+      // Convert centers array to Record<string, boolean> for consistent storage
+      const centersData: Record<string, boolean> = {};
+      chart.centers.forEach(center => {
+        centersData[center.id] = center.defined;
+      });
+
       const insertData = {
         user_id: user.id,
         session_id: currentSessionId,
@@ -175,7 +181,7 @@ const DesenhoHumanoTest = () => {
         incarnation_cross: chart.incarnationCross,
         personality_activations: chart.personality as unknown as any,
         design_activations: chart.design as unknown as any,
-        centers: chart.centers as unknown as any,
+        centers: centersData,
         channels: chart.channels as unknown as any,
         activated_gates: chart.allActivatedGates
       };
