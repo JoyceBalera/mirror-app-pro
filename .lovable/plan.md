@@ -1,88 +1,77 @@
 
-# Plano: Atualizar o Prompt do Desenho Humano conforme Documento de Referencia
 
-## Problema
+# Fix: definedCenters sending array indices instead of center names
 
-O relatorio de Desenho Humano gerado pela IA nao segue a estrutura e nivel de detalhe definidos nos documentos de referencia que voce enviou. As principais diferencas entre o que esta no codigo e o que voce precisa:
+## Root Cause
 
-1. **Nivel de detalhe insuficiente** -- O prompt atual gera relatorios curtos (3-4 paginas). O modelo de referencia tem 19 paginas com tratamento profundo de cada elemento.
-2. **Falta de "Acoes para colocar em pratica"** -- O modelo mostra que cada secao deve ter Significado + Pontos Fortes + Pontos de Atencao + Acoes praticas.
-3. **Falta de areas da vida** -- O modelo inclui secoes por area (Intelectual, Socio-afetiva, Profissional, Espiritual, Economica, Saude Fisica, Saude Emocional) para o tipo.
-4. **Falta do "Sentido" (Sense)** -- O prompt nao envia o dado de Sentido para a IA, mesmo que ele ja esteja calculado no sistema.
-5. **Portoes e Canais individuais** -- O modelo mostra cada portao e canal com descricao individual, enquanto o prompt atual pede para agrupar por temas.
-6. **Assinatura e Tema do Nao-Eu** -- O modelo tem secoes dedicadas para esses elementos, ausentes no prompt atual.
-7. **Terminologia** -- O documento usa "Desenho Humano", o prompt atual usa "Arquitetura Pessoal".
+The `centers` data has two different formats depending on how it was saved:
 
----
+1. **Original save path** (`DesenhoHumanoTest.tsx` lines 178): Saves `chart.centers` directly as an **array** of objects: `[{ id: 'head', defined: true, ... }, { id: 'ajna', defined: false, ... }]`. When stored in the database, `Object.entries()` on this produces keys `"0"`, `"1"`, `"2"` (array indices).
 
-## Mudancas Planejadas
+2. **Recalculate path** (`DesenhoHumanoResults.tsx` lines 366-369): Correctly converts to a **key-value object**: `{ head: true, ajna: false, ... }`. After recalculation, `Object.entries()` gives proper `"head"`, `"ajna"` keys.
 
-### 1. `supabase/functions/analyze-human-design/index.ts` -- Prompt PT (principal)
+So users who recalculated their chart have correct data, but users who only generated once have array-format data.
 
-Substituir completamente o prompt em portugues para refletir o documento enviado. Principais adicoes:
+## Changes
 
-**Estrutura de secoes ampliada:**
-- Ponte com a teoria + visao geral
-- Tipo + Estrategia + Autoridade (com subsecoes por area da vida: Intelectual, Socio-afetiva, Profissional, Espiritual, Economica, Saude Fisica, Saude Emocional)
-- Assinatura e Tema do Nao-Eu
-- Autoridade Interna (secao dedicada com acoes praticas)
-- Definicao (secao dedicada com acoes praticas)
-- Perfil (secao dedicada com acoes praticas)
-- Cruz de Encarnacao (secao dedicada com acoes praticas)
-- Centros (com perguntas de mentoria)
-- Variaveis avancadas (Digestao, Sentido, Motivacao, Perspectiva, Ambiente)
-- Portoes (cada um individualmente com descricao breve)
-- Canais (cada um individualmente com descricao)
-- Conclusao e encerramento
+### 1. Fix the save path in both `DesenhoHumanoTest.tsx` files
 
-**Formato de cada elemento:**
-- Significado (explicacao aplicada, sem rotulos secos)
-- Pontos Fortes
-- Pontos de Atencao
-- Acoes para colocar em pratica (1-2 acoes concretas)
+Convert `chart.centers` (array) to a `Record<string, boolean>` before saving, matching the recalculate logic:
 
-**Tom e estilo:**
-- Mentora experiente conversando com mentorada
-- Usar "amada" com moderacao
-- Exemplos concretos do dia a dia
-- Perguntas de mentoria nos centros ("Voce percebe como, quando... acontece, voce tende a...?")
-- Regras de formatacao para PDF
+```
+// Before (broken)
+centers: chart.centers as unknown as any,
 
-### 2. `supabase/functions/analyze-human-design/index.ts` -- Prompts ES e EN
+// After (correct)
+const centersData: Record<string, boolean> = {};
+chart.centers.forEach(center => {
+  centersData[center.id] = center.defined;
+});
+// ...
+centers: centersData,
+```
 
-Atualizar os prompts em espanhol e ingles para manter o mesmo nivel de detalhe e estrutura do PT.
+This applies to:
+- `src/pages/app/DesenhoHumanoTest.tsx` (line 178)
+- `src/pages/DesenhoHumanoTest.tsx` (line 115)
 
-### 3. `supabase/functions/analyze-human-design/index.ts` -- Dados enviados (buildUserPrompt)
+### 2. Fix the read path in `DesenhoHumanoResults.tsx`
 
-- Adicionar campo **Sentido** (Sense) aos dados enviados para a IA
-- Adicionar campos **Assinatura** (Signature) e **Tema do Nao-Eu** (Not-Self Theme) se disponiveis nos dados
-- Adicionar label localizado para Sentido nas 3 linguas
+Make the `handleGenerateAnalysis` function handle **both** data formats (array and object), so existing data in the database still works:
 
-### 4. `supabase/functions/analyze-human-design/index.ts` -- max_tokens
+```
+// Handle both formats: array of objects OR key-value object
+let definedCenters: string[];
+let openCenters: string[];
 
-Aumentar `max_tokens` de 16.000 para 32.000 para comportar o relatorio completo e detalhado (19 paginas no modelo).
+if (Array.isArray(result.centers)) {
+  // Array format: [{ id: 'head', defined: true }, ...]
+  definedCenters = result.centers
+    .filter((c: any) => c.defined)
+    .map((c: any) => c.id);
+  openCenters = result.centers
+    .filter((c: any) => !c.defined)
+    .map((c: any) => c.id);
+} else {
+  // Object format: { head: true, ajna: false, ... }
+  definedCenters = Object.entries(result.centers || {})
+    .filter(([_, isDefined]) => isDefined)
+    .map(([centerId]) => centerId);
+  openCenters = Object.entries(result.centers || {})
+    .filter(([_, isDefined]) => !isDefined)
+    .map(([centerId]) => centerId);
+}
+```
 
-### 5. `src/pages/DesenhoHumanoResults.tsx` -- Dados adicionais
+Also fix the same pattern at line 461-463 (the `definedCenters` used for rendering the BodyGraph).
 
-Verificar e incluir `signature`, `notSelfTheme` e `sense` no objeto `humanDesignData` enviado ao edge function (se disponiveis no result).
+## Files to Edit
 
----
+| File | Change |
+|------|--------|
+| `src/pages/app/DesenhoHumanoTest.tsx` | Convert centers array to object before saving |
+| `src/pages/DesenhoHumanoTest.tsx` | Same conversion (legacy route) |
+| `src/pages/DesenhoHumanoResults.tsx` | Handle both array and object formats when reading centers |
 
-## Resumo dos Arquivos
+**Total: 3 files, no database migration needed**
 
-| Arquivo | Tipo de Mudanca |
-|---------|----------------|
-| `supabase/functions/analyze-human-design/index.ts` | Prompt PT reescrito, ES/EN atualizados, Sense adicionado, max_tokens aumentado |
-| `src/pages/DesenhoHumanoResults.tsx` | Adiciona sense/signature/notSelfTheme aos dados enviados |
-
-**Total: 2 arquivos editados, nenhuma migration SQL**
-
----
-
-## O que NAO muda
-
-- A logica de calculo do Desenho Humano permanece intacta
-- O PDF generator (generateHDReport.ts) nao e alterado nesta etapa
-- A UI de resultados nao muda
-- As demais edge functions (analyze-personality, analyze-integrated) nao sao afetadas
-- O banco de dados nao precisa de alteracao
