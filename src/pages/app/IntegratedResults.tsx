@@ -41,7 +41,7 @@ interface IntegratedData {
 const IntegratedResults = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [downloadingPdf, setDownloadingPdf] = useState(false);
@@ -140,8 +140,8 @@ const IntegratedResults = () => {
     } catch (error) {
       console.error("Erro ao carregar dados:", error);
       toast({
-        title: "Erro",
-        description: "Não foi possível carregar seus dados.",
+        title: t('integratedResults.loadError'),
+        description: t('integratedResults.loadErrorDesc'),
         variant: "destructive",
       });
     } finally {
@@ -152,8 +152,8 @@ const IntegratedResults = () => {
   const generateAnalysis = async () => {
     if (!data.bigFiveSession || !data.humanDesignResult) {
       toast({
-        title: "Dados incompletos",
-        description: "É necessário completar ambos os testes para gerar a análise integrada.",
+        title: t('integratedResults.dataIncompleteTitle'),
+        description: t('integratedResults.dataIncompleteDesc'),
         variant: "destructive",
       });
       return;
@@ -163,7 +163,7 @@ const IntegratedResults = () => {
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Usuário não autenticado");
+      if (!user) throw new Error(t('integratedResults.userNotAuth'));
 
       // Call edge function
       const { data: response, error } = await supabase.functions.invoke("analyze-integrated", {
@@ -196,14 +196,14 @@ const IntegratedResults = () => {
       }
 
       toast({
-        title: "Análise gerada!",
-        description: "Seu relatório integrado está pronto.",
+        title: t('integratedResults.analysisGenerated'),
+        description: t('integratedResults.analysisGeneratedDesc'),
       });
     } catch (error: any) {
       console.error("Erro ao gerar análise:", error);
       toast({
-        title: "Erro",
-        description: error.message || "Não foi possível gerar a análise.",
+        title: t('integratedResults.analysisError'),
+        description: error.message || t('integratedResults.analysisErrorDesc'),
         variant: "destructive",
       });
     } finally {
@@ -259,8 +259,8 @@ const IntegratedResults = () => {
   const handleDownloadPdf = async () => {
     if (!analysisText || !data.bigFiveSession || !fullHDData) {
       toast({
-        title: "Dados incompletos",
-        description: "Gere a análise primeiro para baixar o PDF.",
+        title: t('integratedResults.dataIncompleteTitle'),
+        description: t('integratedResults.pdfDataIncompleteDesc'),
         variant: "destructive",
       });
       return;
@@ -272,12 +272,10 @@ const IntegratedResults = () => {
       // Capture BodyGraph image first
       const bodygraphImage = await captureBodyGraphAsImage();
 
-      // Derive classifications from trait scores using the CORRECT scoring function
-      // Faixas corretas: 60-140 = Baixa, 141-220 = Média, 221-300 = Alta
+      // Derive classifications from trait scores
       const traitScores = data.bigFiveSession.traitScores;
       const traitClassifications: Record<string, string> = {};
       Object.keys(traitScores).forEach((trait) => {
-        // Usa a função de classificação correta do scoreCalculator
         traitClassifications[trait] = getTraitClassification(traitScores[trait]);
       });
 
@@ -325,14 +323,14 @@ const IntegratedResults = () => {
       await generateIntegratedReport(reportData);
 
       toast({
-        title: "PDF gerado!",
-        description: "O download do relatório foi iniciado.",
+        title: t('integratedResults.pdfGenerated'),
+        description: t('integratedResults.pdfGeneratedDesc'),
       });
     } catch (error: any) {
       console.error("Erro ao gerar PDF:", error);
       toast({
-        title: "Erro",
-        description: "Não foi possível gerar o PDF.",
+        title: t('integratedResults.pdfError'),
+        description: t('integratedResults.pdfErrorDesc'),
         variant: "destructive",
       });
     } finally {
@@ -362,7 +360,7 @@ const IntegratedResults = () => {
           className="gap-2"
         >
           <ArrowLeft className="w-4 h-4" />
-          Voltar
+          {t('integratedResults.back')}
         </Button>
       </div>
 
@@ -371,10 +369,10 @@ const IntegratedResults = () => {
           <Sparkles className="w-10 h-10 text-accent" />
         </div>
         <h1 className="text-3xl font-bold text-primary mb-2">
-          Blueprint Pessoal
+          {t('integratedResults.title')}
         </h1>
         <p className="text-muted-foreground max-w-lg mx-auto">
-          Mapa de Personalidade + Arquitetura Pessoal: uma visão única e completa do seu perfil
+          {t('integratedResults.subtitle')}
         </p>
       </div>
 
@@ -386,9 +384,9 @@ const IntegratedResults = () => {
               {data.bigFiveSession ? "✓" : "○"}
             </div>
             <div>
-              <p className="font-semibold">Mapa de Personalidade</p>
+              <p className="font-semibold">{t('integratedResults.personalityMap')}</p>
               <p className="text-sm text-muted-foreground">
-                {data.bigFiveSession ? "Teste concluído" : "Teste pendente"}
+                {data.bigFiveSession ? t('integratedResults.testCompleted') : t('integratedResults.testPending')}
               </p>
             </div>
           </CardContent>
@@ -400,9 +398,9 @@ const IntegratedResults = () => {
               {data.humanDesignResult ? "✓" : "○"}
             </div>
             <div>
-              <p className="font-semibold">Arquitetura Pessoal</p>
+              <p className="font-semibold">{t('integratedResults.personalArchitecture')}</p>
               <p className="text-sm text-muted-foreground">
-                {data.humanDesignResult ? "Mapa calculado" : "Mapa pendente"}
+                {data.humanDesignResult ? t('integratedResults.mapCalculated') : t('integratedResults.mapPending')}
               </p>
             </div>
           </CardContent>
@@ -433,12 +431,12 @@ const IntegratedResults = () => {
         <Card className="bg-muted/30">
           <CardContent className="py-12 text-center">
             <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Testes Incompletos</h3>
+            <h3 className="text-lg font-semibold mb-2">{t('integratedResults.testsIncompleteTitle')}</h3>
             <p className="text-muted-foreground mb-4">
-              Complete ambos os testes para gerar seu Blueprint Pessoal.
+              {t('integratedResults.testsIncompleteDesc')}
             </p>
             <Button onClick={() => navigate("/app")} variant="outline">
-              Ir para o Dashboard
+              {t('integratedResults.goToDashboard')}
             </Button>
           </CardContent>
         </Card>
@@ -447,7 +445,7 @@ const IntegratedResults = () => {
           <CardHeader className="flex flex-row items-center justify-between flex-wrap gap-2">
             <CardTitle className="flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-accent" />
-              Sua Análise Integrada
+              {t('integratedResults.yourIntegratedAnalysis')}
             </CardTitle>
             <div className="flex gap-2">
               <Button
@@ -462,7 +460,7 @@ const IntegratedResults = () => {
                 ) : (
                   <Download className="w-4 h-4" />
                 )}
-                Baixar PDF
+                {t('integratedResults.downloadPdf')}
               </Button>
               <Button
                 variant="outline"
@@ -472,7 +470,7 @@ const IntegratedResults = () => {
                 className="gap-2"
               >
                 <RefreshCw className={`w-4 h-4 ${generating ? "animate-spin" : ""}`} />
-                Regenerar
+                {t('integratedResults.regenerate')}
               </Button>
             </div>
           </CardHeader>
@@ -487,11 +485,10 @@ const IntegratedResults = () => {
           <CardContent className="py-12 text-center">
             <Sparkles className="w-12 h-12 text-accent mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">
-              Gerar Blueprint Pessoal
+              {t('integratedResults.generateBlueprintTitle')}
             </h3>
             <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-              Nossa IA irá cruzar os dados do seu Mapa de Personalidade com sua Arquitetura Pessoal
-              para revelar padrões únicos do seu perfil.
+              {t('integratedResults.generateBlueprintDesc')}
             </p>
             <Button
               onClick={generateAnalysis}
@@ -502,12 +499,12 @@ const IntegratedResults = () => {
               {generating ? (
                 <>
                   <RefreshCw className="w-5 h-5 animate-spin" />
-                  Gerando análise...
+                  {t('integratedResults.generating')}
                 </>
               ) : (
                 <>
                   <Sparkles className="w-5 h-5" />
-                  Gerar Relatório Integrado
+                  {t('integratedResults.generateReport')}
                 </>
               )}
             </Button>

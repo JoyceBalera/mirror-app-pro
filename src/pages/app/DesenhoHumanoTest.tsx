@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,6 +17,7 @@ const DesenhoHumanoTest = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const { hasActiveSession, activeSessionType, refetch } = useActiveSession();
   
   // Check if coming from admin test environment
@@ -43,25 +45,22 @@ const DesenhoHumanoTest = () => {
 
   // Check if there's an existing HD session in progress (skip in demo mode)
   useEffect(() => {
-    // Skip session checks in demo mode
     if (isDemo) return;
 
     const checkExistingSession = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      // If there's a Big Five session in progress, block access
       if (hasActiveSession && activeSessionType === 'big_five') {
         toast({
-          title: "Teste em andamento",
-          description: "Finalize o Big Five antes de iniciar o Desenho Humano.",
+          title: t('humanDesignForm.testInProgress'),
+          description: t('humanDesignForm.finishFirst'),
           variant: "destructive",
         });
         navigate("/app");
         return;
       }
 
-      // Check for existing HD session
       const { data: existingSession } = await supabase
         .from('human_design_sessions')
         .select('id')
@@ -75,29 +74,29 @@ const DesenhoHumanoTest = () => {
     };
 
     checkExistingSession();
-  }, [hasActiveSession, activeSessionType, navigate, toast]);
+  }, [hasActiveSession, activeSessionType, navigate, toast, t]);
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
     
     if (!birthDate) {
-      newErrors.birthDate = "Data de nascimento é obrigatória";
+      newErrors.birthDate = t('humanDesignForm.birthDateRequired');
     } else {
       const selectedDate = new Date(birthDate);
       const today = new Date();
       if (selectedDate > today) {
-        newErrors.birthDate = "Data não pode ser no futuro";
+        newErrors.birthDate = t('humanDesignForm.birthDateFuture');
       }
     }
     
     if (!birthTime) {
-      newErrors.birthTime = "Hora de nascimento é obrigatória";
+      newErrors.birthTime = t('humanDesignForm.birthTimeRequired');
     }
     
     if (!birthLocation) {
-      newErrors.birthLocation = "Local de nascimento é obrigatório";
+      newErrors.birthLocation = t('humanDesignForm.birthLocationRequired');
     } else if (birthLocation.length < 5) {
-      newErrors.birthLocation = "Informe o local completo (mínimo 5 caracteres)";
+      newErrors.birthLocation = t('humanDesignForm.birthLocationMinLength');
     }
     
     setErrors(newErrors);
@@ -114,22 +113,20 @@ const DesenhoHumanoTest = () => {
     setIsSubmitting(true);
     
     try {
-      // 1. Verify user is logged in
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         toast({
-          title: "Erro de autenticação",
-          description: "Você precisa estar logado para gerar seu mapa.",
+          title: t('humanDesignForm.authError'),
+          description: t('humanDesignForm.authErrorDesc'),
           variant: "destructive",
         });
         navigate("/auth");
         return;
       }
 
-      // 2. Create session as in_progress if doesn't exist
       let currentSessionId = sessionId;
       if (!currentSessionId) {
-        setLoadingMessage("Iniciando sessão...");
+        setLoadingMessage(t('humanDesignForm.startingSession'));
         const { data: newSession, error: sessionError } = await supabase
           .from('human_design_sessions')
           .insert({
@@ -144,27 +141,22 @@ const DesenhoHumanoTest = () => {
         setSessionId(currentSessionId);
       }
 
-      // 3. Geocode location
-      setLoadingMessage("Buscando coordenadas do local...");
+      setLoadingMessage(t('humanDesignForm.searchingCoordinates'));
       const location = await geocodeLocation(birthLocation);
       
-      // 4. Get timezone
-      setLoadingMessage("Determinando fuso horário...");
+      setLoadingMessage(t('humanDesignForm.determiningTimezone'));
       const timezoneResult = await getTimezoneFromCoords(location.lat, location.lon);
       
-      // 5. Convert to UTC
       const birthDateTimeUTC = convertLocalBirthToUTC(birthDate, birthTime, timezoneResult.timezone);
       
-      // 6. Calculate chart
-      setLoadingMessage("Calculando posições planetárias...");
+      setLoadingMessage(t('humanDesignForm.calculatingPositions'));
       const chart = await calculateHumanDesignChart(birthDateTimeUTC, {
         lat: location.lat,
         lon: location.lon,
         name: birthLocation
       });
       
-      // 7. Save result
-      setLoadingMessage("Salvando seu mapa energético...");
+      setLoadingMessage(t('humanDesignForm.savingMap'));
       
       const insertData = {
         user_id: user.id,
@@ -196,7 +188,6 @@ const DesenhoHumanoTest = () => {
       
       if (error) throw error;
 
-      // 8. Update session to completed
       await supabase
         .from('human_design_sessions')
         .update({
@@ -205,7 +196,6 @@ const DesenhoHumanoTest = () => {
         })
         .eq('id', currentSessionId);
 
-      // 9. Update user_test_access
       await supabase
         .from('user_test_access')
         .update({ 
@@ -213,22 +203,20 @@ const DesenhoHumanoTest = () => {
         })
         .eq('user_id', user.id);
 
-      // 10. Refresh active session state
       await refetch();
       
       toast({
-        title: "Mapa gerado com sucesso! 🎉",
-        description: `Você é um(a) ${chart.type} com perfil ${chart.profile}`,
+        title: t('humanDesignForm.successTitle'),
+        description: t('humanDesignForm.successDesc', { type: chart.type, profile: chart.profile }),
       });
       
-      // 11. Navigate to results
       navigate(`/app/desenho-humano/results/${result.id}`);
       
     } catch (error: any) {
       console.error('Erro ao calcular HD:', error);
       toast({
-        title: "Erro",
-        description: error.message || "Não foi possível calcular seu mapa.",
+        title: t('humanDesignForm.calcError'),
+        description: error.message || t('humanDesignForm.calcErrorDesc'),
         variant: "destructive",
       });
     } finally {
@@ -243,10 +231,10 @@ const DesenhoHumanoTest = () => {
       <header className="w-full bg-primary py-6 px-4">
         <div className="container mx-auto text-center">
           <h1 className="text-2xl md:text-3xl font-bold text-primary-foreground">
-            Desenho Humano - Dados de Nascimento
+            {t('humanDesignForm.pageTitle')}
           </h1>
           <p className="text-primary-foreground/80 mt-2">
-            Preencha seus dados para gerar seu mapa energético
+            {t('humanDesignForm.pageSubtitle')}
           </p>
         </div>
       </header>
@@ -260,7 +248,7 @@ const DesenhoHumanoTest = () => {
             className="mb-6 gap-2"
           >
             <ArrowLeft className="w-4 h-4" />
-            Voltar ao Dashboard
+            {t('humanDesignForm.backToDashboard')}
           </Button>
           
           {/* Form Card */}
@@ -268,12 +256,12 @@ const DesenhoHumanoTest = () => {
             <CardContent className="p-6">
               {isDemo && (
                 <div className="bg-amber-100 border border-amber-300 text-amber-800 px-4 py-2 rounded-lg text-sm mb-4 flex items-center gap-2">
-                  🧪 <span className="font-medium">Modo Demo</span> - Dados pré-preenchidos do ambiente de teste
+                  🧪 <span className="font-medium">{t('humanDesignForm.demoMode')}</span> - {t('humanDesignForm.demoModeDesc')}
                 </div>
               )}
 
               <h2 className="text-xl font-semibold text-primary mb-6">
-                DADOS NECESSÁRIOS
+                {t('humanDesignForm.requiredData')}
               </h2>
 
               <form onSubmit={handleSubmit} className="space-y-6">
@@ -281,7 +269,7 @@ const DesenhoHumanoTest = () => {
                 {/* Birth Date */}
                 <div className="space-y-2">
                   <Label htmlFor="birthDate">
-                    Data de Nascimento *
+                    {t('humanDesignForm.birthDate')} *
                   </Label>
                   <Input
                     id="birthDate"
@@ -300,7 +288,7 @@ const DesenhoHumanoTest = () => {
                 {/* Birth Time */}
                 <div className="space-y-2">
                   <Label htmlFor="birthTime">
-                    Hora de Nascimento *
+                    {t('humanDesignForm.birthTime')} *
                   </Label>
                   <Input
                     id="birthTime"
@@ -314,19 +302,19 @@ const DesenhoHumanoTest = () => {
                     <p className="text-sm text-destructive">{errors.birthTime}</p>
                   )}
                   <p className="text-sm text-muted-foreground italic">
-                    💡 Verifique sua certidão de nascimento
+                    💡 {t('humanDesignForm.birthCertificateHint')}
                   </p>
                 </div>
 
                 {/* Birth Location */}
                 <div className="space-y-2">
                   <Label htmlFor="birthLocation">
-                    Local de Nascimento *
+                    {t('humanDesignForm.birthLocation')} *
                   </Label>
                   <LocationAutocomplete
                     value={birthLocation}
                     onChange={setBirthLocation}
-                    placeholder="Digite sua cidade..."
+                    placeholder={t('humanDesignForm.locationPlaceholder')}
                     disabled={isSubmitting}
                     error={!!errors.birthLocation}
                   />
@@ -334,7 +322,7 @@ const DesenhoHumanoTest = () => {
                     <p className="text-sm text-destructive">{errors.birthLocation}</p>
                   )}
                   <p className="text-sm text-muted-foreground">
-                    Comece a digitar e selecione sua cidade
+                    {t('humanDesignForm.locationHint')}
                   </p>
                 </div>
 
@@ -353,7 +341,7 @@ const DesenhoHumanoTest = () => {
                     onClick={() => navigate("/app")}
                     disabled={isSubmitting}
                   >
-                    ← Voltar
+                    ← {t('humanDesignForm.back')}
                   </Button>
 
                   <Button
@@ -363,10 +351,10 @@ const DesenhoHumanoTest = () => {
                     {isSubmitting ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Calculando...
+                        {t('humanDesignForm.calculating')}
                       </>
                     ) : (
-                      "GERAR MEU MAPA ✨"
+                      t('humanDesignForm.generateMyMap')
                     )}
                   </Button>
                 </div>
