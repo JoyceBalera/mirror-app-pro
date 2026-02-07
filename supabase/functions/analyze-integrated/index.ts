@@ -27,11 +27,13 @@ IMPORTANTE - TOM E ESTILO:
 - Traga exemplos concretos e situações práticas
 - O texto deve fluir naturalmente, sem parecer um relatório técnico
 
-IMPORTANTE - USO DE EXPRESSÕES CARINHOSAS:
-- Use "querida" ou "amada" no MÁXIMO 2-3 vezes em todo o texto
-- Prefira "você" na grande maioria das frases
-- Reserve termos carinhosos para a abertura (início) e fechamento (final)
-- NÃO repita "minha querida" em cada parágrafo - isso torna o texto cansativo
+REGRA CRÍTICA - PROIBIÇÃO DE EXPRESSÕES CARINHOSAS REPETIDAS:
+- PROIBIDO usar "querida", "amada", "minha querida", "minha amada" mais de 1 VEZ em todo o texto
+- Use APENAS na saudação inicial OU no fechamento final - NUNCA nos dois
+- Em TODO o restante do texto, use apenas "você"
+- Se você usar "querida" uma vez no início, NÃO use mais em nenhum outro lugar
+- Cada parágrafo deve começar de forma variada - NUNCA com termos carinhosos
+- Esta é a regra mais importante de formatação: MENOS é MAIS com termos carinhosos
 
 NOMENCLATURA OBRIGATÓRIA:
 - Use "Estabilidade Emocional" em vez de "Neuroticismo"
@@ -137,11 +139,13 @@ IMPORTANTE - TONO Y ESTILO:
 - Trae ejemplos concretos y situaciones prácticas
 - El texto debe fluir naturalmente, sin parecer un informe técnico
 
-IMPORTANTE - USO DE EXPRESIONES CARIÑOSAS:
-- Usa "querida" o "amada" como MÁXIMO 2-3 veces en todo el texto
-- Prefiere "tú" en la gran mayoría de las frases
-- Reserva términos cariñosos para la apertura (inicio) y cierre (final)
-- NO repitas "mi querida" en cada párrafo - esto hace el texto cansador
+REGLA CRÍTICA - PROHIBICIÓN DE EXPRESIONES CARIÑOSAS REPETIDAS:
+- PROHIBIDO usar "querida", "amada", "mi querida", "mi amada" más de 1 VEZ en todo el texto
+- Usa SOLO en el saludo inicial O en el cierre final - NUNCA en ambos
+- En TODO el resto del texto, usa solo "tú"
+- Si usas "querida" una vez al inicio, NO la uses en ningún otro lugar
+- Cada párrafo debe empezar de forma variada - NUNCA con términos cariñosos
+- Esta es la regla más importante de formato: MENOS es MÁS con términos cariñosos
 
 NOMENCLATURA OBLIGATORIA:
 - Usa "Estabilidad Emocional" en vez de "Neuroticismo"
@@ -232,11 +236,13 @@ IMPORTANT - TONE AND STYLE:
 - Bring concrete examples and practical situations
 - The text should flow naturally, not like a technical report
 
-IMPORTANT - USE OF ENDEARING TERMS:
-- Use "dear one" or "dear" at MAXIMUM 2-3 times in the entire text
-- Prefer "you" in the vast majority of sentences
-- Reserve endearing terms for the opening (beginning) and closing (end)
-- DO NOT repeat "my dear" in every paragraph - this makes the text tiring
+CRITICAL RULE - PROHIBITION OF REPEATED ENDEARING TERMS:
+- FORBIDDEN to use "dear", "dear one", "my dear" more than 1 TIME in the entire text
+- Use ONLY in the opening greeting OR the final closing - NEVER in both
+- In ALL the rest of the text, use only "you"
+- If you use "dear" once at the beginning, DO NOT use it anywhere else
+- Each paragraph must start in varied ways - NEVER with endearing terms
+- This is the most important formatting rule: LESS is MORE with endearing terms
 
 MANDATORY NOMENCLATURE:
 - Use "Emotional Stability" instead of "Neuroticism"
