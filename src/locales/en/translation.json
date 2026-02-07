@@ -613,5 +613,27 @@
         "content": "All these elements of Human Design help compose a detailed map of your individuality, offering insights on how to live more authentically and satisfyingly.\n\nHuman Design suggests that by understanding your type, strategy, authority, and other aspects of your personal chart, you can make more authentic choices and live more fluidly. It's a system that invites us to experiment with its guidance in daily life, observing how we feel more aligned and fulfilled.\n\nUnderstanding Human Design can help you live according to your true nature, respecting your unique energy and potential. It's a powerful tool for self-knowledge and personal development."
       }
     }
+  },
+  "bigFiveTest": {
+    "title": "📊 Personality Map",
+    "subtitle": "Discover the 5 major traits of your personality",
+    "duration": "⏱️ Duration:",
+    "durationValue": "~30 minutes",
+    "questionsLabel": "📝 Questions:",
+    "questionsValue": "{{count}} questions",
+    "progress": "💾 Progress:",
+    "progressValue": "Saved automatically",
+    "description": "This test evaluates five major personality dimensions: Openness to Experience, Conscientiousness, Extraversion, Agreeableness, and Neuroticism. Answer honestly for more accurate results.",
+    "testInProgress": "📌 You have a test in progress!",
+    "answeredOf": "{{answered}} of {{total}} questions answered ({{percent}}%)",
+    "startTest": "Start Test",
+    "continueTest": "Continue Test",
+    "backToDashboard": "Back to Dashboard",
+    "questionLabel": "Question {{current}} of {{total}}",
+    "completed": "{{percent}}% completed",
+    "testCompleted": "Test completed! 🎉",
+    "resultsSaved": "Your results have been saved successfully.",
+    "startError": "Error starting test",
+    "startErrorDesc": "Could not start the test."
   }
 }
