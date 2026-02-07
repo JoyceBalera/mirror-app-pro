@@ -1,199 +1,126 @@
 
 
-# Plano: Idioma Preferido no Perfil do Usuario
+# Plano: Internacionalizar Blueprint e Formulario de Desenho Humano
 
-## Resumo
+## Problema Identificado
 
-Adicionar um campo de idioma preferido (`preferred_language`) na tabela `profiles` do banco de dados, permitindo que o admin defina o idioma ao criar/editar a usuaria. No login, o app carrega automaticamente esse idioma. A usuaria ainda pode trocar manualmente pelo seletor no header.
+Duas telas inteiras ainda tem todo o texto em portugues hardcoded, sem usar o sistema de traducao (`t()`):
+
+1. **Tela do Blueprint Pessoal** (`src/pages/app/IntegratedResults.tsx`) - ~40 strings em portugues
+2. **Formulario do Desenho Humano** (`src/pages/app/DesenhoHumanoTest.tsx`) - ~25 strings em portugues
 
 ---
 
 ## Mudancas por Arquivo
 
-### 1. Banco de Dados (Migration SQL)
+### 1. Arquivos de traducao (3 arquivos)
 
-**O que muda:** Adiciona a coluna `preferred_language` na tabela `profiles`
+**`src/locales/pt/translation.json`** - Adicionar namespace `integratedResults` e `humanDesignForm`
 
-```sql
-ALTER TABLE public.profiles 
-ADD COLUMN preferred_language text DEFAULT 'pt';
+**`src/locales/en/translation.json`** - Mesmas chaves em ingles
+
+**`src/locales/es/translation.json`** - Mesmas chaves em espanhol
+
+Chaves a adicionar para **Blueprint (integratedResults)**:
+- `title` - "Blueprint Pessoal" / "Personal Blueprint" / "Blueprint Personal"
+- `subtitle` - descricao
+- `back` - "Voltar" / "Back" / "Volver"
+- `personalityMap` - "Mapa de Personalidade"
+- `personalArchitecture` - "Arquitetura Pessoal"
+- `testCompleted` - "Teste concluido"
+- `testPending` - "Teste pendente"
+- `mapCalculated` - "Mapa calculado"
+- `mapPending` - "Mapa pendente"
+- `testsIncomplete` - titulo e descricao
+- `goToDashboard` - "Ir para o Dashboard"
+- `yourIntegratedAnalysis` - "Sua Analise Integrada"
+- `downloadPdf` - "Baixar PDF"
+- `regenerate` - "Regenerar"
+- `generateBlueprint` - titulo e descricao do botao de gerar
+- `generating` - "Gerando analise..."
+- `generateReport` - "Gerar Relatorio Integrado"
+- Toast messages (sucesso/erro para geracao e PDF)
+- `dataIncomplete` - mensagem de dados incompletos
+
+Chaves a adicionar para **Formulario HD (humanDesignForm)**:
+- `pageTitle` - "Desenho Humano - Dados de Nascimento"
+- `pageSubtitle` - descricao
+- `requiredData` - "DADOS NECESSARIOS"
+- `birthDate` - "Data de Nascimento"
+- `birthTime` - "Hora de Nascimento"
+- `birthLocation` - "Local de Nascimento"
+- Labels e placeholders dos campos
+- Mensagens de validacao (obrigatorio, futuro, minimo caracteres)
+- `birthCertificateHint` - "Verifique sua certidao de nascimento"
+- `typeYourCity` - "Digite sua cidade..."
+- `selectYourCity` - "Comece a digitar..."
+- `backToDashboard` - "Voltar ao Dashboard"
+- `back` - "Voltar"
+- `calculating` - "Calculando..."
+- `generateMyMap` - "GERAR MEU MAPA"
+- Loading messages (coordenadas, fuso, posicoes, salvando)
+- Toast messages (sucesso, erros de auth, calculo)
+- `demoMode` - mensagem do modo demo
+- `testInProgress` / `finishFirst` - mensagens de bloqueio
+
+---
+
+### 2. `src/pages/app/IntegratedResults.tsx`
+
+**O que muda:** Substituir TODOS os textos hardcoded por chamadas `t()`
+
+- Adicionar `const { t } = useTranslation();` (ja tem `i18n` importado)
+- Substituir ~40 strings por `t('integratedResults.xxx')`
+
+Exemplos de substituicoes:
 ```
-
-Tambem atualiza a funcao `handle_new_user()` para aceitar o idioma dos metadados:
-
-```sql
-CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS trigger AS $$
-BEGIN
-  INSERT INTO public.profiles (id, full_name, email, preferred_language)
-  VALUES (
-    NEW.id,
-    COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.email),
-    NEW.email,
-    COALESCE(NEW.raw_user_meta_data->>'preferred_language', 'pt')
-  );
-  
-  INSERT INTO public.user_roles (user_id, role)
-  VALUES (NEW.id, 'user');
-  
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+"Voltar" -> t('integratedResults.back')
+"Blueprint Pessoal" -> t('integratedResults.title')
+"Mapa de Personalidade" -> t('integratedResults.personalityMap')
+"Teste concluído" -> t('integratedResults.testCompleted')
+"Baixar PDF" -> t('integratedResults.downloadPdf')
+"Gerando análise..." -> t('integratedResults.generating')
 ```
 
 ---
 
-### 2. `src/components/CreateUserDialog.tsx`
+### 3. `src/pages/app/DesenhoHumanoTest.tsx`
 
-**O que muda:** Adiciona um Select de idioma no formulario de criacao de usuario
+**O que muda:** Substituir TODOS os textos hardcoded por chamadas `t()`
 
-- Novo state: `const [language, setLanguage] = useState<"pt" | "en" | "es">("pt");`
-- Novo campo visual com Select (Portugues / English / Espanol)
-- Envia `language` no body da chamada ao edge function
+- Adicionar `import { useTranslation } from "react-i18next";`
+- Adicionar `const { t } = useTranslation();`
+- Substituir ~25 strings por `t('humanDesignForm.xxx')`
 
-**Antes:**
+Exemplos de substituicoes:
 ```
-body: { email, password, fullName, role }
-```
-
-**Depois:**
-```
-body: { email, password, fullName, role, language }
+"Data de nascimento é obrigatória" -> t('humanDesignForm.birthDateRequired')
+"Calculando..." -> t('humanDesignForm.calculating')
+"GERAR MEU MAPA ✨" -> t('humanDesignForm.generateMyMap')
+"Buscando coordenadas do local..." -> t('humanDesignForm.searchingCoordinates')
 ```
 
 ---
 
-### 3. `supabase/functions/create-user/index.ts`
+## Resumo
 
-**O que muda:** Recebe e salva o idioma preferido
+| Arquivo | Tipo de Mudanca |
+|---------|----------------|
+| `src/locales/pt/translation.json` | +2 namespaces (~65 chaves) |
+| `src/locales/en/translation.json` | +2 namespaces (~65 chaves) |
+| `src/locales/es/translation.json` | +2 namespaces (~65 chaves) |
+| `src/pages/app/IntegratedResults.tsx` | ~40 strings substituidas por `t()` |
+| `src/pages/app/DesenhoHumanoTest.tsx` | ~25 strings substituidas por `t()` |
 
-- Adiciona `language` na interface `CreateUserRequest`
-- Passa `preferred_language` nos `user_metadata` ao criar usuario
-- Apos criacao, atualiza `profiles.preferred_language` diretamente
-
-**Linha chave adicionada:**
-```typescript
-// Apos criar o usuario, atualiza o idioma no perfil
-await supabaseAdmin
-  .from("profiles")
-  .update({ preferred_language: language || 'pt' })
-  .eq("id", newUser.user.id);
-```
-
----
-
-### 4. `src/components/EditUserDialog.tsx`
-
-**O que muda:** Adiciona Select de idioma no formulario de edicao
-
-- Novo state: `const [language, setLanguage] = useState(user.preferred_language || "pt");`
-- Novo campo visual com Select de idioma
-- Envia `language` no body da chamada ao `edit-user`
-- Interface atualizada para receber `preferred_language` do usuario
-
----
-
-### 5. `supabase/functions/edit-user/index.ts`
-
-**O que muda:** Recebe e salva idioma atualizado
-
-- Extrai `language` do body da requisicao
-- Inclui `preferred_language: language` no update do profiles
-
-**Linha chave modificada:**
-```typescript
-.update({ full_name: fullName, email, preferred_language: language })
-```
-
----
-
-### 6. `src/contexts/LanguageContext.tsx`
-
-**O que muda:** Carrega o idioma preferido do perfil apos login
-
-- Adiciona um `useEffect` que, quando o usuario esta autenticado, busca `profiles.preferred_language` e aplica como idioma ativo
-- So aplica se o usuario ainda nao tiver feito uma troca manual na sessao
-
-**Logica adicionada:**
-```typescript
-useEffect(() => {
-  const loadPreferredLanguage = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('preferred_language')
-        .eq('id', user.id)
-        .single();
-      
-      if (profile?.preferred_language) {
-        i18n.changeLanguage(profile.preferred_language);
-      }
-    }
-  };
-  loadPreferredLanguage();
-}, []);
-```
-
----
-
-### 7. `src/pages/admin/Dashboard.tsx`
-
-**O que muda:** Busca e passa `preferred_language` para os componentes
-
-- Adiciona `preferred_language` no fetch dos usuarios (ja vem do profiles)
-- Passa para o `EditUserDialog` via props
-- Interface `Profile` atualizada com `preferred_language?: string`
-
----
-
-## Fluxo Resultante
-
-```text
-Admin cria usuario
-       |
-       v
-Escolhe idioma (PT/EN/ES) no formulario
-       |
-       v
-Edge function salva no profiles.preferred_language
-       |
-       v
-Usuaria faz login
-       |
-       v
-LanguageContext carrega preferred_language do banco
-       |
-       v
-App inteiro muda para o idioma correto
-       |
-       v
-Relatorios IA gerados no idioma ativo
-```
+**Total: 5 arquivos editados, nenhuma migration SQL**
 
 ---
 
 ## O que NAO muda
 
-- O seletor de idioma no header continua funcionando normalmente
-- Se a usuaria trocar manualmente, prevalece a escolha dela na sessao
-- Os edge functions de analise (`analyze-personality`, `analyze-human-design`, `analyze-integrated`) continuam recebendo o idioma da mesma forma -- pelo idioma ativo no momento da geracao
-- PDFs continuam usando o idioma ativo
-- Nenhuma tabela nova e criada -- apenas uma coluna adicionada
-
----
-
-## Resumo dos Arquivos
-
-| Arquivo | Tipo de Mudanca |
-|---------|----------------|
-| Migration SQL | Nova coluna `preferred_language` + trigger atualizado |
-| `CreateUserDialog.tsx` | Novo campo Select de idioma |
-| `create-user/index.ts` | Recebe e salva idioma |
-| `EditUserDialog.tsx` | Novo campo Select de idioma |
-| `edit-user/index.ts` | Recebe e salva idioma |
-| `LanguageContext.tsx` | Carrega idioma do perfil no login |
-| `admin/Dashboard.tsx` | Passa `preferred_language` ao EditDialog |
-
-**Total: 6 arquivos editados + 1 migration SQL**
+- Nenhuma logica de negocio e alterada
+- Nenhuma tabela ou edge function e modificada
+- O DesenhoHumanoResults.tsx ja esta internacionalizado (usa `t()`)
+- Os PDFs ja tem internacionalizacao propria
+- O AnalysisSections.tsx ja usa `t()`
 
