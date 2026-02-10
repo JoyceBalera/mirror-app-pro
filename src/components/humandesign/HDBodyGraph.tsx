@@ -15,12 +15,21 @@ interface DefinedGateMap {
   isConnected?: boolean;
 }
 
+interface LegendLabels {
+  design: string;
+  personality: string;
+  both: string;
+  definedCenter: string;
+  undefined: string;
+}
+
 interface HDBodyGraphProps {
   definedCenters: string[];
   activeChannels: { id: string; gates?: number[]; isComplete: boolean }[];
   activatedGates: number[];
   personalityGates: number[];
   designGates: number[];
+  legendLabels?: LegendLabels;
 }
 
 const HDBodyGraph: React.FC<HDBodyGraphProps> = ({
