@@ -562,8 +562,16 @@ export const generateTestResultPDF = (
     
     yPos += 15;
 
-    // Cards das facetas
-    const traitFacets = facetScores[trait] || {};
+    // Cards das facetas - try English key first, then find by normalized Portuguese key
+    let traitFacets = facetScores[trait] || {};
+    if (Object.keys(traitFacets).length === 0) {
+      // Find the original key in facetScores that maps to this English trait
+      const originalKey = Object.keys(facetScores).find(k => {
+        const nk = normalizeKey(k);
+        return ptMapping[nk] === trait || nk === trait;
+      });
+      if (originalKey) traitFacets = facetScores[originalKey];
+    }
     const facetEntries = Object.entries(traitFacets);
     
     if (facetEntries.length > 0) {
