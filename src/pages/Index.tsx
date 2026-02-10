@@ -315,23 +315,17 @@ const Index = () => {
     // Save results to database
     if (currentSessionId) {
       try {
-        const traitScoresObj = results.reduce((acc, result) => {
-          acc[result.name.toLowerCase()] = result.score;
-          return acc;
-        }, {} as Record<string, number>);
+        const traitKeys = Object.keys(scores);
+        const traitScoresObj: Record<string, number> = {};
+        const facetScoresObj: Record<string, Record<string, number>> = {};
+        const classificationsObj: Record<string, string> = {};
 
-        const facetScoresObj = results.reduce((acc, result) => {
-          acc[result.name.toLowerCase()] = result.facets.reduce((fAcc, facet) => {
-            fAcc[facet.name] = facet.score;
-            return fAcc;
-          }, {} as Record<string, number>);
-          return acc;
-        }, {} as Record<string, Record<string, number>>);
-
-        const classificationsObj = results.reduce((acc, result) => {
-          acc[result.name.toLowerCase()] = result.classification;
-          return acc;
-        }, {} as Record<string, string>);
+        traitKeys.forEach((trait) => {
+          const ptKey = TRAIT_NAME_MAP[trait] || trait;
+          traitScoresObj[ptKey] = scores[trait];
+          classificationsObj[ptKey] = getTraitClassification(scores[trait]);
+          facetScoresObj[ptKey] = facetScores[trait] || {};
+        });
 
         await supabase.from('test_results').insert({
           session_id: currentSessionId,
