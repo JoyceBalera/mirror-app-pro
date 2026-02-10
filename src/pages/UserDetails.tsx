@@ -278,6 +278,7 @@ const UserDetails = () => {
       
       const reportData: HDReportData = {
         language: currentLanguage,
+        user_name: user?.full_name || '',
         birth_date: hdResult.birth_date,
         birth_time: hdResult.birth_time,
         birth_location: hdResult.birth_location,
