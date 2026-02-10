@@ -123,7 +123,8 @@ const Index = () => {
     const mockAnswers = generateMockAnswers();
     setAnswers(mockAnswers);
     
-    const { scores, facetScores } = calculateScore(mockAnswers);
+    const raw = calculateScore(mockAnswers);
+    const { scores, facetScores } = validateAndCapScores(raw.scores, raw.facetScores);
     
     const results: TraitScore[] = Object.entries(scores).map(([trait, score]) => {
       const traitKey = trait as keyof typeof scores;
