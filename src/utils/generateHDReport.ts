@@ -1,4 +1,5 @@
 import jsPDF from 'jspdf';
+import { translateCross } from '../data/humanDesignCrosses';
 import type { AdvancedVariables } from './humanDesignVariables';
 import { 
   type HDPdfTranslations,
