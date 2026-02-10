@@ -809,5 +809,12 @@
       "Sentimento": { "desc": "Sentido primário: Sentimento/tato", "tips": "Suas sensações emocionais são informação valiosa. 'Sentir' uma situação te dá dados que a lógica não alcança." },
       "Toque": { "desc": "Sentido primário: Toque físico", "tips": "O contato físico é importante para você processar informações. Tocar objetos, pessoas, texturas te conecta à realidade." }
     }
+  },
+  "bodygraphLegend": {
+    "design": "Design (Inconsciente)",
+    "personality": "Personalidade (Consciente)",
+    "both": "Ambos",
+    "definedCenter": "Centro Definido",
+    "undefined": "Indefinido"
   }
 }
