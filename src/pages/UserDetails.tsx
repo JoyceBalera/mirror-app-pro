@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,6 +18,8 @@ import { generateIntegratedReport, type IntegratedReportData } from "@/utils/gen
 import AIDataDebugPanel from "@/components/AIDataDebugPanel";
 import { facetNamesLuciana } from "@/data/bigFiveQuestionsLuciana";
 import ReactMarkdown from "react-markdown";
+import HDBodyGraph from "@/components/humandesign/HDBodyGraph";
+import { extractAdvancedVariables } from "@/utils/humanDesignVariables";
 
 interface TestResult {
   id: string;
@@ -271,10 +273,70 @@ const UserDetails = () => {
     }
   };
 
+  // Capture hidden bodygraph SVG as PNG
+  const captureBodyGraphAsImage = async (): Promise<string | null> => {
+    try {
+      const svgElement = document.querySelector('.bodygraph-svg') as SVGElement;
+      if (!svgElement) {
+        console.warn('Bodygraph SVG not found');
+        return null;
+      }
+
+      const serializer = new XMLSerializer();
+      const svgString = serializer.serializeToString(svgElement);
+      const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(svgBlob);
+
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const scale = 2;
+          canvas.width = 330 * scale;
+          canvas.height = 620 * scale;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.scale(scale, scale);
+            ctx.drawImage(img, 0, 0, 330, 620);
+          }
+          const dataUrl = canvas.toDataURL('image/png');
+          URL.revokeObjectURL(url);
+          resolve(dataUrl);
+        };
+        img.onerror = () => {
+          URL.revokeObjectURL(url);
+          resolve(null);
+        };
+        img.src = url;
+      });
+    } catch (error) {
+      console.error('Error capturing Bodygraph:', error);
+      return null;
+    }
+  };
+
+  // State to track which HD result to render for PDF capture
+  const [hdForPDF, setHdForPDF] = useState<HDResult | null>(null);
+
   const handleDownloadHDPDF = async (hdResult: HDResult) => {
     try {
+      // Set the HD result to render the hidden bodygraph
+      setHdForPDF(hdResult);
+      
+      // Wait for React to render the hidden SVG
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      const bodygraphImage = await captureBodyGraphAsImage();
+      
       // Get current language
       const currentLanguage = (i18n.language?.split('-')[0] || 'pt') as 'pt' | 'es' | 'en';
+
+      const advancedVars = extractAdvancedVariables({
+        personality_activations: hdResult.personality_activations || [],
+        design_activations: hdResult.design_activations || [],
+      });
       
       const reportData: HDReportData = {
         language: currentLanguage,
@@ -292,11 +354,15 @@ const UserDetails = () => {
         channels: hdResult.channels || [],
         personality_activations: hdResult.personality_activations || [],
         design_activations: hdResult.design_activations || [],
-        variables: hdResult.variables || {},
+        variables: advancedVars,
         ai_analysis_full: hdResult.human_design_analyses?.[0]?.analysis_text || '',
+        bodygraph_image: bodygraphImage || undefined,
       };
 
       await generateHDReport(reportData);
+
+      // Clean up
+      setHdForPDF(null);
 
       toast({
         title: "PDF gerado!",
@@ -304,6 +370,7 @@ const UserDetails = () => {
       });
     } catch (error: any) {
       console.error("Erro ao gerar PDF:", error);
+      setHdForPDF(null);
       toast({
         title: "Erro ao gerar PDF",
         description: error.message || "Não foi possível gerar o PDF.",
@@ -995,6 +1062,30 @@ const UserDetails = () => {
           )}
         </Card>
       </main>
+
+      {/* Hidden HDBodyGraph for PDF capture */}
+      {hdForPDF && (() => {
+        const personalityGates = hdForPDF.personality_activations?.map((a: any) => a.gate) || [];
+        const designGates = hdForPDF.design_activations?.map((a: any) => a.gate) || [];
+        const allGates = [...new Set([...personalityGates, ...designGates])];
+        const definedCentersList = Array.isArray(hdForPDF.centers)
+          ? hdForPDF.centers.filter((c: any) => c.defined).map((c: any) => c.id)
+          : Object.entries(hdForPDF.centers || {})
+              .filter(([_, isDefined]) => isDefined)
+              .map(([centerId]) => centerId);
+
+        return (
+          <div style={{ position: 'absolute', left: '-9999px', top: 0 }}>
+            <HDBodyGraph
+              definedCenters={definedCentersList}
+              activeChannels={hdForPDF.channels || []}
+              activatedGates={allGates}
+              personalityGates={personalityGates}
+              designGates={designGates}
+            />
+          </div>
+        );
+      })()}
     </div>
   );
 };
