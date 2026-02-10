@@ -561,7 +561,7 @@ const DesenhoHumanoResults = () => {
             <h1 className="text-xl md:text-2xl font-bold text-[#F7F3EF]">
               {t('humanDesignResults.pageTitle')}
             </h1>
-            <div className="w-20" />
+            <LanguageSwitcher variant="compact" className="border-white/30 bg-white/10 text-white hover:bg-white/20 hover:border-white/50 [&_svg]:text-white" />
           </div>
         </div>
       </header>
