@@ -12,13 +12,6 @@ import {
   getAdvancedVariablesTheory,
   getGatesChannelsTheory,
   getClosingTheory,
-  // Legacy imports for fallback
-  INTRO_SECTION, 
-  CENTERS_THEORY, 
-  ELEMENTS_THEORY, 
-  ADVANCED_VARIABLES_THEORY,
-  GATES_CHANNELS_THEORY,
-  CLOSING_THEORY
 } from '../data/humanDesignTheory';
 
 // Import translations directly for PDF generation (avoiding React hooks)
