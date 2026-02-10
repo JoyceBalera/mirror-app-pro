@@ -38,6 +38,7 @@ const HDBodyGraph: React.FC<HDBodyGraphProps> = ({
   activatedGates,
   personalityGates,
   designGates,
+  legendLabels,
 }) => {
   // Build gate map with activation info
   const gateMap = useMemo(() => {
