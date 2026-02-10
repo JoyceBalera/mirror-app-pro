@@ -165,21 +165,31 @@ const Index = () => {
     }
 
     try {
-      console.log('📝 Criando test_session para user_id:', user.id);
-      
-      // Create a new test session
-      const { data: session, error } = await supabase
+      // Check for existing in_progress session first
+      const { data: existingSession } = await supabase
         .from('test_sessions')
-        .insert({ user_id: user.id })
-        .select()
-        .single();
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('status', 'in_progress')
+        .maybeSingle();
 
-      console.log('📦 Resultado da inserção:', { session, error });
+      let session = existingSession;
 
-      if (error) {
-        console.error('❌ Erro ao criar sessão:', error);
-        throw error;
+      if (existingSession) {
+        console.log('♻️ Reutilizando sessão existente:', existingSession.id);
+      } else {
+        console.log('📝 Criando test_session para user_id:', user.id);
+        const { data: newSession, error } = await supabase
+          .from('test_sessions')
+          .insert({ user_id: user.id })
+          .select()
+          .single();
+
+        if (error) throw error;
+        session = newSession;
       }
+
+      console.log('✅ Sessão pronta:', session?.id);
 
       console.log('✅ Sessão criada com sucesso:', session.id);
       setCurrentSessionId(session.id);
