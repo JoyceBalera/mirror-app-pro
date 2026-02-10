@@ -614,8 +614,7 @@ const DesenhoHumanoResults = () => {
                     {renderVariableCard('environment', variables.environment, <MapPin className="h-4 w-4 text-[#7B192B]" />, t('humanDesignResults.environment'))}
                     {renderVariableCard('motivation', variables.motivation, <Heart className="h-4 w-4 text-[#7B192B]" />, t('humanDesignResults.motivation'))}
                     {renderVariableCard('perspective', variables.perspective, <Eye className="h-4 w-4 text-[#7B192B]" />, t('humanDesignResults.perspective'))}
-                    {renderVariableCard('sense', variables.sense, <Hand className="h-4 w-4 text-[#7B192B]" />, t('humanDesignResults.sense'))}
-                    {renderVariableCard('sense', variables.designSense, <Hand className="h-4 w-4 text-[#7B192B]" />, t('humanDesignResults.designSense'))}
+                    {renderVariableCard('sense', variables.designSense || variables.sense, <Hand className="h-4 w-4 text-[#7B192B]" />, t('humanDesignResults.sense'))}
                   </div>
                 </CardContent>
               </Card>
