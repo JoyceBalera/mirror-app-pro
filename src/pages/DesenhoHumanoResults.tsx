@@ -596,7 +596,7 @@ const DesenhoHumanoResults = () => {
                 <div className="p-4 bg-[#F7F3EF] rounded-lg">
                   <Target className="h-6 w-6 mx-auto mb-2 text-[#7B192B]" />
                   <p className="text-xs text-muted-foreground">{t('humanDesignResults.cross')}</p>
-                  <p className="font-semibold text-[#7B192B] text-sm">{result.incarnation_cross}</p>
+                  <p className="font-semibold text-[#7B192B] text-sm">{translateCross(result.incarnation_cross, i18n.language?.split('-')[0] || 'pt')}</p>
                 </div>
               </div>
             </CardContent>

@@ -185,29 +185,37 @@ const HDBodyGraph: React.FC<HDBodyGraphProps> = ({
   };
 
   // Render legend
+  const labels = legendLabels || {
+    design: 'Design (Inconsciente)',
+    personality: 'Personalidade (Consciente)',
+    both: 'Ambos',
+    definedCenter: 'Centro Definido',
+    undefined: 'Indefinido',
+  };
+
   const renderLegend = () => (
     <g transform="translate(10, 560)">
       <rect x="0" y="0" width="310" height="55" fill="rgba(255,255,255,0.9)" rx="6" />
       
       {/* Design */}
       <rect x="10" y="10" width="16" height="16" rx="3" fill={red} />
-      <text x="30" y="22" fontSize="11" fill="#374151">Design (Inconsciente)</text>
+      <text x="30" y="22" fontSize="11" fill="#374151">{labels.design}</text>
       
       {/* Personality */}
       <rect x="160" y="10" width="16" height="16" rx="3" fill={darkGrey} />
-      <text x="180" y="22" fontSize="11" fill="#374151">Personalidade (Consciente)</text>
+      <text x="180" y="22" fontSize="11" fill="#374151">{labels.personality}</text>
       
       {/* Both */}
       <rect x="10" y="32" width="16" height="16" rx="3" fill="url(#legendGradient)" />
-      <text x="30" y="44" fontSize="11" fill="#374151">Ambos</text>
+      <text x="30" y="44" fontSize="11" fill="#374151">{labels.both}</text>
       
       {/* Defined Center */}
       <rect x="90" y="32" width="16" height="16" rx="3" fill="#F3893F" stroke="#F3893F" strokeWidth="1" />
-      <text x="110" y="44" fontSize="11" fill="#374151">Centro Definido</text>
+      <text x="110" y="44" fontSize="11" fill="#374151">{labels.definedCenter}</text>
       
       {/* Undefined Center */}
       <rect x="220" y="32" width="16" height="16" rx="3" fill={white} stroke="#F3893F" strokeWidth="1" />
-      <text x="240" y="44" fontSize="11" fill="#374151">Indefinido</text>
+      <text x="240" y="44" fontSize="11" fill="#374151">{labels.undefined}</text>
     </g>
   );
 
