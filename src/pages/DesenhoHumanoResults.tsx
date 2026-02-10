@@ -16,6 +16,8 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { extractAdvancedVariables, type AdvancedVariables, type AdvancedVariable } from "@/utils/humanDesignVariables";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { generateHDReport } from "@/utils/generateHDReport";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { translateCross } from "@/data/humanDesignCrosses";
 
 interface HumanDesignResult {
   id: string;
@@ -559,7 +561,7 @@ const DesenhoHumanoResults = () => {
             <h1 className="text-xl md:text-2xl font-bold text-[#F7F3EF]">
               {t('humanDesignResults.pageTitle')}
             </h1>
-            <div className="w-20" />
+            <LanguageSwitcher variant="compact" className="border-white/30 bg-white/10 text-white hover:bg-white/20 hover:border-white/50 [&_svg]:text-white" />
           </div>
         </div>
       </header>
@@ -594,7 +596,7 @@ const DesenhoHumanoResults = () => {
                 <div className="p-4 bg-[#F7F3EF] rounded-lg">
                   <Target className="h-6 w-6 mx-auto mb-2 text-[#7B192B]" />
                   <p className="text-xs text-muted-foreground">{t('humanDesignResults.cross')}</p>
-                  <p className="font-semibold text-[#7B192B] text-sm">{result.incarnation_cross}</p>
+                  <p className="font-semibold text-[#7B192B] text-sm">{translateCross(result.incarnation_cross, i18n.language?.split('-')[0] || 'pt')}</p>
                 </div>
               </div>
             </CardContent>
@@ -642,6 +644,13 @@ const DesenhoHumanoResults = () => {
                     activatedGates={result.activated_gates || []}
                     personalityGates={personalityGates}
                     designGates={designGates}
+                    legendLabels={{
+                      design: t('bodygraphLegend.design'),
+                      personality: t('bodygraphLegend.personality'),
+                      both: t('bodygraphLegend.both'),
+                      definedCenter: t('bodygraphLegend.definedCenter'),
+                      undefined: t('bodygraphLegend.undefined'),
+                    }}
                   />
                 </div>
 

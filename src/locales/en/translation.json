@@ -809,5 +809,12 @@
       "Sentimento": { "desc": "Primary sense: Feeling/touch", "tips": "Your emotional sensations are valuable information. 'Feeling' a situation gives you data that logic can't reach." },
       "Toque": { "desc": "Primary sense: Physical touch", "tips": "Physical contact is important for you to process information. Touching objects, people, textures connects you to reality." }
     }
+  },
+  "bodygraphLegend": {
+    "design": "Design (Unconscious)",
+    "personality": "Personality (Conscious)",
+    "both": "Both",
+    "definedCenter": "Defined Center",
+    "undefined": "Undefined"
   }
 }
