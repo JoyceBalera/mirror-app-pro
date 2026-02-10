@@ -501,7 +501,7 @@ const DesenhoHumanoResults = () => {
 
   const tvt = (variableType: string, value: string | null | undefined): string => {
     if (!value) return '';
-    const key = `hdVariableDetails.${variableType}.${value}.tip`;
+    const key = `hdVariableDetails.${variableType}.${value}.tips`;
     const translated = t(key);
     return translated === key ? '' : translated;
   };
