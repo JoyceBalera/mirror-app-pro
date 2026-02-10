@@ -1,4 +1,5 @@
 import jsPDF from 'jspdf';
+import { translateCross } from '../data/humanDesignCrosses';
 import type { AdvancedVariables } from './humanDesignVariables';
 import { 
   type HDPdfTranslations,
@@ -308,7 +309,7 @@ export async function generateHDReport(data: HDReportData): Promise<void> {
     { label: t.authority, value: data.authority || 'N/A' },
     { label: t.profile, value: data.profile || 'N/A' },
     { label: t.definition, value: data.definition || 'N/A' },
-    { label: t.incarnationCross, value: data.incarnation_cross || 'N/A' },
+    { label: t.incarnationCross, value: translateCross(data.incarnation_cross, language, data.profile) },
   ];
   
   const colWidth = contentWidth / 2;
