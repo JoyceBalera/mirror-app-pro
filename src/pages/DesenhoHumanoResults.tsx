@@ -16,6 +16,8 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { extractAdvancedVariables, type AdvancedVariables, type AdvancedVariable } from "@/utils/humanDesignVariables";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { generateHDReport } from "@/utils/generateHDReport";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { translateCross } from "@/data/humanDesignCrosses";
 
 interface HumanDesignResult {
   id: string;
