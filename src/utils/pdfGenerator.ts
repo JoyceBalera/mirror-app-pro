@@ -252,7 +252,6 @@ const normalizeTraitKey = (trait: string): keyof PDFTranslations['traits'] | nul
     neuroticismo: 'neuroticism',
     extraversion: 'extraversion',
     extroversao: 'extraversion',
-    extroversão: 'extraversion',
     openness: 'openness',
     abertura: 'openness',
     agreeableness: 'agreeableness',
@@ -260,7 +259,11 @@ const normalizeTraitKey = (trait: string): keyof PDFTranslations['traits'] | nul
     conscientiousness: 'conscientiousness',
     conscienciosidade: 'conscientiousness'
   };
-  return mapping[trait.toLowerCase()] || null;
+  // First try direct match, then try with accents removed for keys like "extroversão"
+  const direct = mapping[trait.toLowerCase()];
+  if (direct) return direct;
+  const normalized = trait.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  return mapping[normalized] || null;
 };
 
 // Get localized trait label
