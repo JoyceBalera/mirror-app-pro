@@ -9,10 +9,12 @@ import { questionsLuciana as questions, traitInfoLuciana as traitInfo } from "@/
 import { Answer, TraitScore } from "@/types/test";
 import {
   calculateScore,
+  validateAndCapScores,
   getTraitClassification,
   getFacetClassification,
   facetNames,
 } from "@/utils/scoreCalculator";
+import { TRAIT_NAME_MAP } from "@/constants/scoring";
 import { Button } from "@/components/ui/button";
 import { LogOut, LayoutDashboard } from "lucide-react";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -121,7 +123,8 @@ const Index = () => {
     const mockAnswers = generateMockAnswers();
     setAnswers(mockAnswers);
     
-    const { scores, facetScores } = calculateScore(mockAnswers);
+    const raw = calculateScore(mockAnswers);
+    const { scores, facetScores } = validateAndCapScores(raw.scores, raw.facetScores);
     
     const results: TraitScore[] = Object.entries(scores).map(([trait, score]) => {
       const traitKey = trait as keyof typeof scores;
@@ -218,7 +221,8 @@ const Index = () => {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else {
       // Last question - calculate results with the new answers
-      const { scores, facetScores } = calculateScore(newAnswers);
+      const raw = calculateScore(newAnswers);
+      const { scores, facetScores } = validateAndCapScores(raw.scores, raw.facetScores);
 
       const results: TraitScore[] = Object.entries(scores).map(([trait, score]) => {
         const traitKey = trait as keyof typeof scores;
@@ -243,23 +247,18 @@ const Index = () => {
 
       // Save results to database
       try {
-        const traitScoresObj = results.reduce((acc, result) => {
-          acc[result.name.toLowerCase()] = result.score;
-          return acc;
-        }, {} as Record<string, number>);
+        // Usa chaves curtas em PT via TRAIT_NAME_MAP para consistência com o banco
+        const traitKeys = Object.keys(scores);
+        const traitScoresObj: Record<string, number> = {};
+        const facetScoresObj: Record<string, Record<string, number>> = {};
+        const classificationsObj: Record<string, string> = {};
 
-        const facetScoresObj = results.reduce((acc, result) => {
-          acc[result.name.toLowerCase()] = result.facets.reduce((fAcc, facet) => {
-            fAcc[facet.name] = facet.score;
-            return fAcc;
-          }, {} as Record<string, number>);
-          return acc;
-        }, {} as Record<string, Record<string, number>>);
-
-        const classificationsObj = results.reduce((acc, result) => {
-          acc[result.name.toLowerCase()] = result.classification;
-          return acc;
-        }, {} as Record<string, string>);
+        traitKeys.forEach((trait) => {
+          const ptKey = TRAIT_NAME_MAP[trait] || trait;
+          traitScoresObj[ptKey] = scores[trait];
+          classificationsObj[ptKey] = getTraitClassification(scores[trait]);
+          facetScoresObj[ptKey] = facetScores[trait] || {};
+        });
 
         await supabase.from('test_results').insert({
           session_id: currentSessionId,
@@ -289,7 +288,8 @@ const Index = () => {
   };
 
   const calculateResults = async () => {
-    const { scores, facetScores } = calculateScore(answers);
+    const raw = calculateScore(answers);
+    const { scores, facetScores } = validateAndCapScores(raw.scores, raw.facetScores);
 
     const results: TraitScore[] = Object.entries(scores).map(([trait, score]) => {
       const traitKey = trait as keyof typeof scores;
@@ -315,23 +315,17 @@ const Index = () => {
     // Save results to database
     if (currentSessionId) {
       try {
-        const traitScoresObj = results.reduce((acc, result) => {
-          acc[result.name.toLowerCase()] = result.score;
-          return acc;
-        }, {} as Record<string, number>);
+        const traitKeys = Object.keys(scores);
+        const traitScoresObj: Record<string, number> = {};
+        const facetScoresObj: Record<string, Record<string, number>> = {};
+        const classificationsObj: Record<string, string> = {};
 
-        const facetScoresObj = results.reduce((acc, result) => {
-          acc[result.name.toLowerCase()] = result.facets.reduce((fAcc, facet) => {
-            fAcc[facet.name] = facet.score;
-            return fAcc;
-          }, {} as Record<string, number>);
-          return acc;
-        }, {} as Record<string, Record<string, number>>);
-
-        const classificationsObj = results.reduce((acc, result) => {
-          acc[result.name.toLowerCase()] = result.classification;
-          return acc;
-        }, {} as Record<string, string>);
+        traitKeys.forEach((trait) => {
+          const ptKey = TRAIT_NAME_MAP[trait] || trait;
+          traitScoresObj[ptKey] = scores[trait];
+          classificationsObj[ptKey] = getTraitClassification(scores[trait]);
+          facetScoresObj[ptKey] = facetScores[trait] || {};
+        });
 
         await supabase.from('test_results').insert({
           session_id: currentSessionId,

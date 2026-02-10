@@ -18,12 +18,8 @@ import { useLanguage } from "@/contexts/LanguageContext";
 // Usa os nomes corretos das facetas definidos pela Luciana (mapeamento flat)
 const FACET_NAMES = facetNamesLuciana;
 
-// Calcula classificação de faceta baseado no score (10-50)
-const getFacetClassification = (score: number): string => {
-  if (score <= 23) return "Baixa";
-  if (score <= 36) return "Média";
-  return "Alta";
-};
+// Usa o sistema oficial de 5 níveis do scoreCalculator
+const getFacetClassification = getScoreFacetClassification;
 
 // Normaliza nome do trait para busca no mapeamento
 const normalizeTraitKey = (key: string): string => {
