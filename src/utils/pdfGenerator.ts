@@ -461,20 +461,32 @@ export const generateTestResultPDF = (
   yPos += 18;
 
   // Cards dos traços com progress bars
-  const traitOrder = ['neuroticism', 'extraversion', 'openness', 'agreeableness', 'conscientiousness'];
-  const traitEntries = traitOrder
-    .filter(trait => traitScores[trait] !== undefined)
-    .map(trait => [trait, traitScores[trait]] as [string, number]);
+  // Normalize all trait keys by removing accents for reliable matching
+  const normalizeKey = (k: string) => k.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
   
-  // Se não encontrou com chaves em inglês, tenta português
-  if (traitEntries.length === 0) {
-    const ptTraitOrder = ['neuroticismo', 'extroversao', 'abertura', 'amabilidade', 'conscienciosidade'];
-    ptTraitOrder.forEach(trait => {
-      if (traitScores[trait] !== undefined) {
-        traitEntries.push([trait, traitScores[trait]]);
-      }
-    });
-  }
+  const traitOrder = ['neuroticism', 'extraversion', 'openness', 'agreeableness', 'conscientiousness'];
+  const ptMapping: Record<string, string> = {
+    neuroticismo: 'neuroticism',
+    extroversao: 'extraversion',
+    abertura: 'openness',
+    amabilidade: 'agreeableness',
+    conscienciosidade: 'conscientiousness'
+  };
+  
+  // Build a normalized lookup from the input traitScores
+  const normalizedScores: Record<string, number> = {};
+  Object.entries(traitScores).forEach(([key, val]) => {
+    const nk = normalizeKey(key);
+    // Map Portuguese keys to English
+    const mapped = ptMapping[nk] || nk;
+    normalizedScores[mapped] = val;
+    // Also keep original key mapping for downstream use
+    normalizedScores[key] = val;
+  });
+  
+  const traitEntries = traitOrder
+    .filter(trait => normalizedScores[trait] !== undefined)
+    .map(trait => [trait, normalizedScores[trait]] as [string, number]);
 
   traitEntries.forEach(([trait, score], index) => {
     yPos = checkAddPage(yPos, 22);
