@@ -288,7 +288,8 @@ const Index = () => {
   };
 
   const calculateResults = async () => {
-    const { scores, facetScores } = calculateScore(answers);
+    const raw = calculateScore(answers);
+    const { scores, facetScores } = validateAndCapScores(raw.scores, raw.facetScores);
 
     const results: TraitScore[] = Object.entries(scores).map(([trait, score]) => {
       const traitKey = trait as keyof typeof scores;
