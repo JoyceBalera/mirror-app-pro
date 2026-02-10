@@ -1,54 +1,55 @@
 
-# Fix: Big Five Score Consistency and Validation
+## Fix Remaining i18n Bugs in Human Design
 
-## Problem Found
+### 1. Translate BodyGraph Legend (HDBodyGraph.tsx)
 
-Luciana's Big Five results showed scores of 400+ (max is 300) and "Indefinido" classifications. Root causes:
+The legend in the SVG has 5 hardcoded Portuguese strings. The component needs to accept translated labels via props (since it's an SVG component, using hooks directly adds complexity).
 
-1. **Corrupted scores in DB** -- Already fixed by running the recalculate function. The correct scores are now stored.
-2. **Key mismatch between save and read paths** -- `Index.tsx` saves trait keys using full Portuguese names from `traitInfo` (e.g., `"abertura a experiencia"`), but `BigFiveResults.tsx` and `recalculate-results` expect short names (e.g., `"abertura"`). This inconsistency can cause data not to display or to be mismatched.
-3. **No validation** -- There is no guard to prevent impossible scores (above 300 for traits, above 50 for facets) from being stored.
+**Changes to `HDBodyGraph.tsx`:**
+- Add a `legendLabels` prop with keys: `design`, `personality`, `both`, `definedCenter`, `undefined`
+- Replace hardcoded text in `renderLegend()` with these props
 
-## Changes
+**Changes to `DesenhoHumanoResults.tsx`:**
+- Pass `legendLabels` prop to `HDBodyGraph` using `t()` translations
 
-### 1. Fix key mismatch in `src/pages/Index.tsx`
-
-Change the trait key used when saving results to use the same short Portuguese names that the rest of the system expects:
-
-```text
-Before: acc[result.name.toLowerCase()] = result.score
-  -> "abertura a experiencia", "neuroticismo", etc.
-
-After: acc[TRAIT_NAME_MAP[trait]] = score
-  -> "abertura", "neuroticismo", "extroversao", "amabilidade", "conscienciosidade"
+**New translation keys** (in all 3 locale files):
+```
+"bodygraphLegend": {
+  "design": "Design (Unconscious)" / "Design (Inconsciente)" / "Design (Inconsciente)",
+  "personality": "Personality (Conscious)" / "Personalidade (Consciente)" / "Personalidad (Consciente)",
+  "both": "Both" / "Ambos" / "Ambos",
+  "definedCenter": "Defined Center" / "Centro Definido" / "Centro Definido",
+  "undefined": "Undefined" / "Indefinido" / "Indefinido"
+}
 ```
 
-This aligns with the `recalculate-results` edge function and `BigFiveResults.tsx`'s `normalizeTraitKey`.
+### 2. Add LanguageSwitcher to Results Header
 
-Apply the same fix to the facet_scores and classifications save blocks.
+The header at line 548-565 of `DesenhoHumanoResults.tsx` has a spacer `<div className="w-20" />` on the right side. Replace it with the `LanguageSwitcher` component (compact variant) styled for the dark header background.
 
-### 2. Add score validation in `src/utils/scoreCalculator.ts`
+### 3. Translate Incarnation Cross
 
-Add a `validateAndCapScores` function that clamps trait scores to 60-300 and facet scores to 10-50. This prevents impossible values from ever being displayed or stored, even if a bug reappears.
+At line 597, `result.incarnation_cross` is displayed raw from the database (always in Portuguese). Add a translation mapping for common Incarnation Cross names in all 3 locale files under a `hdCrosses` key, and use a helper function `tv()` or a new dedicated helper to translate the cross name with a fallback to the raw value.
 
-### 3. Apply validation in `src/pages/Index.tsx`
+**New translation keys** (common crosses):
+```
+"hdCrosses": {
+  "Cruz do Inesperado": "Cross of the Unexpected" (EN) / "Cruz de lo Inesperado" (ES),
+  "Cruz da Explicação": "Cross of Explanation" / "Cruz de la Explicación",
+  ... (cover all 192 crosses or the most common ones)
+}
+```
 
-Call `validateAndCapScores` after `calculateScore` in both the `handleAnswer` (last question) and `calculateResults` code paths, before saving to the database.
+Since there are 192 possible Incarnation Crosses, a practical approach is to create a lookup object in a new data file (`src/data/humanDesignCrosses.ts`) with all cross translations, rather than putting them in the JSON locale files. The component will import this and look up the translation by the Portuguese key.
 
-### 4. Fix `BigFiveResults.tsx` facet classification inconsistency
+### Technical Details
 
-The results page at line 22-26 uses a 3-level classification (Baixa/Media/Alta) that differs from the official 5-level system in `scoreCalculator.ts` (Muito Baixo/Baixo/Medio/Alto/Muito Alto). Update it to use the imported `getScoreFacetClassification` consistently.
+**Files to modify:**
+- `src/components/humandesign/HDBodyGraph.tsx` -- add `legendLabels` prop
+- `src/pages/DesenhoHumanoResults.tsx` -- import LanguageSwitcher, pass legend props, translate cross
+- `src/locales/pt/translation.json` -- add `bodygraphLegend` keys
+- `src/locales/en/translation.json` -- add `bodygraphLegend` keys
+- `src/locales/es/translation.json` -- add `bodygraphLegend` keys
 
-## Files to Edit
-
-| File | Change |
-|------|--------|
-| `src/pages/Index.tsx` | Use consistent short PT trait keys when saving, add validation |
-| `src/utils/scoreCalculator.ts` | Add `validateAndCapScores` helper |
-| `src/pages/app/BigFiveResults.tsx` | Use 5-level facet classification consistently |
-
-**Total: 3 files, no database migration needed**
-
-## What is already done
-
-- Luciana's scores have been recalculated and corrected in the database via the `recalculate-results` edge function.
+**New file to create:**
+- `src/data/humanDesignCrosses.ts` -- cross name translations for PT/EN/ES (all 192 crosses)
