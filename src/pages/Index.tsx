@@ -221,7 +221,8 @@ const Index = () => {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else {
       // Last question - calculate results with the new answers
-      const { scores, facetScores } = calculateScore(newAnswers);
+      const raw = calculateScore(newAnswers);
+      const { scores, facetScores } = validateAndCapScores(raw.scores, raw.facetScores);
 
       const results: TraitScore[] = Object.entries(scores).map(([trait, score]) => {
         const traitKey = trait as keyof typeof scores;
