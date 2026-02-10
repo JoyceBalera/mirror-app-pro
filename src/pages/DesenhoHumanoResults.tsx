@@ -494,7 +494,7 @@ const DesenhoHumanoResults = () => {
 
   const tvd = (variableType: string, value: string | null | undefined): string => {
     if (!value) return '';
-    const key = `hdVariableDetails.${variableType}.${value}.description`;
+    const key = `hdVariableDetails.${variableType}.${value}.desc`;
     const translated = t(key);
     return translated === key ? '' : translated;
   };
