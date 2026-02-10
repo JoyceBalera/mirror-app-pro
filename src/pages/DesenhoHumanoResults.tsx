@@ -644,6 +644,13 @@ const DesenhoHumanoResults = () => {
                     activatedGates={result.activated_gates || []}
                     personalityGates={personalityGates}
                     designGates={designGates}
+                    legendLabels={{
+                      design: t('bodygraphLegend.design'),
+                      personality: t('bodygraphLegend.personality'),
+                      both: t('bodygraphLegend.both'),
+                      definedCenter: t('bodygraphLegend.definedCenter'),
+                      undefined: t('bodygraphLegend.undefined'),
+                    }}
                   />
                 </div>
 
