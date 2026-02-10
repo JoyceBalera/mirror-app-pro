@@ -189,12 +189,7 @@ const Index = () => {
         session = newSession;
       }
 
-      console.log('📦 Resultado da inserção:', { session, error });
-
-      if (error) {
-        console.error('❌ Erro ao criar sessão:', error);
-        throw error;
-      }
+      console.log('✅ Sessão pronta:', session?.id);
 
       console.log('✅ Sessão criada com sucesso:', session.id);
       setCurrentSessionId(session.id);
