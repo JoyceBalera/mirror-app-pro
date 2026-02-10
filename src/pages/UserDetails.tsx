@@ -12,11 +12,11 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { SCORING, TRAIT_LABELS, getTraitPercentage } from "@/constants/scoring";
 import { generateTestResultPDF } from "@/utils/pdfGenerator";
-import { getTraitClassification, getFacetClassification } from "@/utils/scoreCalculator";
+import { getTraitClassification } from "@/utils/scoreCalculator";
 import { generateHDReport, type HDReportData } from "@/utils/generateHDReport";
 import { generateIntegratedReport, type IntegratedReportData } from "@/utils/generateIntegratedReport";
 import AIDataDebugPanel from "@/components/AIDataDebugPanel";
-import { facetNamesLuciana } from "@/data/bigFiveQuestionsLuciana";
+// facetNamesLuciana removed - unused
 import ReactMarkdown from "react-markdown";
 import HDBodyGraph from "@/components/humandesign/HDBodyGraph";
 import { extractAdvancedVariables } from "@/utils/humanDesignVariables";
@@ -1071,7 +1071,7 @@ const UserDetails = () => {
         const definedCentersList = Array.isArray(hdForPDF.centers)
           ? hdForPDF.centers.filter((c: any) => c.defined).map((c: any) => c.id)
           : Object.entries(hdForPDF.centers || {})
-              .filter(([_, isDefined]) => isDefined)
+              .filter(([_key, isDefined]) => isDefined)
               .map(([centerId]) => centerId);
 
         return (
