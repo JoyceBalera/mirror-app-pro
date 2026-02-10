@@ -253,14 +253,18 @@ const normalizeTraitKey = (trait: string): keyof PDFTranslations['traits'] | nul
     extraversion: 'extraversion',
     extroversao: 'extraversion',
     extroversão: 'extraversion',
+    'extroversão': 'extraversion',
     openness: 'openness',
     abertura: 'openness',
     agreeableness: 'agreeableness',
     amabilidade: 'agreeableness',
     conscientiousness: 'conscientiousness',
-    conscienciosidade: 'conscientiousness'
+    conscienciosidade: 'conscientiousness',
+    'conscienciosidade': 'conscientiousness'
   };
-  return mapping[trait.toLowerCase()] || null;
+  // Normalize: remove accents for safer matching
+  const normalized = trait.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  return mapping[trait.toLowerCase()] || mapping[normalized] || null;
 };
 
 // Get localized trait label
