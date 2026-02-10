@@ -9,10 +9,12 @@ import { questionsLuciana as questions, traitInfoLuciana as traitInfo } from "@/
 import { Answer, TraitScore } from "@/types/test";
 import {
   calculateScore,
+  validateAndCapScores,
   getTraitClassification,
   getFacetClassification,
   facetNames,
 } from "@/utils/scoreCalculator";
+import { TRAIT_NAME_MAP } from "@/constants/scoring";
 import { Button } from "@/components/ui/button";
 import { LogOut, LayoutDashboard } from "lucide-react";
 import { useUserRole } from "@/hooks/useUserRole";

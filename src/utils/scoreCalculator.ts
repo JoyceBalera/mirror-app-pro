@@ -39,6 +39,28 @@ export const calculateScore = (answers: Answer[]) => {
   };
 };
 
+// Valida e limita scores para evitar valores impossíveis
+export const validateAndCapScores = (
+  scores: Record<string, number>,
+  facetScores: Record<string, Record<string, number>>
+) => {
+  const cappedScores: Record<string, number> = {};
+  const cappedFacets: Record<string, Record<string, number>> = {};
+
+  for (const [trait, score] of Object.entries(scores)) {
+    cappedScores[trait] = Math.max(60, Math.min(300, score));
+  }
+
+  for (const [trait, facets] of Object.entries(facetScores)) {
+    cappedFacets[trait] = {};
+    for (const [facet, score] of Object.entries(facets)) {
+      cappedFacets[trait][facet] = Math.max(10, Math.min(50, score));
+    }
+  }
+
+  return { scores: cappedScores, facetScores: cappedFacets };
+};
+
 // Faixas de 5 níveis para 300 questões (60 perguntas por traço, escala 60-300) - Luciana
 export const getTraitClassification = (score: number): string => {
   if (score >= 60 && score <= 108) return "Muito Baixo";
