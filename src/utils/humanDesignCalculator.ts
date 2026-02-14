@@ -93,6 +93,7 @@ const PLANETS = [
   { name: 'Saturn', label: 'Saturno', symbol: '♄' },
   { name: 'Uranus', label: 'Urano', symbol: '♅' },
   { name: 'Neptune', label: 'Netuno', symbol: '♆' },
+  { name: 'Pluto', label: 'Plutão', symbol: '♇' },
 ];
 
 // ===== FUNÇÕES DE CÁLCULO PLANETÁRIO =====
@@ -123,13 +124,11 @@ async function getPlanetLongitude(planetName: string, toi: TimeOfInterestType): 
       break;
     }
     case 'NorthNode': {
-      // Aproximação do Nodo Lunar Norte
-      longitude = calculateLunarNodeApprox(toi, 'north');
+      longitude = calculateTrueNorthNode(toi);
       break;
     }
     case 'SouthNode': {
-      // Nodo Sul = Nodo Norte + 180°
-      longitude = (calculateLunarNodeApprox(toi, 'north') + 180) % 360;
+      longitude = (calculateTrueNorthNode(toi) + 180) % 360;
       break;
     }
     case 'Mercury': {
@@ -174,6 +173,10 @@ async function getPlanetLongitude(planetName: string, toi: TimeOfInterestType): 
       longitude = coords.lon;
       break;
     }
+    case 'Pluto': {
+      longitude = await calculatePlutoGeocentricLongitude(toi);
+      break;
+    }
     default:
       throw new Error(`Planeta não suportado: ${planetName}`);
   }
@@ -183,28 +186,18 @@ async function getPlanetLongitude(planetName: string, toi: TimeOfInterestType): 
 
 // Cálculo preciso do True North Node (Nodo Lunar Norte Verdadeiro)
 // Baseado na fórmula astronômica de Jean Meeus (Astronomical Algorithms)
-function calculateLunarNodeApprox(toi: TimeOfInterestType, node: 'north' | 'south'): number {
+// CORREÇÃO: Usa F (argumento de latitude da Lua) nos termos periódicos, não Ω
+function calculateTrueNorthNode(toi: TimeOfInterestType): number {
   const jd = toi.getJulianDay();
-  const jd2000 = 2451545.0; // J2000.0 epoch
-  
-  // T = séculos julianos desde J2000.0
+  const jd2000 = 2451545.0;
   const T = (jd - jd2000) / 36525.0;
   
-  // Fórmula de Meeus para a longitude média do Nodo Norte Ascendente
-  // Ω = 125.0445479° - 1934.1362891° * T + 0.0020754° * T² + T³/467441 - T⁴/60616000
+  // Longitude média do Nodo Norte Ascendente (Meeus, Cap. 47)
   let omega = 125.0445479 
     - 1934.1362891 * T 
     + 0.0020754 * T * T 
     + (T * T * T) / 467441.0 
     - (T * T * T * T) / 60616000.0;
-  
-  // Correções periódicas principais (nutação)
-  // L' = longitude média da Lua
-  const Lprime = 218.3164477 
-    + 481267.88123421 * T 
-    - 0.0015786 * T * T 
-    + (T * T * T) / 538841.0 
-    - (T * T * T * T) / 65194000.0;
   
   // D = elongação média da Lua
   const D = 297.8501921 
@@ -226,21 +219,24 @@ function calculateLunarNodeApprox(toi: TimeOfInterestType, node: 'north' | 'sout
     + (T * T * T) / 69699.0 
     - (T * T * T * T) / 14712000.0;
   
-  // Converter para radianos
-  const degToRad = Math.PI / 180;
-  const omegaRad = omega * degToRad;
-  const LprimeRad = Lprime * degToRad;
-  const DRad = D * degToRad;
-  const MRad = M * degToRad;
-  const MprimeRad = Mprime * degToRad;
+  // F = argumento de latitude média da Lua (FUNDAMENTAL para True Node!)
+  const F = 93.2720950 
+    + 483202.0175233 * T 
+    - 0.0036539 * T * T 
+    - (T * T * T) / 3526000.0 
+    + (T * T * T * T) / 863310000.0;
   
-  // Correções principais para True Node (em graus)
+  const deg2rad = Math.PI / 180;
+  
+  // Correções periódicas para converter Mean Node → True Node
+  // Os termos usam F (argumento de latitude), NÃO Ω (omega)!
+  // Fonte: Meeus, Astronomical Algorithms, Cap. 47
   const correction = 
-    - 1.4979 * Math.sin(2 * (DRad - omegaRad))
-    - 0.1500 * Math.sin(MRad)
-    - 0.1226 * Math.sin(2 * DRad)
-    + 0.1176 * Math.sin(2 * omegaRad)
-    - 0.0801 * Math.sin(2 * (MprimeRad - omegaRad));
+    - 1.4979 * Math.sin(2 * (D - F) * deg2rad)
+    - 0.1500 * Math.sin(M * deg2rad)
+    - 0.1226 * Math.sin(2 * D * deg2rad)
+    + 0.1176 * Math.sin(2 * F * deg2rad)
+    - 0.0801 * Math.sin(2 * (Mprime - F) * deg2rad);
   
   omega += correction;
   
@@ -248,11 +244,132 @@ function calculateLunarNodeApprox(toi: TimeOfInterestType, node: 'north' | 'sout
   let result = omega % 360;
   if (result < 0) result += 360;
   
-  if (node === 'south') {
-    result = (result + 180) % 360;
+  return result;
+}
+// ===== CÁLCULO DE PLUTÃO (Meeus, Cap. 37, Tabela 37.A) =====
+
+// Argumentos periódicos: [coeff_J, coeff_S, coeff_P]
+const PLUTO_ARGUMENTS: [number, number, number][] = [
+  [0,0,1],[0,0,2],[0,0,3],[0,0,4],[0,0,5],[0,0,6],
+  [0,1,-1],[0,1,0],[0,1,1],[0,1,2],[0,1,3],
+  [0,2,-2],[0,2,-1],[0,2,0],
+  [1,-1,0],[1,-1,1],
+  [1,0,-3],[1,0,-2],[1,0,-1],[1,0,0],[1,0,1],[1,0,2],[1,0,3],[1,0,4],
+  [1,1,-3],[1,1,-2],[1,1,-1],[1,1,0],[1,1,1],[1,1,3],
+  [2,0,-6],[2,0,-5],[2,0,-4],[2,0,-3],[2,0,-2],[2,0,-1],[2,0,0],[2,0,1],[2,0,2],[2,0,3],
+  [3,0,-2],[3,0,-1],[3,0,0]
+];
+
+// Coeficientes de longitude: [sin_coeff, cos_coeff] em 10^-6 graus
+const PLUTO_LON_COEFFS: [number, number][] = [
+  [-19799805,19850055],[897144,-4954829],[611149,1211027],[-341243,-189585],
+  [129287,-34992],[-38164,30893],[20442,-9987],[-4063,-5071],
+  [-6016,-3336],[-3956,3039],[-667,3572],[1276,501],[1152,-917],[630,-1277],
+  [2571,-459],[899,-1449],[-1016,1043],[-2343,-1012],[7042,788],
+  [1199,-338],[418,-67],[120,-274],[-60,-159],[-82,-29],
+  [-36,-29],[-40,7],[-14,22],[4,13],[5,2],[-1,0],
+  [2,0],[-4,5],[4,-7],[14,24],[-49,-34],[163,-48],
+  [9,-24],[-4,1],[-3,1],[1,3],[-3,-1],[5,-3],[0,0]
+];
+
+// Coeficientes de latitude: [sin_coeff, cos_coeff] em 10^-6 graus
+const PLUTO_LAT_COEFFS: [number, number][] = [
+  [-5452852,-14974862],[3527812,1672790],[-1050748,327647],[178690,-292153],
+  [18650,100340],[-30697,-25823],[4878,11248],[226,-64],
+  [2030,-836],[69,-604],[-247,-567],[-57,1],[-122,175],[-49,-164],
+  [-197,199],[-25,217],[589,-248],[-269,711],[185,193],
+  [315,807],[-130,-43],[5,3],[2,17],[2,5],
+  [2,3],[3,1],[2,-1],[1,-1],[0,-1],[0,0],
+  [0,-2],[2,2],[-7,0],[10,-8],[-3,20],[6,5],
+  [14,17],[-2,0],[0,0],[0,0],[0,1],[0,0],[1,0]
+];
+
+// Coeficientes de raio vetor: [sin_coeff, cos_coeff] em 10^-7 AU
+const PLUTO_RAD_COEFFS: [number, number][] = [
+  [66865439,68951812],[-11827535,-332538],[1593179,-1438890],[-18444,483220],
+  [-65977,-85431],[31174,-6032],[-5794,22161],[4601,4032],
+  [-1729,234],[-415,702],[239,723],[67,-67],[1034,-451],[-129,504],
+  [480,-231],[2,-441],[-3359,265],[7856,-7832],[36,45763],
+  [8663,8547],[-809,-769],[263,-144],[-126,32],[-35,-16],
+  [-19,-4],[-15,8],[-4,12],[5,6],[3,1],[6,-2],
+  [2,2],[-2,-2],[14,13],[-63,13],[136,-236],[273,1065],
+  [251,149],[-25,-9],[9,-2],[-8,7],[2,-10],[19,35],[10,3]
+];
+
+/**
+ * Calcula a posição heliocêntrica de Plutão usando Meeus Cap. 37 (Tabela 37.A)
+ * Válido para 1885-2099
+ */
+function calculatePlutoHeliocentric(T: number): { lon: number; lat: number; r: number } {
+  const J = 34.35 + 3034.9057 * T;
+  const S = 50.08 + 1222.1138 * T;
+  const P = 238.96 + 144.96 * T;
+  
+  const deg2rad = Math.PI / 180;
+  
+  let corrLon = 0;
+  let corrLat = 0;
+  let corrRad = 0;
+  
+  for (let i = 0; i < PLUTO_ARGUMENTS.length; i++) {
+    const [jc, sc, pc] = PLUTO_ARGUMENTS[i];
+    const alpha = (jc * J + sc * S + pc * P) * deg2rad;
+    const sinA = Math.sin(alpha);
+    const cosA = Math.cos(alpha);
+    
+    corrLon += PLUTO_LON_COEFFS[i][0] * sinA + PLUTO_LON_COEFFS[i][1] * cosA;
+    corrLat += PLUTO_LAT_COEFFS[i][0] * sinA + PLUTO_LAT_COEFFS[i][1] * cosA;
+    corrRad += PLUTO_RAD_COEFFS[i][0] * sinA + PLUTO_RAD_COEFFS[i][1] * cosA;
   }
   
-  return result;
+  const lon = 238.958116 + 144.96 * T + corrLon / 1000000;
+  const lat = -3.908239 + corrLat / 1000000;
+  const r = 40.7241346 + corrRad / 10000000;
+  
+  return { lon, lat, r };
+}
+
+/**
+ * Calcula a longitude eclíptica geocêntrica de Plutão
+ * Converte de heliocêntrica para geocêntrica usando a posição do Sol
+ */
+async function calculatePlutoGeocentricLongitude(toi: TimeOfInterestType): Promise<number> {
+  const jd = toi.getJulianDay();
+  const T = (jd - 2451545.0) / 36525.0;
+  
+  // Posição heliocêntrica de Plutão
+  const pluto = calculatePlutoHeliocentric(T);
+  const deg2rad = Math.PI / 180;
+  const rad2deg = 180 / Math.PI;
+  
+  // Posição do Sol (geocêntrica) para obter a posição da Terra (heliocêntrica)
+  const sun = createSun(toi);
+  const sunCoords = await sun.getGeocentricEclipticSphericalDateCoordinates();
+  
+  // Longitude heliocêntrica da Terra = longitude geocêntrica do Sol + 180°
+  const earthLon = (sunCoords.lon + 180) % 360;
+  const earthR = 1.0; // ~1 AU (simplificação aceitável)
+  
+  // Converter coordenadas heliocêntricas de Plutão para cartesianas
+  const plutoLonRad = pluto.lon * deg2rad;
+  const plutoLatRad = pluto.lat * deg2rad;
+  const xp = pluto.r * Math.cos(plutoLatRad) * Math.cos(plutoLonRad);
+  const yp = pluto.r * Math.cos(plutoLatRad) * Math.sin(plutoLonRad);
+  
+  // Converter coordenadas heliocêntricas da Terra para cartesianas
+  const earthLonRad = earthLon * deg2rad;
+  const xe = earthR * Math.cos(earthLonRad);
+  const ye = earthR * Math.sin(earthLonRad);
+  
+  // Vetor geocêntrico de Plutão
+  const dx = xp - xe;
+  const dy = yp - ye;
+  
+  // Longitude eclíptica geocêntrica
+  let geoLon = Math.atan2(dy, dx) * rad2deg;
+  if (geoLon < 0) geoLon += 360;
+  
+  return geoLon;
 }
 
 // ===== CÁLCULO DAS POSIÇÕES PLANETÁRIAS =====
