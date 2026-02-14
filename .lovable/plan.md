@@ -1,55 +1,73 @@
 
-## Fix Remaining i18n Bugs in Human Design
 
-### 1. Translate BodyGraph Legend (HDBodyGraph.tsx)
+# Fix Human Design Calculation: Lunar Nodes and Missing Pluto
 
-The legend in the SVG has 5 hardcoded Portuguese strings. The component needs to accept translated labels via props (since it's an SVG component, using hooks directly adds complexity).
+## Problem Summary
 
-**Changes to `HDBodyGraph.tsx`:**
-- Add a `legendLabels` prop with keys: `design`, `personality`, `both`, `definedCenter`, `undefined`
-- Replace hardcoded text in `renderLegend()` with these props
+After comparing Luciana Belenton's chart on the reference platform (aHumanDesign.com) with our platform, two critical calculation errors were identified:
 
-**Changes to `DesenhoHumanoResults.tsx`:**
-- Pass `legendLabels` prop to `HDBodyGraph` using `t()` translations
+### Issue 1: Lunar Node Calculation is Wrong
+The North Node and South Node positions are significantly off, producing completely different gate activations:
 
-**New translation keys** (in all 3 locale files):
-```
-"bodygraphLegend": {
-  "design": "Design (Unconscious)" / "Design (Inconsciente)" / "Design (Inconsciente)",
-  "personality": "Personality (Conscious)" / "Personalidade (Consciente)" / "Personalidad (Consciente)",
-  "both": "Both" / "Ambos" / "Ambos",
-  "definedCenter": "Defined Center" / "Centro Definido" / "Centro Definido",
-  "undefined": "Undefined" / "Indefinido" / "Indefinido"
-}
-```
+| Planet | Correct (Reference) | Our Platform |
+|--------|---------------------|-------------|
+| Design North Node | Gate 10, Line 1 | Gate 11, Line 5 |
+| Design South Node | Gate 15, Line 1 | Gate 12, Line 5 |
+| Personality North Node | Gate 26, Line 6 | Gate 11, Line 1 |
+| Personality South Node | Gate 45, Line 6 | Gate 12, Line 1 |
 
-### 2. Add LanguageSwitcher to Results Header
+This means the chart shows gates 11 and 12 activated when they should not be, and is missing gates 10, 15, 26, and 45 from node activations. For this user the channels and defined centers coincidentally match, but for other users this could produce completely wrong Types, Authorities, and Definitions.
 
-The header at line 548-565 of `DesenhoHumanoResults.tsx` has a spacer `<div className="w-20" />` on the right side. Replace it with the `LanguageSwitcher` component (compact variant) styled for the dark header background.
+### Issue 2: Pluto is Not Included
+Our calculator uses 12 celestial bodies (Sun, Earth, Moon, North Node, South Node, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune) but Human Design uses 13 -- Pluto is missing. The reference shows Pluto activating gate 18 for this user.
 
-### 3. Translate Incarnation Cross
+## Root Cause Analysis
 
-At line 597, `result.incarnation_cross` is displayed raw from the database (always in Portuguese). Add a translation mapping for common Incarnation Cross names in all 3 locale files under a `hdCrosses` key, and use a helper function `tv()` or a new dedicated helper to translate the cross name with a fallback to the raw value.
+### Lunar Nodes
+The current implementation in `humanDesignCalculator.ts` uses a custom approximation formula (`calculateLunarNodeApprox`) based on Meeus' mean longitude with nutational corrections. However, this formula is producing results that are off by many degrees compared to the reference. The issue is likely that the formula calculates a "Mean Node" (or a poorly corrected True Node) rather than the actual "True North Node" used in Human Design.
 
-**New translation keys** (common crosses):
-```
-"hdCrosses": {
-  "Cruz do Inesperado": "Cross of the Unexpected" (EN) / "Cruz de lo Inesperado" (ES),
-  "Cruz da Explicação": "Cross of Explanation" / "Cruz de la Explicación",
-  ... (cover all 192 crosses or the most common ones)
-}
-```
+The `astronomy-bundle` library does not provide a built-in Lunar Node function, so we need a more accurate calculation -- either improving the Meeus formula with full perturbation terms, or using a different algorithmic approach (e.g., Swiss Ephemeris-quality calculations).
 
-Since there are 192 possible Incarnation Crosses, a practical approach is to create a lookup object in a new data file (`src/data/humanDesignCrosses.ts`) with all cross translations, rather than putting them in the JSON locale files. The component will import this and look up the translation by the Portuguese key.
+### Pluto
+The `astronomy-bundle` library does not include Pluto (it was removed from the main planets module). We need to either calculate Pluto's position using a polynomial approximation or integrate a different data source.
 
-### Technical Details
+## Implementation Plan
 
-**Files to modify:**
-- `src/components/humandesign/HDBodyGraph.tsx` -- add `legendLabels` prop
-- `src/pages/DesenhoHumanoResults.tsx` -- import LanguageSwitcher, pass legend props, translate cross
-- `src/locales/pt/translation.json` -- add `bodygraphLegend` keys
-- `src/locales/en/translation.json` -- add `bodygraphLegend` keys
-- `src/locales/es/translation.json` -- add `bodygraphLegend` keys
+### Step 1: Fix Lunar Node Calculation
+**File: `src/utils/humanDesignCalculator.ts`**
 
-**New file to create:**
-- `src/data/humanDesignCrosses.ts` -- cross name translations for PT/EN/ES (all 192 crosses)
+Replace the current `calculateLunarNodeApprox` function with a high-precision True North Node calculation using the full series of periodic terms from Meeus Chapter 47 (Nutation and the Obliquity of the Ecliptic). The key improvement is applying the complete set of 62+ periodic correction terms to the mean longitude of the ascending node, rather than just the 5 main terms currently used.
+
+Alternatively, implement the calculation using the Moon's orbital elements approach:
+- Calculate the mean longitude of the ascending node (omega)
+- Apply the full set of periodic perturbation corrections (not just 5 terms)
+- The True Node oscillates around the Mean Node by up to ~1.7 degrees
+
+### Step 2: Add Pluto Calculation  
+**File: `src/utils/humanDesignCalculator.ts`**
+
+Add Pluto to the PLANETS array and implement a polynomial approximation for Pluto's ecliptic longitude. Since Pluto moves very slowly (~0.01 degrees/day), a polynomial fit covering the relevant date range (1920-2050) can achieve sufficient accuracy for gate determination (within ~0.5 degrees).
+
+### Step 3: Validate Against Reference
+**File: `src/utils/__tests__/humanDesignCalculator.test.ts`**
+
+Add test cases comparing our calculated positions against the reference chart for Luciana Belenton:
+- Verify all 13 planetary gate/line values match the reference
+- Verify activated gates list matches
+- Verify channels, centers, type, authority, profile all match
+
+## Technical Details
+
+### Files to modify:
+- `src/utils/humanDesignCalculator.ts` -- Fix lunar node formula, add Pluto planet and calculation
+- `src/utils/__tests__/humanDesignCalculator.test.ts` -- Add validation test cases
+
+### Key considerations:
+- The `longitudeToGate` function uses MANDALA_OFFSET of 302.0 degrees, which has been validated as correct for all other planets -- no change needed there
+- The 88-degree solar arc Design Date calculation is also correct -- no change needed
+- After fixing, existing users' charts in the database will still have the old (wrong) data; a recalculation may be needed for existing results
+- The bodygraph rendering code (HDBodyGraph.tsx) is correct -- it faithfully renders whatever data it receives, so fixing the calculation is the only change needed for the visual to be correct
+
+### Impact on existing data:
+After deploying the fix, existing Human Design results in the database will still contain the old incorrect gate activations. Users would need to recalculate their charts (there is already a "Recalculate" button on the results page) to get corrected results.
+
