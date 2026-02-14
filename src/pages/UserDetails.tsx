@@ -81,6 +81,7 @@ const UserDetails = () => {
   const [generatingAnalysis, setGeneratingAnalysis] = useState<string | null>(null);
   const [generatingHDAnalysis, setGeneratingHDAnalysis] = useState<string | null>(null);
   const [recalculating, setRecalculating] = useState<string | null>(null);
+  const [recalculatingHD, setRecalculatingHD] = useState<string | null>(null);
   const [integratedAnalysis, setIntegratedAnalysis] = useState<string | null>(null);
   const [generatingIntegrated, setGeneratingIntegrated] = useState(false);
   const [downloadingIntegrated, setDownloadingIntegrated] = useState(false);
@@ -404,6 +405,89 @@ const UserDetails = () => {
       });
     } finally {
       setRecalculating(null);
+    }
+  };
+
+  const handleRecalculateHD = async (hdResult: HDResult) => {
+    setRecalculatingHD(hdResult.id);
+    try {
+      const { calculateHumanDesignChart } = await import('@/utils/humanDesignCalculator');
+      
+      // Parse birth date and time
+      const [year, month, day] = hdResult.birth_date.split('-').map(Number);
+      const [hours, minutes] = hdResult.birth_time.split(':').map(Number);
+      const birthDateUTC = new Date(Date.UTC(year, month - 1, day, hours, minutes, 0));
+      
+      const lat = Number(hdResult.centers && (hdResult as any).birth_lat) || 0;
+      const lon = Number((hdResult as any).birth_lon) || 0;
+      
+      // Fetch lat/lon from the DB record directly
+      const { data: fullRecord } = await supabase
+        .from('human_design_results')
+        .select('birth_lat, birth_lon')
+        .eq('id', hdResult.id)
+        .single();
+      
+      const location = {
+        lat: fullRecord?.birth_lat || 0,
+        lon: fullRecord?.birth_lon || 0,
+        name: hdResult.birth_location,
+      };
+      
+      const chart = await calculateHumanDesignChart(birthDateUTC, location);
+      
+      // Build the data to update
+      const centersMap: Record<string, boolean> = {};
+      chart.centers.forEach(c => { centersMap[c.id] = c.defined; });
+      
+      const completeChannels = chart.channels
+        .filter(ch => ch.isComplete)
+        .map(ch => ({ gates: ch.gates, name: ch.name }));
+      
+      const mapActivation = (a: any) => ({
+        planet: a.planet,
+        gate: a.gate,
+        line: a.line,
+        color: a.color,
+        tone: a.tone,
+        base: a.base,
+      });
+      
+      const { error: updateError } = await supabase
+        .from('human_design_results')
+        .update({
+          energy_type: chart.type,
+          strategy: chart.strategy,
+          authority: chart.authority,
+          profile: chart.profile,
+          definition: chart.definition,
+          incarnation_cross: chart.incarnationCross,
+          centers: centersMap,
+          channels: completeChannels,
+          activated_gates: chart.allActivatedGates,
+          personality_activations: chart.personality.map(mapActivation),
+          design_activations: chart.design.map(mapActivation),
+          design_date: chart.designDate.toISOString(),
+        })
+        .eq('id', hdResult.id);
+      
+      if (updateError) throw updateError;
+      
+      toast({
+        title: "Mapa recalculado!",
+        description: `Tipo: ${chart.type}, Perfil: ${chart.profile}, ${chart.allActivatedGates.length} gates ativados.`,
+      });
+      
+      fetchUserData();
+    } catch (error: any) {
+      console.error("Erro ao recalcular HD:", error);
+      toast({
+        title: "Erro ao recalcular",
+        description: error.message || "Não foi possível recalcular o mapa.",
+        variant: "destructive",
+      });
+    } finally {
+      setRecalculatingHD(null);
     }
   };
 
@@ -820,6 +904,25 @@ const UserDetails = () => {
                     >
                       <Download className="w-4 h-4" />
                       PDF
+                    </Button>
+                    <Button
+                      onClick={() => handleRecalculateHD(hdResult)}
+                      disabled={recalculatingHD === hdResult.id}
+                      variant="outline"
+                      size="sm"
+                      className="gap-2"
+                    >
+                      {recalculatingHD === hdResult.id ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Recalculando...
+                        </>
+                      ) : (
+                        <>
+                          <RefreshCw className="w-4 h-4" />
+                          Recalcular
+                        </>
+                      )}
                     </Button>
                     <Button
                       onClick={() => navigate(`/desenho-humano/results/${hdResult.session_id}`)}
