@@ -279,7 +279,10 @@ export async function generateHDReport(data: HDReportData): Promise<void> {
   doc.setTextColor(...COLORS.darkText);
   doc.setFontSize(10);
   
-  const birthDate = new Date(data.birth_date).toLocaleDateString(dateLocale);
+  // Parse date parts directly to avoid UTC timezone shift (e.g., 1974-03-30 becoming 29/03 in BR timezone)
+  const [bYear, bMonth, bDay] = data.birth_date.split('-').map(Number);
+  const birthDateObj = new Date(bYear, bMonth - 1, bDay);
+  const birthDate = birthDateObj.toLocaleDateString(dateLocale);
   doc.text(`${t.birthDate}: ${birthDate}`, margin + 10, yPos + 20);
   doc.text(`${t.birthTime}: ${data.birth_time}`, margin + 10, yPos + 28);
   doc.text(`${t.birthLocation}: ${data.birth_location}`, margin + 10, yPos + 36);
@@ -746,7 +749,8 @@ export async function generateHDReport(data: HDReportData): Promise<void> {
   }
   
   // ============ SALVAR PDF ============
-  const birthDateFormatted = new Date(data.birth_date)
+  const [fYear, fMonth, fDay] = data.birth_date.split('-').map(Number);
+  const birthDateFormatted = new Date(fYear, fMonth - 1, fDay)
     .toLocaleDateString(dateLocale)
     .replace(/\//g, '-');
   const fileName = `${t.fileName}_${birthDateFormatted}.pdf`;
