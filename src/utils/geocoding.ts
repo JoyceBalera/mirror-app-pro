@@ -137,8 +137,10 @@ export function convertLocalBirthToUTC(
   birthTime: string, 
   timezone: string
 ): Date {
-  // Criar string de datetime local
-  const localDateTimeStr = `${birthDate}T${birthTime}:00`;
+  // Criar string de datetime local (birth_time pode vir como "HH:MM" ou "HH:MM:SS")
+  const timeParts = birthTime.split(':');
+  const normalizedTime = timeParts.length >= 3 ? birthTime : `${birthTime}:00`;
+  const localDateTimeStr = `${birthDate}T${normalizedTime}`;
   
   // Usar date-fns-tz para converter corretamente
   // fromZonedTime converte de timezone local para UTC
