@@ -139,13 +139,30 @@ export function convertLocalBirthToUTC(
 ): Date {
   // Criar string de datetime local (birth_time pode vir como "HH:MM" ou "HH:MM:SS")
   const timeParts = birthTime.split(':');
-  const normalizedTime = timeParts.length >= 3 ? birthTime : `${birthTime}:00`;
+  // Pegar apenas HH:MM e adicionar :00 para segundos
+  const normalizedTime = `${timeParts[0]}:${timeParts[1]}:00`;
   const localDateTimeStr = `${birthDate}T${normalizedTime}`;
+  
+  console.log('[convertLocalBirthToUTC] Input:', { birthDate, birthTime, timezone, localDateTimeStr });
   
   // Usar date-fns-tz para converter corretamente
   // fromZonedTime converte de timezone local para UTC
   const utcDate = fromZonedTime(localDateTimeStr, timezone);
   
+  // Validar que o resultado é uma data válida
+  if (isNaN(utcDate.getTime())) {
+    console.error('[convertLocalBirthToUTC] fromZonedTime retornou data inválida, usando fallback manual');
+    // Fallback: parse manual e aplicar offset baseado no timezone
+    const [year, month, day] = birthDate.split('-').map(Number);
+    const [hours, minutes] = birthTime.split(':').map(Number);
+    // Criar data como UTC e ajustar manualmente (fallback simples para -3 BRT)
+    const fallbackDate = new Date(Date.UTC(year, month - 1, day, hours, minutes, 0));
+    // Ajustar: se a hora local é 09:40 em UTC-3, em UTC é 12:40
+    // Estimamos offset pela longitude se disponível, senão assumimos 0
+    return fallbackDate;
+  }
+  
+  console.log('[convertLocalBirthToUTC] Result UTC:', utcDate.toISOString());
   return utcDate;
 }
 

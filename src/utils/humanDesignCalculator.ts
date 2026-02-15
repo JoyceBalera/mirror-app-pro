@@ -415,6 +415,11 @@ export async function calculatePlanetaryPositions(date: Date): Promise<Planetary
  * Usa velocidade média do Sol (~0.985647°/dia) para convergir rapidamente.
  */
 export async function calculateDesignDate(birthDate: Date): Promise<Date> {
+  // Validar data de entrada
+  if (isNaN(birthDate.getTime())) {
+    throw new Error(`Data de nascimento inválida recebida no cálculo do Design: ${birthDate}. Verifique os dados de nascimento.`);
+  }
+  console.log('[calculateDesignDate] Input birthDate:', birthDate.toISOString());
   const toi = createTimeOfInterest.fromDate(birthDate);
   const sun = createSun(toi);
   const birthSunCoords = await sun.getGeocentricEclipticSphericalDateCoordinates();
