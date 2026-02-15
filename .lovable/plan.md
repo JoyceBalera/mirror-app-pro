@@ -1,73 +1,61 @@
 
 
-# Fix Human Design Calculation: Lunar Nodes and Missing Pluto
+# Corrigir Recalculação do Desenho Humano: Conversão de Timezone
 
-## Problem Summary
+## Problema
 
-After comparing Luciana Belenton's chart on the reference platform (aHumanDesign.com) with our platform, two critical calculation errors were identified:
+O botão "Recalcular" do Desenho Humano trata o horário de nascimento armazenado no banco como se fosse UTC, mas ele e armazenado como **horario local**. Isso causa um erro de 3 horas (no caso de Rio de Janeiro, UTC-3), resultando em posicoes planetarias incorretas e perfil errado (6/2 ao inves de 6/3).
 
-### Issue 1: Lunar Node Calculation is Wrong
-The North Node and South Node positions are significantly off, producing completely different gate activations:
+O fluxo original do teste usa `convertLocalBirthToUTC()` com lookup de timezone correto, mas as duas funcoes de recalculo ignoram essa conversao.
 
-| Planet | Correct (Reference) | Our Platform |
-|--------|---------------------|-------------|
-| Design North Node | Gate 10, Line 1 | Gate 11, Line 5 |
-| Design South Node | Gate 15, Line 1 | Gate 12, Line 5 |
-| Personality North Node | Gate 26, Line 6 | Gate 11, Line 1 |
-| Personality South Node | Gate 45, Line 6 | Gate 12, Line 1 |
+## Locais Afetados
 
-This means the chart shows gates 11 and 12 activated when they should not be, and is missing gates 10, 15, 26, and 45 from node activations. For this user the channels and defined centers coincidentally match, but for other users this could produce completely wrong Types, Authorities, and Definitions.
+Existem **dois** pontos de recalculo com o mesmo bug:
 
-### Issue 2: Pluto is Not Included
-Our calculator uses 12 celestial bodies (Sun, Earth, Moon, North Node, South Node, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune) but Human Design uses 13 -- Pluto is missing. The reference shows Pluto activating gate 18 for this user.
+1. **`src/pages/UserDetails.tsx`** (painel admin, linha 419) -- usa `Date.UTC(year, month-1, day, hours, minutes)` diretamente
+2. **`src/pages/DesenhoHumanoResults.tsx`** (pagina do usuario, linha 364) -- usa `new Date(\`..T..Z\`)` com sufixo Z
 
-## Root Cause Analysis
+## Solucao
 
-### Lunar Nodes
-The current implementation in `humanDesignCalculator.ts` uses a custom approximation formula (`calculateLunarNodeApprox`) based on Meeus' mean longitude with nutational corrections. However, this formula is producing results that are off by many degrees compared to the reference. The issue is likely that the formula calculates a "Mean Node" (or a poorly corrected True Node) rather than the actual "True North Node" used in Human Design.
+Em ambos os arquivos, antes de chamar `calculateHumanDesignChart`, fazer o lookup de timezone usando as coordenadas ja salvas no banco (`birth_lat`, `birth_lon`) e converter a hora local para UTC usando `convertLocalBirthToUTC`.
 
-The `astronomy-bundle` library does not provide a built-in Lunar Node function, so we need a more accurate calculation -- either improving the Meeus formula with full perturbation terms, or using a different algorithmic approach (e.g., Swiss Ephemeris-quality calculations).
+### Mudancas em `src/pages/UserDetails.tsx`
 
-### Pluto
-The `astronomy-bundle` library does not include Pluto (it was removed from the main planets module). We need to either calculate Pluto's position using a polynomial approximation or integrate a different data source.
+- Importar `getTimezoneFromCoords` e `convertLocalBirthToUTC` de `@/utils/geocoding`
+- Na funcao `handleRecalculateHD`, substituir a construcao direta de `Date.UTC` por:
+  1. Buscar timezone via `getTimezoneFromCoords(lat, lon)`
+  2. Converter com `convertLocalBirthToUTC(birth_date, birth_time, timezone)`
+  3. Passar o resultado para `calculateHumanDesignChart`
 
-## Implementation Plan
+### Mudancas em `src/pages/DesenhoHumanoResults.tsx`
 
-### Step 1: Fix Lunar Node Calculation
-**File: `src/utils/humanDesignCalculator.ts`**
+- Importar `getTimezoneFromCoords` e `convertLocalBirthToUTC` de `@/utils/geocoding`
+- Na funcao de recalculo, substituir `new Date(\`..T..Z\`)` por:
+  1. Buscar timezone via `getTimezoneFromCoords(birth_lat, birth_lon)`
+  2. Converter com `convertLocalBirthToUTC(birth_date, birth_time, timezone)`
+  3. Passar o resultado para `calculateHumanDesignChart`
 
-Replace the current `calculateLunarNodeApprox` function with a high-precision True North Node calculation using the full series of periodic terms from Meeus Chapter 47 (Nutation and the Obliquity of the Ecliptic). The key improvement is applying the complete set of 62+ periodic correction terms to the mean longitude of the ascending node, rather than just the 5 main terms currently used.
+## Detalhes Tecnicos
 
-Alternatively, implement the calculation using the Moon's orbital elements approach:
-- Calculate the mean longitude of the ascending node (omega)
-- Apply the full set of periodic perturbation corrections (not just 5 terms)
-- The True Node oscillates around the Mean Node by up to ~1.7 degrees
+```text
+Fluxo Original (correto):
+  birthTime "09:40" + timezone "America/Sao_Paulo"
+  -> convertLocalBirthToUTC -> 12:40 UTC
+  -> calculateHumanDesignChart -> Profile 6/3 ✓
 
-### Step 2: Add Pluto Calculation  
-**File: `src/utils/humanDesignCalculator.ts`**
+Recalculo Atual (bug):
+  birthTime "09:40" tratado como UTC
+  -> calculateHumanDesignChart com 09:40 UTC -> Profile 6/2 ✗
 
-Add Pluto to the PLANETS array and implement a polynomial approximation for Pluto's ecliptic longitude. Since Pluto moves very slowly (~0.01 degrees/day), a polynomial fit covering the relevant date range (1920-2050) can achieve sufficient accuracy for gate determination (within ~0.5 degrees).
+Recalculo Corrigido:
+  birthTime "09:40" + getTimezoneFromCoords(lat, lon)
+  -> convertLocalBirthToUTC -> 12:40 UTC  
+  -> calculateHumanDesignChart -> Profile 6/3 ✓
+```
 
-### Step 3: Validate Against Reference
-**File: `src/utils/__tests__/humanDesignCalculator.test.ts`**
+## Impacto
 
-Add test cases comparing our calculated positions against the reference chart for Luciana Belenton:
-- Verify all 13 planetary gate/line values match the reference
-- Verify activated gates list matches
-- Verify channels, centers, type, authority, profile all match
-
-## Technical Details
-
-### Files to modify:
-- `src/utils/humanDesignCalculator.ts` -- Fix lunar node formula, add Pluto planet and calculation
-- `src/utils/__tests__/humanDesignCalculator.test.ts` -- Add validation test cases
-
-### Key considerations:
-- The `longitudeToGate` function uses MANDALA_OFFSET of 302.0 degrees, which has been validated as correct for all other planets -- no change needed there
-- The 88-degree solar arc Design Date calculation is also correct -- no change needed
-- After fixing, existing users' charts in the database will still have the old (wrong) data; a recalculation may be needed for existing results
-- The bodygraph rendering code (HDBodyGraph.tsx) is correct -- it faithfully renders whatever data it receives, so fixing the calculation is the only change needed for the visual to be correct
-
-### Impact on existing data:
-After deploying the fix, existing Human Design results in the database will still contain the old incorrect gate activations. Users would need to recalculate their charts (there is already a "Recalculate" button on the results page) to get corrected results.
+- Apos o deploy, o botao "Recalcular" no admin e na pagina de resultados do usuario vai produzir resultados corretos
+- Usuarios existentes com perfis incorretos precisam clicar "Recalcular" novamente para atualizar
+- A Luciana especificamente vai de 6/2 para 6/3 apos recalcular
 
