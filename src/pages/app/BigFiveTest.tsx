@@ -286,6 +286,15 @@ const BigFiveTest = () => {
               </p>
             </div>
 
+            <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-4">
+              <p className="text-sm font-semibold text-destructive mb-1">
+                ⚠️ {t("bigFiveTest.noReturnWarningTitle", "Atenção: Sem retorno!")}
+              </p>
+              <p className="text-sm text-destructive/80">
+                {t("bigFiveTest.noReturnWarningDesc", "Uma vez respondida, cada questão não poderá ser alterada. Não é possível voltar para questões anteriores. Leia com atenção e responda com cuidado.")}
+              </p>
+            </div>
+
             <p className="text-sm text-muted-foreground">
               {t("bigFiveTest.description")}
             </p>
