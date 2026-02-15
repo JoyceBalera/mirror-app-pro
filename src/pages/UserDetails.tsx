@@ -922,7 +922,7 @@ const UserDetails = () => {
                       )}
                     </Button>
                     <Button
-                      onClick={() => navigate(`/desenho-humano/results/${hdResult.session_id}`)}
+                      onClick={() => navigate(`/desenho-humano/results/${hdResult.id}`)}
                       variant="outline"
                       size="sm"
                       className="gap-2"
