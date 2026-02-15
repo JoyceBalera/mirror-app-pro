@@ -258,14 +258,19 @@ describe('Einstein Chart Integration Test', () => {
     // Log design gates (unconscious)
     console.log('Design Gates:', chart.design.map(d => `${d.planet}: Gate ${d.gate}.${d.line}`).join(', '));
     
-    // Basic type validation (Generator family due to defined Sacral)
-    expect(['Gerador', 'Gerador Manifestante']).toContain(chart.type);
+    // Exact assertions based on reference: humandesignforsuccess.com/albert-einstein/
+    expect(chart.type).toBe('Gerador');
+    expect(chart.profile).toBe('1/4');
     
-    // Validate that Sacral is defined (Generator/MG must have defined Sacral)
+    // Exact channels
+    const channelIds = completeChannels.map(c => c.id).sort();
+    expect(channelIds).toEqual(['30-41', '51-25', '6-59'].sort());
+    
+    // Defined centers must include these
     expect(definedCenters).toContain('sacral');
-    
-    // Validate profile format
-    expect(chart.profile).toMatch(/^\d\/\d$/);
+    expect(definedCenters).toContain('g');
+    expect(definedCenters).toContain('heart');
+    expect(definedCenters).toContain('solar');
   });
   
   it('should produce consistent results across multiple calculations', async () => {
@@ -287,23 +292,23 @@ describe('Einstein Chart Integration Test', () => {
   });
 });
 
-// User validation test: November 20, 1982, 12:30, São Bernardo do Campo, Brazil
-describe('User Chart Validation - Nov 20, 1982', () => {
+// User validation test: Luciana - March 30, 1974, 09:40, Rio de Janeiro, Brazil
+describe('User Chart Validation - Luciana (30/03/1974)', () => {
   const USER_DATA = {
-    // São Bernardo do Campo: -23.6914, -46.5646
-    // Brazil timezone in Nov 1982: DST active (UTC-2)
-    // 12:30 local = 14:30 UTC
-    birthDate: new Date(Date.UTC(1982, 10, 20, 14, 30, 0)),
-    location: { lat: -23.6914, lon: -46.5646, name: 'São Bernardo do Campo, Brazil' },
+    // Rio de Janeiro: -22.9068, -43.1729
+    // Brazil timezone in Mar 1974: UTC-3 (no DST)
+    // 09:40 local = 12:40 UTC
+    birthDate: new Date(Date.UTC(1974, 2, 30, 12, 40, 0)),
+    location: { lat: -22.9068, lon: -43.1729, name: 'Rio de Janeiro, Brazil' },
   };
 
-  it('should calculate complete chart for user birth data', async () => {
+  it('should calculate complete chart for Luciana', async () => {
     const chart = await calculateHumanDesignChart(
       USER_DATA.birthDate,
       USER_DATA.location
     );
     
-    console.log('\\n=== USER CHART: 20/11/1982 12:30 São Bernardo do Campo ===');
+    console.log('\n=== LUCIANA CHART: 30/03/1974 09:40 Rio de Janeiro ===');
     console.log('Type:', chart.type);
     console.log('Profile:', chart.profile);
     console.log('Authority:', chart.authority);
@@ -311,7 +316,7 @@ describe('User Chart Validation - Nov 20, 1982', () => {
     console.log('Incarnation Cross:', chart.incarnationCross);
     
     const completeChannels = chart.channels.filter(c => c.isComplete);
-    console.log('\\nComplete Channels:', completeChannels.length > 0 
+    console.log('\nComplete Channels:', completeChannels.length > 0 
       ? completeChannels.map(c => `${c.id} (${c.name})`).join(', ')
       : 'None');
     
@@ -320,21 +325,33 @@ describe('User Chart Validation - Nov 20, 1982', () => {
     console.log('Defined Centers:', definedCenters.join(', ') || 'None');
     console.log('Open Centers:', openCenters.join(', '));
     
-    console.log('\\nActivated Gates:', chart.allActivatedGates.sort((a,b) => a-b).join(', '));
+    console.log('\nActivated Gates:', chart.allActivatedGates.sort((a,b) => a-b).join(', '));
     
-    console.log('\\n--- PERSONALITY (Conscious) ---');
+    console.log('\n--- PERSONALITY (Conscious) ---');
     chart.personality.forEach(p => {
       console.log(`${p.planetLabel}: Gate ${p.gate}.${p.line} (${p.gateInfo?.name || '?'})`);
     });
     
-    console.log('\\n--- DESIGN (Unconscious) ---');
+    console.log('\n--- DESIGN (Unconscious) ---');
     chart.design.forEach(d => {
       console.log(`${d.planetLabel}: Gate ${d.gate}.${d.line} (${d.gateInfo?.name || '?'})`);
     });
     
-    console.log('\\nDesign Date:', chart.designDate.toISOString());
+    console.log('\nDesign Date:', chart.designDate.toISOString());
     
-    expect(chart.type).toBeDefined();
-    expect(chart.profile).toMatch(/^\d\/\d$/);
+    // Exact assertions for Luciana's chart
+    expect(chart.type).toBe('Gerador');
+    expect(chart.profile).toBe('6/3');
+    expect(chart.authority).toBe('Emocional');
+    
+    // Exact channels
+    const channelIds = completeChannels.map(c => c.id).sort();
+    expect(channelIds).toEqual(['18-58', '19-49', '39-55', '50-27'].sort());
+    
+    // Defined centers
+    expect(definedCenters.sort()).toEqual(['spleen', 'sacral', 'solar', 'root'].sort());
+    
+    // Open centers
+    expect(openCenters.sort()).toEqual(['head', 'ajna', 'throat', 'g', 'heart'].sort());
   });
 });
