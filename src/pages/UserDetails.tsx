@@ -412,14 +412,7 @@ const UserDetails = () => {
     setRecalculatingHD(hdResult.id);
     try {
       const { calculateHumanDesignChart } = await import('@/utils/humanDesignCalculator');
-      
-      // Parse birth date and time
-      const [year, month, day] = hdResult.birth_date.split('-').map(Number);
-      const [hours, minutes] = hdResult.birth_time.split(':').map(Number);
-      const birthDateUTC = new Date(Date.UTC(year, month - 1, day, hours, minutes, 0));
-      
-      const lat = Number(hdResult.centers && (hdResult as any).birth_lat) || 0;
-      const lon = Number((hdResult as any).birth_lon) || 0;
+      const { getTimezoneFromCoords, convertLocalBirthToUTC } = await import('@/utils/geocoding');
       
       // Fetch lat/lon from the DB record directly
       const { data: fullRecord } = await supabase
@@ -433,6 +426,10 @@ const UserDetails = () => {
         lon: fullRecord?.birth_lon || 0,
         name: hdResult.birth_location,
       };
+      
+      // Convert local birth time to UTC using timezone lookup
+      const timezoneResult = await getTimezoneFromCoords(location.lat, location.lon);
+      const birthDateUTC = convertLocalBirthToUTC(hdResult.birth_date, hdResult.birth_time, timezoneResult.timezone);
       
       const chart = await calculateHumanDesignChart(birthDateUTC, location);
       

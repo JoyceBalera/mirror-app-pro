@@ -356,22 +356,10 @@ const DesenhoHumanoResults = () => {
 
     setRecalculating(true);
     try {
-      const timeParts = result.birth_time.split(':');
-      const timeValue = timeParts.length === 3 
-        ? result.birth_time
-        : `${result.birth_time}:00`;
-      
-      const birthDateTimeUTC = new Date(`${result.birth_date}T${timeValue}Z`);
-      
-      if (isNaN(birthDateTimeUTC.getTime())) {
-        toast({
-          title: t('humanDesignResults.error'),
-          description: t('humanDesignResults.invalidBirthDate'),
-          variant: "destructive",
-        });
-        setRecalculating(false);
-        return;
-      }
+      // Convert local birth time to UTC using timezone lookup
+      const { getTimezoneFromCoords, convertLocalBirthToUTC } = await import('@/utils/geocoding');
+      const timezoneResult = await getTimezoneFromCoords(result.birth_lat!, result.birth_lon!);
+      const birthDateTimeUTC = convertLocalBirthToUTC(result.birth_date, result.birth_time, timezoneResult.timezone);
       
       const chart = await calculateHumanDesignChart(birthDateTimeUTC, {
         lat: result.birth_lat,
