@@ -1,50 +1,20 @@
 
 
-## Problema
+## Corrigir horario de nascimento da Jessica Borges
 
-Dois problemas identificados na pagina de resultados Big Five (`src/pages/app/BigFiveResults.tsx`):
+### O que sera feito
 
-1. **Nomes dos tracos em letra minuscula** -- As chaves no banco de dados sao `"neuroticismo"`, `"extroversao"`, `"abertura a experiencia"` (minusculas com acentos). A funcao `normalizeTraitKey` nao reconhece `"abertura à experiência"` (com acentos) e o fallback mostra a chave crua do banco em minuscula.
-
-2. **Facetas ja estao no codigo** -- As facetas foram adicionadas na ultima edicao e devem estar funcionando. O problema principal e o mapeamento de labels.
-
-Isso afeta TODOS os usuarios, nao apenas a Jessica.
-
-## Correcoes
-
-### 1. Corrigir `normalizeTraitKey` (linha 29-37)
-
-Adicionar mapeamento para a chave com acentos que existe no banco: `"abertura à experiência": "abertura"`. Tambem adicionar as demais chaves portuguesas para garantir robustez:
-
-```
-neuroticismo: "neuroticismo",
-extroversão: "extroversão",
-abertura: "abertura",
-"abertura a experiencia": "abertura",
-"abertura à experiência": "abertura",
-amabilidade: "amabilidade",
-conscienciosidade: "conscienciosidade",
-```
-
-### 2. Corrigir `getTraitLabel` para nunca retornar chave crua
-
-Na funcao `getTraitLabel` (linha 144-160), garantir que mesmo se a chave nao for encontrada no mapa de traducoes (`t.results.traits`), o fallback use `TRAIT_LABELS` que tem os nomes capitalizados corretamente. Ja faz isso, mas o problema e que `normalizeTraitKey` falha para `"abertura à experiência"`, entao a correcao no passo 1 resolve.
-
-### 3. Adicionar `"abertura à experiência"` ao `TRAIT_LABELS` (scoring.ts)
-
-Adicionar a chave com acentos no `TRAIT_LABELS` como fallback extra:
-```
-"abertura à experiência": "Abertura à Experiência",
-```
-
----
+1. **Atualizar o horario de nascimento** no banco de dados de `12:27` para `17:55`
+2. **Recalcular o mapa de Arquitetura Pessoal** com o horario correto (isso muda tipo energetico, perfil, autoridade, canais, portas, etc.)
+3. **Gerar novo relatorio de IA** com os dados recalculados
 
 ### Detalhes Tecnicos
 
-**Arquivo 1**: `src/pages/app/BigFiveResults.tsx` (linha 33)
-- Adicionar `"abertura à experiência": "abertura"` ao mapa de `normalizeTraitKey`
+**Passo 1**: Usar o insert tool para executar um UPDATE na tabela `human_design_results` alterando `birth_time` de `12:27:00` para `17:55:00` para o registro `id = 6ce60586-4c1d-4f57-9562-18efbf57e45b`
 
-**Arquivo 2**: `src/constants/scoring.ts` (linha 37)
-- Adicionar `"abertura à experiência": "Abertura à Experiência"` ao `TRAIT_LABELS`
+**Passo 2**: Acessar a pagina de detalhes da Jessica no admin (`/admin/user/758045ef-...`) e usar o botao "Recalcular HD" que ja existe na interface -- OU -- executar a recalculacao via codigo diretamente (chamando `calculateHumanDesignChart` com a data `1991-02-08`, hora `17:55`, coordenadas `-20.43, -47.83` de Guara-SP, convertendo para UTC com timezone correto)
 
-Essas correcoes sao genericas e aplicam-se a todos os usuarios automaticamente.
+**Passo 3**: Apos recalculo, gerar nova analise de IA chamando a edge function `analyze-human-design`
+
+> O resultado final tera tipo energetico, perfil, autoridade, canais e portas diferentes do atual, pois a mudanca de horario (12:27 para 17:55) altera significativamente as posicoes planetarias.
+
