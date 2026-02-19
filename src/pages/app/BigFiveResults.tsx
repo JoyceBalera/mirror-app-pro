@@ -14,6 +14,9 @@ import { getTraitClassification, getFacetClassification as getScoreFacetClassifi
 import { facetNamesLuciana } from "@/data/bigFiveQuestionsLuciana";
 import ReactMarkdown from "react-markdown";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { getFacetPercentage } from "@/constants/scoring";
+import { ChevronDown } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 // Usa os nomes corretos das facetas definidos pela Luciana (mapeamento flat)
 const FACET_NAMES = facetNamesLuciana;
@@ -27,6 +30,7 @@ const normalizeTraitKey = (key: string): string => {
     neuroticism: "neuroticismo",
     extraversion: "extroversão", 
     openness: "abertura",
+    "abertura a experiencia": "abertura",
     agreeableness: "amabilidade",
     conscientiousness: "conscienciosidade"
   };
@@ -353,6 +357,34 @@ const BigFiveResults = () => {
                   </div>
                 </div>
                 <Progress value={getTraitPercentage(score)} className="h-3" />
+
+                {/* Facets */}
+                {result.facet_scores[trait] && (
+                  <Collapsible className="mt-3">
+                    <CollapsibleTrigger className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors">
+                      <ChevronDown className="w-3 h-3" />
+                      {t.results.facets || "Ver facetas"}
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
+                        {Object.entries(result.facet_scores[trait] as Record<string, number>).map(([facetKey, facetScore]) => {
+                          const facetClassification = getScoreFacetClassification(facetScore);
+                          return (
+                            <div key={facetKey} className="flex items-center justify-between bg-muted/40 rounded-md px-3 py-2">
+                              <span className="text-sm">{FACET_NAMES[facetKey] || facetKey}</span>
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs text-muted-foreground">{facetScore}/{SCORING.FACET_MAX}</span>
+                                <span className={`text-xs font-medium ${getClassificationColor(facetClassification)}`}>
+                                  {getClassificationLabel(facetClassification)}
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </CollapsibleContent>
+                  </Collapsible>
+                )}
               </div>
             );
           })}
