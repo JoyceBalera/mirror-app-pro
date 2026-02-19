@@ -1,43 +1,50 @@
 
 
-## Problem Identified
+## Problema
 
-The Big Five results page (`src/pages/app/BigFiveResults.tsx`) is missing two things:
+Dois problemas identificados na pagina de resultados Big Five (`src/pages/app/BigFiveResults.tsx`):
 
-1. **Facets are not displayed** -- The page only renders the 5 main trait bars (Neuroticismo, Extroversao, etc.) but never renders the individual facets (6 per trait). The data exists in the database and is even prepared by `getFormattedTraitScores()`, but that function is only used for the AI analysis, not for the UI.
+1. **Nomes dos tracos em letra minuscula** -- As chaves no banco de dados sao `"neuroticismo"`, `"extroversao"`, `"abertura a experiencia"` (minusculas com acentos). A funcao `normalizeTraitKey` nao reconhece `"abertura à experiência"` (com acentos) e o fallback mostra a chave crua do banco em minuscula.
 
-2. **"Abertura a Experiencia" IS present** in the database and should be rendering as a trait bar. If it's not appearing, it may be a label mapping issue since the DB key is `"abertura a experiencia"` (full name) while `normalizeTraitKey` only maps to `"abertura"` (short form).
+2. **Facetas ja estao no codigo** -- As facetas foram adicionadas na ultima edicao e devem estar funcionando. O problema principal e o mapeamento de labels.
 
-Both issues are purely frontend -- the database has all the correct data.
+Isso afeta TODOS os usuarios, nao apenas a Jessica.
 
-## Plan
+## Correcoes
 
-### 1. Add facet display section under each trait bar
+### 1. Corrigir `normalizeTraitKey` (linha 29-37)
 
-Below each trait's progress bar in the "Trait Scores" card, add a collapsible or always-visible grid of facets (similar to the pattern in `src/components/Results.tsx`), showing:
-- Facet name (using `FACET_NAMES` mapping)
-- Facet score
-- Classification (recalculated via `getScoreFacetClassification`)
-- Color indicator dot
+Adicionar mapeamento para a chave com acentos que existe no banco: `"abertura à experiência": "abertura"`. Tambem adicionar as demais chaves portuguesas para garantir robustez:
 
-### 2. Fix trait label mapping
+```
+neuroticismo: "neuroticismo",
+extroversão: "extroversão",
+abertura: "abertura",
+"abertura a experiencia": "abertura",
+"abertura à experiência": "abertura",
+amabilidade: "amabilidade",
+conscienciosidade: "conscienciosidade",
+```
 
-Update the `normalizeTraitKey` function and `getTraitLabel` to handle the full key `"abertura a experiencia"` correctly, mapping it to the display label "Abertura a Experiencia".
+### 2. Corrigir `getTraitLabel` para nunca retornar chave crua
+
+Na funcao `getTraitLabel` (linha 144-160), garantir que mesmo se a chave nao for encontrada no mapa de traducoes (`t.results.traits`), o fallback use `TRAIT_LABELS` que tem os nomes capitalizados corretamente. Ja faz isso, mas o problema e que `normalizeTraitKey` falha para `"abertura à experiência"`, entao a correcao no passo 1 resolve.
+
+### 3. Adicionar `"abertura à experiência"` ao `TRAIT_LABELS` (scoring.ts)
+
+Adicionar a chave com acentos no `TRAIT_LABELS` como fallback extra:
+```
+"abertura à experiência": "Abertura à Experiência",
+```
 
 ---
 
-### Technical Details
+### Detalhes Tecnicos
 
-**File**: `src/pages/app/BigFiveResults.tsx`
+**Arquivo 1**: `src/pages/app/BigFiveResults.tsx` (linha 33)
+- Adicionar `"abertura à experiência": "abertura"` ao mapa de `normalizeTraitKey`
 
-**Change 1 -- Fix label mapping** (around line 26):
-Add `"abertura a experiencia": "abertura"` to the `normalizeTraitKey` map so the full DB key resolves correctly.
+**Arquivo 2**: `src/constants/scoring.ts` (linha 37)
+- Adicionar `"abertura à experiência": "Abertura à Experiência"` ao `TRAIT_LABELS`
 
-**Change 2 -- Render facets** (after line 356, inside the trait loop):
-Add a grid rendering `result.facet_scores[trait]` entries with:
-- Name from `FACET_NAMES[facetKey]` or fallback to the raw key
-- Score value
-- Classification from `getScoreFacetClassification(score)`
-- Color dot based on classification
-
-This follows the same visual pattern already used in `src/components/Results.tsx` (the older results component).
+Essas correcoes sao genericas e aplicam-se a todos os usuarios automaticamente.
