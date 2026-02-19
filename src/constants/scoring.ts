@@ -35,6 +35,8 @@ export const TRAIT_LABELS: Record<string, string> = {
   extroversão: "Extroversão",
   openness: "Abertura à Experiência",
   abertura: "Abertura à Experiência",
+  "abertura a experiencia": "Abertura à Experiência",
+  "abertura à experiência": "Abertura à Experiência",
   agreeableness: "Amabilidade",
   amabilidade: "Amabilidade",
   conscientiousness: "Conscienciosidade",

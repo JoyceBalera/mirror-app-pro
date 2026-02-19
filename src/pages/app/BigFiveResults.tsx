@@ -28,11 +28,17 @@ const getFacetClassification = getScoreFacetClassification;
 const normalizeTraitKey = (key: string): string => {
   const map: Record<string, string> = {
     neuroticism: "neuroticismo",
-    extraversion: "extroversão", 
+    neuroticismo: "neuroticismo",
+    extraversion: "extroversão",
+    extroversão: "extroversão",
     openness: "abertura",
+    abertura: "abertura",
     "abertura a experiencia": "abertura",
+    "abertura à experiência": "abertura",
     agreeableness: "amabilidade",
-    conscientiousness: "conscienciosidade"
+    amabilidade: "amabilidade",
+    conscientiousness: "conscienciosidade",
+    conscienciosidade: "conscienciosidade",
   };
   return map[key.toLowerCase()] || key.toLowerCase();
 };
