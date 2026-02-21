@@ -360,10 +360,11 @@ export async function generateIntegratedReport(data: IntegratedReportData): Prom
     doc.setFillColor(...COLORS.dustyMauve);
     doc.roundedRect(barX, yPosition + 4, barWidth, 6, 2, 2, 'F');
     
-    // Progress bar fill
-    const fillWidth = (score / 100) * barWidth;
-    const barColor = classification === 'high' || classification === 'Alto' ? COLORS.success : 
-                     classification === 'low' || classification === 'Baixo' ? COLORS.warning : COLORS.carmim;
+    // Progress bar fill (scores range from 60-300)
+    const progress = Math.min(Math.max((score - 60) / 240, 0), 1);
+    const fillWidth = progress * barWidth;
+    // Use numeric thresholds for consistent colors (same as pdfGenerator.ts)
+    const barColor = score <= 156 ? COLORS.warning : score >= 198 ? COLORS.success : COLORS.carmim;
     doc.setFillColor(...barColor);
     doc.roundedRect(barX, yPosition + 4, Math.max(fillWidth, 3), 6, 2, 2, 'F');
     
