@@ -43,6 +43,37 @@ const normalizeTraitKey = (key: string): string => {
   return map[key.toLowerCase()] || key.toLowerCase();
 };
 
+// Busca facetas para um trait tentando todas as variantes possíveis da chave
+const getFacetsForTrait = (facetScores: any, traitKey: string): Record<string, number> | null => {
+  if (!facetScores) return null;
+  
+  // Try exact key first
+  if (facetScores[traitKey]) return facetScores[traitKey];
+  
+  // Build all possible variants for this trait
+  const variants: Record<string, string[]> = {
+    neuroticism: ["neuroticism", "neuroticismo"],
+    neuroticismo: ["neuroticism", "neuroticismo"],
+    extraversion: ["extraversion", "extroversão", "extroversao"],
+    extroversão: ["extraversion", "extroversão", "extroversao"],
+    openness: ["openness", "abertura", "abertura à experiência", "abertura a experiencia"],
+    abertura: ["openness", "abertura", "abertura à experiência", "abertura a experiencia"],
+    "abertura à experiência": ["openness", "abertura", "abertura à experiência", "abertura a experiencia"],
+    "abertura a experiencia": ["openness", "abertura", "abertura à experiência", "abertura a experiencia"],
+    agreeableness: ["agreeableness", "amabilidade"],
+    amabilidade: ["agreeableness", "amabilidade"],
+    conscientiousness: ["conscientiousness", "conscienciosidade"],
+    conscienciosidade: ["conscientiousness", "conscienciosidade"],
+  };
+  
+  const keysToTry = variants[traitKey.toLowerCase()] || [traitKey];
+  for (const variant of keysToTry) {
+    if (facetScores[variant]) return facetScores[variant];
+  }
+  
+  return null;
+};
+
 interface TestResult {
   id: string;
   session_id: string;
@@ -207,7 +238,7 @@ const BigFiveResults = () => {
         name: getTraitLabel(key),  // Backward compatibility
         score: traitScore,
         classification: recalculatedClassification, // Usa classificação recalculada
-        facets: Object.entries(result.facet_scores[key] || {}).map(([facetKey, facetScore]) => ({
+        facets: Object.entries(getFacetsForTrait(result.facet_scores, key) || {}).map(([facetKey, facetScore]) => ({
           // FACET_NAMES agora é flat: { N1: "Ansiedade", E1: "Calor", ... }
           name: FACET_NAMES[facetKey] || facetKey,
           score: facetScore,
@@ -365,7 +396,7 @@ const BigFiveResults = () => {
                 <Progress value={getTraitPercentage(score)} className="h-3" />
 
                 {/* Facets */}
-                {result.facet_scores[trait] && (
+                {getFacetsForTrait(result.facet_scores, trait) && (
                   <Collapsible className="mt-3">
                     <CollapsibleTrigger className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors">
                       <ChevronDown className="w-3 h-3" />
@@ -373,7 +404,7 @@ const BigFiveResults = () => {
                     </CollapsibleTrigger>
                     <CollapsibleContent>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
-                        {Object.entries(result.facet_scores[trait] as Record<string, number>).map(([facetKey, facetScore]) => {
+                        {Object.entries(getFacetsForTrait(result.facet_scores, trait) as Record<string, number>).map(([facetKey, facetScore]) => {
                           const facetClassification = getScoreFacetClassification(facetScore);
                           return (
                             <div key={facetKey} className="flex items-center justify-between bg-muted/40 rounded-md px-3 py-2">
