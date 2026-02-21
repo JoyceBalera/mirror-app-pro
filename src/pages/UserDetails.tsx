@@ -233,28 +233,61 @@ const UserDetails = () => {
   const handleGenerateHDAnalysis = async (resultId: string, hdResult: HDResult) => {
     setGeneratingHDAnalysis(resultId);
     try {
+      // Calculate advanced variables from activations (same as user-facing page)
+      const advancedVars = extractAdvancedVariables({
+        personality_activations: hdResult.personality_activations || [],
+        design_activations: hdResult.design_activations || [],
+      });
+
+      // Derive defined/open centers from the centers object
+      const centersObj = hdResult.centers || {};
+      const definedCenters = Object.entries(centersObj)
+        .filter(([_, v]) => v === true)
+        .map(([k]) => k);
+      const openCenters = Object.entries(centersObj)
+        .filter(([_, v]) => v === false)
+        .map(([k]) => k);
+
+      // Fetch activated_gates from DB if not on hdResult
+      let activatedGates: number[] = [];
+      const { data: fullRecord } = await supabase
+        .from('human_design_results')
+        .select('activated_gates')
+        .eq('id', resultId)
+        .single();
+      if (fullRecord?.activated_gates) {
+        activatedGates = fullRecord.activated_gates;
+      }
+
       const { data, error } = await supabase.functions.invoke("analyze-human-design", {
         body: {
-          energy_type: hdResult.energy_type,
+          resultId,
+          userName: user?.full_name || '',
+          energyType: hdResult.energy_type,
           strategy: hdResult.strategy,
           authority: hdResult.authority,
           profile: hdResult.profile,
           definition: hdResult.definition,
-          incarnation_cross: hdResult.incarnation_cross,
-          centers: hdResult.centers,
+          incarnationCross: hdResult.incarnation_cross,
+          definedCenters,
+          openCenters,
           channels: hdResult.channels,
-          variables: hdResult.variables,
+          activatedGates,
+          advancedVariables: advancedVars,
         },
       });
 
       if (error) throw error;
       if (data.error) throw new Error(data.error);
 
-      await supabase.from('human_design_analyses').insert({
-        result_id: resultId,
-        analysis_text: data.analysis,
-        model_used: 'gemini-2.5-flash',
-      });
+      // The edge function already upserts, but if it doesn't save, insert here as fallback
+      if (!data.saved) {
+        await supabase.from('human_design_analyses').insert({
+          result_id: resultId,
+          analysis_text: data.analysis,
+          model_used: 'gemini-2.5-flash',
+        });
+      }
 
       toast({
         title: "Análise gerada!",
