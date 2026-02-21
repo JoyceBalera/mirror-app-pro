@@ -18,6 +18,28 @@ import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, PlayCircle, Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+const saveAnswerWithRetry = async (
+  sessionId: string,
+  questionId: string,
+  score: number,
+  maxRetries = 3
+): Promise<boolean> => {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    const { error } = await supabase.from('test_answers').insert({
+      session_id: sessionId,
+      question_id: questionId,
+      score: score,
+      answered_at: new Date().toISOString(),
+    });
+    if (!error) return true;
+    console.error(`Attempt ${attempt}/${maxRetries} failed for ${questionId}:`, error);
+    if (attempt < maxRetries) await sleep(1000);
+  }
+  return false;
+};
+
 const BigFiveTest = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -111,22 +133,29 @@ const BigFiveTest = () => {
     }
   };
 
+  const [saving, setSaving] = useState(false);
+
   const handleAnswer = async (score: number) => {
+    if (saving) return;
     const questionId = questions[currentQuestionIndex].id;
     const newAnswers = [...answers, { questionId, score }];
     setAnswers(newAnswers);
 
-    // Save answer to database
+    // Save answer to database with retry
     if (currentSessionId) {
-      try {
-        await supabase.from('test_answers').insert({
-          session_id: currentSessionId,
-          question_id: questionId,
-          score: score,
-          answered_at: new Date().toISOString(),
+      setSaving(true);
+      const saved = await saveAnswerWithRetry(currentSessionId, questionId, score);
+      setSaving(false);
+
+      if (!saved) {
+        // Rollback: remove the answer from local state
+        setAnswers(answers);
+        toast({
+          title: t("bigFiveTest.saveError", "Erro ao salvar"),
+          description: t("bigFiveTest.saveErrorDesc", "Não foi possível salvar sua resposta. Verifique sua conexão e tente novamente."),
+          variant: "destructive",
         });
-      } catch (error) {
-        console.error('Error saving answer:', error);
+        return; // Do NOT advance
       }
     }
 
@@ -134,9 +163,56 @@ const BigFiveTest = () => {
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else {
-      // Complete the test
-      await completeTest(newAnswers);
+      // Validate answer count before completing
+      await validateAndComplete(newAnswers);
     }
+  };
+
+  const validateAndComplete = async (finalAnswers: Answer[]) => {
+    if (!currentSessionId) return;
+
+    // Count answers saved in DB
+    const { count, error } = await supabase
+      .from('test_answers')
+      .select('id', { count: 'exact', head: true })
+      .eq('session_id', currentSessionId);
+
+    const savedCount = count ?? 0;
+
+    if (error || savedCount < questions.length) {
+      console.warn(`DB has ${savedCount}/${questions.length} answers. Attempting to sync missing...`);
+
+      // Find which answers are missing in DB
+      const { data: savedAnswers } = await supabase
+        .from('test_answers')
+        .select('question_id')
+        .eq('session_id', currentSessionId);
+
+      const savedIds = new Set((savedAnswers ?? []).map(a => a.question_id));
+      const missing = finalAnswers.filter(a => !savedIds.has(a.questionId));
+
+      // Try to save missing answers
+      for (const ans of missing) {
+        await saveAnswerWithRetry(currentSessionId, ans.questionId, ans.score);
+      }
+
+      // Re-check
+      const { count: recheck } = await supabase
+        .from('test_answers')
+        .select('id', { count: 'exact', head: true })
+        .eq('session_id', currentSessionId);
+
+      if ((recheck ?? 0) < questions.length) {
+        toast({
+          title: t("bigFiveTest.syncError", "Erro de sincronização"),
+          description: t("bigFiveTest.syncErrorDesc", `Apenas ${recheck}/${questions.length} respostas salvas. Verifique sua conexão.`),
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
+    await completeTest(finalAnswers);
   };
 
   const completeTest = async (finalAnswers: Answer[]) => {
@@ -320,7 +396,12 @@ const BigFiveTest = () => {
         <Progress value={progressPercentage} className="h-2" />
       </div>
 
-      <div className="max-w-3xl w-full mx-auto">
+      <div className="max-w-3xl w-full mx-auto relative">
+        {saving && (
+          <div className="absolute inset-0 bg-background/50 z-10 flex items-center justify-center rounded-lg">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          </div>
+        )}
         <QuestionCard
           question={questions[currentQuestionIndex]}
           currentAnswer={answers.find(a => a.questionId === questions[currentQuestionIndex]?.id)?.score}
