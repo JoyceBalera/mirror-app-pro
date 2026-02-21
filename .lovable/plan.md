@@ -1,63 +1,70 @@
 
 
-# Correcao: Dados de Canais e Variaveis Avancadas enviados incorretamente para a IA
+# Nova Pagina Admin: Exportar Prompts em PDF
 
-## Problema Identificado
+## Objetivo
+Criar uma pagina acessivel em `/admin/prompts` que exibe e exporta um PDF completo com todos os prompts de IA usados nas 3 edge functions (`analyze-personality`, `analyze-human-design`, `analyze-integrated`), nas 3 versoes linguisticas (PT, EN, ES).
 
-O BodyGraph visual esta correto, mas a analise de IA diz que "nao ha canais completos" mesmo quando existem canais definidos (63-4, 43-23, 57-20, 20-34, 57-34). O problema esta em como os dados sao preparados antes de serem enviados para a IA.
+## Estrutura do PDF
 
-### Causa Raiz 1 - Canais
+O PDF tera as seguintes secoes:
 
-O registro da Jessica Borges armazena canais no formato antigo:
-```text
-[{name: "Poder", gates: [34, 57]}, {name: "Lógica", gates: [63, 4]}, ...]
-```
+1. **Capa** - "Documentacao de Prompts - Edge Functions" com data de geracao
+2. **Indice** - Lista das 3 funcoes e idiomas
+3. **analyze-personality** (Mapa de Personalidade)
+   - System Prompt PT (~110 linhas)
+   - System Prompt EN (~100 linhas)
+   - System Prompt ES (~100 linhas)
+   - User Prompt template (PT/EN/ES)
+4. **analyze-human-design** (Arquitetura Pessoal)
+   - System Prompt PT (~250 linhas)
+   - System Prompt ES (~80 linhas)
+   - System Prompt EN (~70 linhas)
+   - User Prompt template (buildUserPrompt labels PT/EN/ES)
+5. **analyze-integrated** (Blueprint Pessoal)
+   - System Prompt PT (~120 linhas)
+   - System Prompt ES (~90 linhas)
+   - System Prompt EN (~90 linhas)
+   - User Prompt template (PT/EN/ES)
 
-Mas a funcao `buildUserPrompt` no edge function filtra assim:
-```text
-data.channels?.filter((ch) => ch.isComplete)
-```
+## Implementacao
 
-Como os registros antigos NAO possuem o campo `isComplete`, o filtro retorna array vazio e a IA recebe "Nenhum canal completo".
+### 1. Novo arquivo: `src/pages/admin/Prompts.tsx`
 
-### Causa Raiz 2 - Variaveis Avancadas
+- Pagina com visualizacao dos prompts organizados por funcao e idioma usando Tabs (funcao) e sub-Tabs (idioma)
+- Botao "Exportar PDF" que gera o documento completo usando jsPDF (ja instalado)
+- Os prompts serao armazenados como constantes diretamente no arquivo (extraidos das edge functions), evitando chamadas de rede
+- Cada prompt sera exibido em um bloco `<pre>` com scroll e fundo cinza claro
 
-Quando a analise e gerada pelo painel admin (`UserDetails.tsx`), os dados sao enviados com o campo `variables`, mas o edge function le `data.advancedVariables`. Alem disso, o admin nao calcula as variaveis avancadas a partir das ativacoes — envia `hdResult.variables` que pode ser `undefined`.
+### 2. Registrar rota em `src/App.tsx`
 
-Na pagina do usuario (`DesenhoHumanoResults.tsx`), as variaveis avancadas SAO calculadas corretamente via `extractAdvancedVariables`.
+- Adicionar rota `/admin/prompts` protegida com `AuthGuard requiredRole="admin"` e `AdminLayout`
 
-## Plano de Correcao
+### 3. Adicionar link no menu admin em `src/components/layout/AdminLayout.tsx`
 
-### 1. Corrigir `buildUserPrompt` no edge function para lidar com ambos os formatos de canais
+- Novo item de navegacao "Prompts" com icone `FileText` do lucide-react
 
-Na funcao `buildUserPrompt` em `supabase/functions/analyze-human-design/index.ts` (linha ~709):
+### 4. Geracao do PDF (`src/utils/generatePromptsReport.ts`)
 
-**Logica atual:**
-```text
-const channels = data.channels?.filter((ch) => ch.isComplete)
-    .map((ch) => `${ch.id}: ${ch.name}`)
-    .join('\n  - ') || labels.noCompleteChannels;
-```
+- Utilizar jsPDF para gerar o documento
+- Paginar automaticamente o texto longo dos prompts
+- Usar fonte monospace (Courier) para o conteudo dos prompts
+- Incluir cabecalho com nome da funcao/idioma e rodape com numero de pagina
+- Seguir o padrao visual dos outros PDFs (cores carmim/gold do brand)
 
-**Nova logica:**
-- Se o canal tem `isComplete === true`, incluir (formato novo com todos os 36 canais).
-- Se o canal NAO tem campo `isComplete` (formato antigo), significa que ele ja foi incluido PORQUE e completo — entao incluir diretamente.
-- Usar `ch.gates?.join('-')` como fallback para `ch.id` quando `id` nao existe.
+### 5. Dados dos prompts (`src/data/edgeFunctionPrompts.ts`)
 
-### 2. Corrigir `handleGenerateHDAnalysis` no admin (`UserDetails.tsx`)
+- Arquivo centralizado com todos os prompts extraidos das 3 edge functions
+- Estrutura tipada por funcao e idioma
+- Inclui system prompts, user prompt templates e metadados (modelo usado, etc.)
 
-Atualizar a chamada do admin para:
-- Enviar `resultId` (necessario para o edge function salvar no banco).
-- Calcular `advancedVariables` usando `extractAdvancedVariables` a partir de `personality_activations` e `design_activations`.
-- Enviar `humanDesignData` no mesmo formato que a pagina do usuario envia, incluindo `definedCenters`, `openCenters`, `activatedGates`, `userName`, etc.
-- Remover a insercao manual em `human_design_analyses` (o edge function ja faz isso via upsert).
+## Arquivos a criar/editar
 
-### 3. Adicionar fallback no edge function para calcular canais a partir de gates
-
-Como camada extra de seguranca, se `data.channels` estiver vazio ou ausente, derivar canais completos a partir de `data.activatedGates` usando a lista conhecida de 36 canais do Human Design. Isso garante que mesmo dados incompletos no banco nao resultem em analises erradas.
-
-## Arquivos Afetados
-
-1. `supabase/functions/analyze-human-design/index.ts` — corrigir `buildUserPrompt` para lidar com ambos formatos de canais e adicionar fallback por gates ativados.
-2. `src/pages/UserDetails.tsx` — corrigir `handleGenerateHDAnalysis` para enviar dados no formato correto, incluindo variaveis avancadas calculadas.
+| Arquivo | Acao |
+|---------|------|
+| `src/data/edgeFunctionPrompts.ts` | Criar - dados dos prompts |
+| `src/utils/generatePromptsReport.ts` | Criar - gerador de PDF |
+| `src/pages/admin/Prompts.tsx` | Criar - pagina admin |
+| `src/App.tsx` | Editar - adicionar rota |
+| `src/components/layout/AdminLayout.tsx` | Editar - adicionar nav item |
 
