@@ -332,18 +332,22 @@ export async function generateIntegratedReport(data: IntegratedReportData): Prom
   yPosition += 20;
 
   // Traços do Big Five com design melhorado
-  const traitKeys = [
-    'Neuroticismo',
-    'Extroversão',
-    'Abertura à Experiência',
-    'Amabilidade',
-    'Conscienciosidade'
+  // Support both English keys (new format) and Portuguese keys (legacy format)
+  const traitKeyVariants: Array<{ displayKey: string; lookupKeys: string[] }> = [
+    { displayKey: 'Neuroticismo', lookupKeys: ['neuroticism', 'Neuroticismo', 'neuroticismo'] },
+    { displayKey: 'Extroversão', lookupKeys: ['extraversion', 'Extroversão', 'extroversão'] },
+    { displayKey: 'Abertura à Experiência', lookupKeys: ['openness', 'Abertura à Experiência', 'abertura à experiência', 'Abertura', 'abertura'] },
+    { displayKey: 'Amabilidade', lookupKeys: ['agreeableness', 'Amabilidade', 'amabilidade'] },
+    { displayKey: 'Conscienciosidade', lookupKeys: ['conscientiousness', 'Conscienciosidade', 'conscienciosidade'] },
   ];
   
-  traitKeys.forEach((traitKey) => {
-    const score = data.traitScores[traitKey] || 0;
-    const classification = data.traitClassifications[traitKey] || 'medium';
+  traitKeyVariants.forEach(({ displayKey, lookupKeys }) => {
+    // Find the score using any matching key variant
+    const matchedKey = lookupKeys.find(k => data.traitScores[k] !== undefined);
+    const score = matchedKey ? data.traitScores[matchedKey] : 0;
+    const classification = matchedKey ? (data.traitClassifications[matchedKey] || 'medium') : 'medium';
     const classLabel = getClassificationLabel(classification, t);
+    const traitKey = displayKey;
     const translatedTrait = t.traits[traitKey as keyof typeof t.traits] || traitKey;
     
     // Card background
