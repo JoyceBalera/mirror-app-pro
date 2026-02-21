@@ -660,20 +660,23 @@ const DesenhoHumanoResults = () => {
               <h3 className="font-bold text-[#7B192B] mb-3">{t('humanDesignResults.definedChannels')}</h3>
               {result.channels && Array.isArray(result.channels) ? (
                 <div className="flex flex-wrap gap-2">
-                  {result.channels
-                    .filter((ch: any) => ch.isComplete)
-                    .map((channel: any, idx: number) => (
-                      <Badge 
-                        key={idx} 
-                        variant="secondary"
-                        className="bg-[#7B192B] text-white px-3 py-1"
-                      >
-                        {channel.id} - {channel.name}
-                      </Badge>
-                    ))}
-                  {result.channels.filter((ch: any) => ch.isComplete).length === 0 && (
-                    <p className="text-muted-foreground">{t('humanDesignResults.noDefinedChannels')}</p>
-                  )}
+                  {(() => {
+                    const completeChannels = result.channels.filter((ch: any) => {
+                      if ('isComplete' in ch) return ch.isComplete === true;
+                      return true;
+                    });
+                    return completeChannels.length > 0
+                      ? completeChannels.map((channel: any, idx: number) => (
+                          <Badge 
+                            key={idx} 
+                            variant="secondary"
+                            className="bg-[#7B192B] text-white px-3 py-1"
+                          >
+                            {channel.id || channel.gates?.join('-')} - {channel.name}
+                          </Badge>
+                        ))
+                      : <p className="text-muted-foreground">{t('humanDesignResults.noDefinedChannels')}</p>;
+                  })()}
                 </div>
               ) : (
                 <p className="text-muted-foreground">{t('humanDesignResults.channelDataNotAvailable')}</p>

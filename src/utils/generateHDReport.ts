@@ -117,7 +117,10 @@ export async function generateHDReport(data: HDReportData): Promise<void> {
   const openCenters = Object.entries(data.centers || {})
     .filter(([_, isDefined]) => !isDefined)
     .map(([centerId]) => centerId);
-  const activeChannels = (data.channels || []).filter((ch: any) => ch.isComplete);
+  const activeChannels = (data.channels || []).filter((ch: any) => {
+    if ('isComplete' in ch) return ch.isComplete === true;
+    return true; // old format: included = complete
+  });
 
   // ============ HELPER: Rodapé elegante (padronizado com Big Five) ============
   const addFooter = (pageNum: number, totalPages: number) => {
