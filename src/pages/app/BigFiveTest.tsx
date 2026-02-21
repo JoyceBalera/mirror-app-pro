@@ -142,8 +142,9 @@ const BigFiveTest = () => {
   const completeTest = async (finalAnswers: Answer[]) => {
     const { scores, facetScores } = calculateScore(finalAnswers);
 
-    const results: TraitScore[] = Object.entries(scores).map(([trait, score]) => {
-      const traitKey = trait as keyof typeof scores;
+    const traitKeys = Object.keys(scores) as (keyof typeof scores)[];
+    const results: TraitScore[] = traitKeys.map((traitKey) => {
+      const score = scores[traitKey];
       const facets = Object.entries(facetScores[traitKey]).map(
         ([facetKey, facetScore]) => ({
           name: facetNames[facetKey] || facetKey,
@@ -161,25 +162,20 @@ const BigFiveTest = () => {
       };
     });
 
-    // Save results to database
+    // Save results to database using standardized English keys
     try {
-      const traitScoresObj = results.reduce((acc, result) => {
-        acc[result.name.toLowerCase()] = result.score;
-        return acc;
-      }, {} as Record<string, number>);
+      const traitScoresObj: Record<string, number> = {};
+      const facetScoresObj: Record<string, Record<string, number>> = {};
 
-      const facetScoresObj = results.reduce((acc, result) => {
-        acc[result.name.toLowerCase()] = result.facets.reduce((fAcc, facet) => {
-          fAcc[facet.name] = facet.score;
-          return fAcc;
-        }, {} as Record<string, number>);
-        return acc;
-      }, {} as Record<string, Record<string, number>>);
+      traitKeys.forEach((traitKey) => {
+        traitScoresObj[traitKey] = scores[traitKey];
+        facetScoresObj[traitKey] = { ...facetScores[traitKey] };
+      });
 
-      const classificationsObj = results.reduce((acc, result) => {
-        acc[result.name.toLowerCase()] = result.classification;
-        return acc;
-      }, {} as Record<string, string>);
+      const classificationsObj: Record<string, string> = {};
+      traitKeys.forEach((traitKey) => {
+        classificationsObj[traitKey] = getTraitClassification(scores[traitKey]);
+      });
 
       const { data: testResult, error: resultError } = await supabase
         .from('test_results')
