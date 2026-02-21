@@ -254,6 +254,7 @@ const normalizeTraitKey = (trait: string): keyof PDFTranslations['traits'] | nul
     extroversao: 'extraversion',
     openness: 'openness',
     abertura: 'openness',
+    'abertura a experiencia': 'openness',
     agreeableness: 'agreeableness',
     amabilidade: 'agreeableness',
     conscientiousness: 'conscientiousness',
@@ -469,6 +470,7 @@ export const generateTestResultPDF = (
     neuroticismo: 'neuroticism',
     extroversao: 'extraversion',
     abertura: 'openness',
+    'abertura a experiencia': 'openness',
     amabilidade: 'agreeableness',
     conscienciosidade: 'conscientiousness'
   };
