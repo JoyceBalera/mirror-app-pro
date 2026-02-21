@@ -4,9 +4,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { UserPlus } from "lucide-react";
+import { UserPlus, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+
+const generateSecurePassword = (): string => {
+  const length = 16;
+  const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
+  const array = new Uint8Array(length);
+  crypto.getRandomValues(array);
+  return Array.from(array, byte => charset[byte % charset.length]).join('');
+};
 
 interface CreateUserDialogProps {
   onUserCreated: () => void;
@@ -20,7 +28,7 @@ const CreateUserDialog = ({ onUserCreated }: CreateUserDialogProps) => {
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<"user" | "admin">("user");
   const [language, setLanguage] = useState<"pt" | "en" | "es">("pt");
-  const DEFAULT_PASSWORD = "Temp@2024";
+  const [generatedPassword, setGeneratedPassword] = useState(() => generateSecurePassword());
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,7 +39,7 @@ const CreateUserDialog = ({ onUserCreated }: CreateUserDialogProps) => {
       const { data, error } = await supabase.functions.invoke('create-user', {
         body: {
           email,
-          password: DEFAULT_PASSWORD,
+          password: generatedPassword,
           fullName,
           role,
           language,
@@ -50,6 +58,7 @@ const CreateUserDialog = ({ onUserCreated }: CreateUserDialogProps) => {
       setEmail("");
       setRole("user");
       setLanguage("pt");
+      setGeneratedPassword(generateSecurePassword());
       setOpen(false);
       onUserCreated();
     } catch (error: any) {
@@ -104,9 +113,14 @@ const CreateUserDialog = ({ onUserCreated }: CreateUserDialogProps) => {
             </div>
 
             <div className="space-y-2 bg-muted p-3 rounded-md">
-              <Label className="text-sm font-medium">Senha Temporária</Label>
+              <div className="flex items-center justify-between">
+                <Label className="text-sm font-medium">Senha Gerada</Label>
+                <Button type="button" variant="ghost" size="sm" onClick={() => setGeneratedPassword(generateSecurePassword())}>
+                  <RefreshCw className="w-3 h-3 mr-1" /> Nova senha
+                </Button>
+              </div>
               <p className="text-sm text-muted-foreground">
-                Senha padrão: <span className="font-mono font-semibold">{DEFAULT_PASSWORD}</span>
+                <span className="font-mono font-semibold break-all">{generatedPassword}</span>
               </p>
             </div>
 
