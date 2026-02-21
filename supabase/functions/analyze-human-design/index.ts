@@ -410,17 +410,65 @@ Always end with: "With love, Luciana Belenton."`
 // ──────────────────────────────────────────────────
 // Main handler
 // ──────────────────────────────────────────────────
+// UUID validation helper
+const isValidUUID = (str: string): boolean =>
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    // Authentication check
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+    const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } }
+    });
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: claimsData, error: claimsError } = await supabaseAuth.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+    const userId = claimsData.claims.sub as string;
+
     const { resultId, humanDesignData, language = 'pt' } = await req.json();
 
+    // Validate resultId
+    if (!resultId || !isValidUUID(resultId)) {
+      return new Response(JSON.stringify({ error: 'resultId inválido' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
     console.log('Received request for result:', resultId);
-    console.log('Language:', language);
-    console.log('Human Design data:', JSON.stringify(humanDesignData, null, 2));
+
+    // Verify ownership
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+
+    const { data: hdResult, error: hdError } = await supabaseAdmin
+      .from('human_design_results')
+      .select('user_id')
+      .eq('id', resultId)
+      .single();
+
+    if (hdError || !hdResult || hdResult.user_id !== userId) {
+      return new Response(JSON.stringify({ error: 'Acesso negado a este resultado' }), {
+        status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {

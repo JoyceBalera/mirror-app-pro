@@ -6,12 +6,39 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// UUID validation helper
+const isValidUUID = (str: string): boolean =>
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    // Authentication check
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } }
+    });
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: claimsData, error: claimsError } = await supabaseAuth.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+    const userId = claimsData.claims.sub as string;
+
     const body = await req.json();
     const sessionId = body?.sessionId as string | undefined;
     const languageRaw = (typeof body?.language === "string" ? body.language : "pt")
@@ -21,8 +48,10 @@ serve(async (req) => {
       ? languageRaw
       : "pt";
     
-    if (!sessionId) {
-      throw new Error("sessionId é obrigatório");
+    if (!sessionId || !isValidUUID(sessionId)) {
+      return new Response(JSON.stringify({ error: "sessionId inválido" }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
     }
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
@@ -31,10 +60,21 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY não configurada");
     }
 
-    // Buscar dados do banco de dados
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    // Verify ownership: check that the session belongs to the authenticated user
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    const { data: session, error: sessionError } = await supabase
+      .from('test_sessions')
+      .select('user_id')
+      .eq('id', sessionId)
+      .single();
+
+    if (sessionError || !session || session.user_id !== userId) {
+      return new Response(JSON.stringify({ error: 'Acesso negado a esta sessão' }), {
+        status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
 
     const { data: result, error } = await supabase
       .from('test_results')
