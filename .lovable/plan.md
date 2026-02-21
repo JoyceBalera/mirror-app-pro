@@ -1,58 +1,63 @@
 
 
-# Correcao: Garantir que todas as 300 respostas sejam salvas
+# Correcao: Dados de Canais e Variaveis Avancadas enviados incorretamente para a IA
 
 ## Problema Identificado
 
-A pergunta **O4_7** (Abertura a Experiencia, faceta 4, questao 7) nao foi salva no banco de dados para a sessao da Adriana Figueiredo (`df347468-eb0e-4cab-aed3-214ae5f1af0c`). Resultado: apenas 299 de 300 respostas foram processadas.
+O BodyGraph visual esta correto, mas a analise de IA diz que "nao ha canais completos" mesmo quando existem canais definidos (63-4, 43-23, 57-20, 20-34, 57-34). O problema esta em como os dados sao preparados antes de serem enviados para a IA.
 
-### Causa Raiz
+### Causa Raiz 1 - Canais
 
-No arquivo `src/pages/app/BigFiveTest.tsx`, a funcao `handleAnswer` salva cada resposta no banco de dados de forma assincrona, mas **falhas sao ignoradas silenciosamente**:
-
+O registro da Jessica Borges armazena canais no formato antigo:
 ```text
-try {
-  await supabase.from('test_answers').insert({...});
-} catch (error) {
-  console.error('Error saving answer:', error);  // <-- silencioso!
-}
+[{name: "Poder", gates: [34, 57]}, {name: "Lógica", gates: [63, 4]}, ...]
 ```
 
-Se houver uma falha de rede momentanea, a resposta e perdida e o usuario avanca para a proxima questao sem saber que houve erro.
+Mas a funcao `buildUserPrompt` no edge function filtra assim:
+```text
+data.channels?.filter((ch) => ch.isComplete)
+```
+
+Como os registros antigos NAO possuem o campo `isComplete`, o filtro retorna array vazio e a IA recebe "Nenhum canal completo".
+
+### Causa Raiz 2 - Variaveis Avancadas
+
+Quando a analise e gerada pelo painel admin (`UserDetails.tsx`), os dados sao enviados com o campo `variables`, mas o edge function le `data.advancedVariables`. Alem disso, o admin nao calcula as variaveis avancadas a partir das ativacoes — envia `hdResult.variables` que pode ser `undefined`.
+
+Na pagina do usuario (`DesenhoHumanoResults.tsx`), as variaveis avancadas SAO calculadas corretamente via `extractAdvancedVariables`.
 
 ## Plano de Correcao
 
-### 1. Adicionar retry automatico no salvamento de respostas
+### 1. Corrigir `buildUserPrompt` no edge function para lidar com ambos os formatos de canais
 
-Quando o `insert` falhar, tentar novamente ate 2 vezes antes de desistir. Isso protege contra falhas de rede momentaneas.
+Na funcao `buildUserPrompt` em `supabase/functions/analyze-human-design/index.ts` (linha ~709):
 
-### 2. Bloquear avanco se o salvamento falhar definitivamente
+**Logica atual:**
+```text
+const channels = data.channels?.filter((ch) => ch.isComplete)
+    .map((ch) => `${ch.id}: ${ch.name}`)
+    .join('\n  - ') || labels.noCompleteChannels;
+```
 
-Se apos os retries a resposta nao for salva, exibir um toast de erro e **nao avancar** para a proxima questao, permitindo que o usuario tente novamente.
+**Nova logica:**
+- Se o canal tem `isComplete === true`, incluir (formato novo com todos os 36 canais).
+- Se o canal NAO tem campo `isComplete` (formato antigo), significa que ele ja foi incluido PORQUE e completo — entao incluir diretamente.
+- Usar `ch.gates?.join('-')` como fallback para `ch.id` quando `id` nao existe.
 
-### 3. Adicionar validacao antes de completar o teste
+### 2. Corrigir `handleGenerateHDAnalysis` no admin (`UserDetails.tsx`)
 
-Antes de chamar `completeTest()`, verificar se o numero de respostas salvas no banco corresponde ao total de questoes. Se faltar alguma, tentar salvar as pendentes.
+Atualizar a chamada do admin para:
+- Enviar `resultId` (necessario para o edge function salvar no banco).
+- Calcular `advancedVariables` usando `extractAdvancedVariables` a partir de `personality_activations` e `design_activations`.
+- Enviar `humanDesignData` no mesmo formato que a pagina do usuario envia, incluindo `definedCenters`, `openCenters`, `activatedGates`, `userName`, etc.
+- Remover a insercao manual em `human_design_analyses` (o edge function ja faz isso via upsert).
 
-### 4. Corrigir a resposta faltante da Adriana (acao manual)
+### 3. Adicionar fallback no edge function para calcular canais a partir de gates
 
-Como a Adriana ja completou o teste e nao temos como recuperar a resposta original da O4_7, sera necessario decidir como tratar. Opcoes:
-- Manter como esta (299/300 - impacto minimo no score)
-- Inserir manualmente um valor neutro (3) para completar os dados
+Como camada extra de seguranca, se `data.channels` estiver vazio ou ausente, derivar canais completos a partir de `data.activatedGates` usando a lista conhecida de 36 canais do Human Design. Isso garante que mesmo dados incompletos no banco nao resultem em analises erradas.
 
-## Detalhes Tecnicos
+## Arquivos Afetados
 
-### Arquivo: `src/pages/app/BigFiveTest.tsx`
-
-**Mudanca 1 - Funcao de retry:**
-Criar uma funcao auxiliar `saveAnswerWithRetry` que tenta o insert ate 3 vezes com intervalo de 1 segundo.
-
-**Mudanca 2 - handleAnswer:**
-Substituir o bloco try/catch atual por uma chamada a `saveAnswerWithRetry`. Se falhar apos todos os retries:
-- Exibir toast de erro
-- Nao incrementar `currentQuestionIndex`
-- Remover a resposta do array local `answers`
-
-**Mudanca 3 - Validacao pre-completar:**
-Antes de chamar `completeTest()`, contar as respostas salvas no banco e comparar com `questions.length`. Se houver discrepancia, tentar re-salvar as respostas faltantes.
+1. `supabase/functions/analyze-human-design/index.ts` — corrigir `buildUserPrompt` para lidar com ambos formatos de canais e adicionar fallback por gates ativados.
+2. `src/pages/UserDetails.tsx` — corrigir `handleGenerateHDAnalysis` para enviar dados no formato correto, incluindo variaveis avancadas calculadas.
 
