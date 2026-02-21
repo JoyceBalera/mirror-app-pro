@@ -30,6 +30,7 @@ import AdminDashboard from "./pages/admin/Dashboard";
 import UsuarioDetalhe from "./pages/admin/UsuarioDetalhe";
 import AmbienteTeste from "./pages/admin/AmbienteTeste";
 import Validacao from "./pages/admin/Validacao";
+import AdminPrompts from "./pages/admin/Prompts";
 
 const queryClient = new QueryClient();
 
@@ -146,6 +147,13 @@ const App = () => {
               <AuthGuard requiredRole="admin">
                 <AdminLayout>
                   <Validacao />
+                </AdminLayout>
+              </AuthGuard>
+            } />
+            <Route path="/admin/prompts" element={
+              <AuthGuard requiredRole="admin">
+                <AdminLayout>
+                  <AdminPrompts />
                 </AdminLayout>
               </AuthGuard>
             } />
