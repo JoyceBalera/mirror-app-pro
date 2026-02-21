@@ -60,9 +60,18 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY não configurada");
     }
 
-    // Verify ownership: check that the session belongs to the authenticated user
+    // Verify ownership: check that the session belongs to the authenticated user OR user is admin
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Check if user is admin
+    const { data: roleData } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', userId)
+      .eq('role', 'admin')
+      .maybeSingle();
+    const isAdmin = !!roleData;
 
     const { data: session, error: sessionError } = await supabase
       .from('test_sessions')
@@ -70,7 +79,7 @@ serve(async (req) => {
       .eq('id', sessionId)
       .single();
 
-    if (sessionError || !session || session.user_id !== userId) {
+    if (sessionError || !session || (!isAdmin && session.user_id !== userId)) {
       return new Response(JSON.stringify({ error: 'Acesso negado a esta sessão' }), {
         status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
