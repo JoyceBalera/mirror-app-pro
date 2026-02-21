@@ -379,6 +379,10 @@ const getFacetClassification = (score: number): string => {
   return "Indefinido";
 };
 
+// UUID validation helper
+const isValidUUID = (str: string): boolean =>
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -386,18 +390,48 @@ serve(async (req) => {
   }
 
   try {
-    const { session_id } = await req.json();
-
-    if (!session_id) {
-      throw new Error('session_id é obrigatório');
+    // Authentication check - admin only
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
     }
 
-    console.log(`[recalculate-results] Iniciando recálculo para sessão: ${session_id}`);
-
-    // Criar cliente Supabase com service role
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    if (authError || !user) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Verify admin role
+    const { data: roleData } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id)
+      .single();
+
+    if (roleData?.role !== 'admin') {
+      return new Response(JSON.stringify({ error: 'Admin access required' }), {
+        status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    const { session_id } = await req.json();
+
+    if (!session_id || !isValidUUID(session_id)) {
+      return new Response(JSON.stringify({ error: 'session_id inválido' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    console.log(`[recalculate-results] Iniciando recálculo para sessão: ${session_id}`);
 
     // Buscar todas as respostas da sessão
     const { data: answers, error: answersError } = await supabase

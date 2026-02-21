@@ -45,8 +45,22 @@ serve(async (req) => {
     // Get request body
     const { userId, email, password, fullName, role, hasBigFive, hasDesenhoHumano, language } = await req.json();
 
-    if (!userId || !email || !fullName || !role) {
-      throw new Error("Missing required fields");
+    // Input validation
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!userId || typeof userId !== 'string' || !uuidRegex.test(userId)) {
+      throw new Error("userId inválido");
+    }
+    if (!email || typeof email !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 255) {
+      throw new Error("Email inválido");
+    }
+    if (!fullName || typeof fullName !== 'string' || fullName.length > 200) {
+      throw new Error("Nome completo inválido");
+    }
+    if (!role || !['user', 'admin'].includes(role)) {
+      throw new Error("Role deve ser 'user' ou 'admin'");
+    }
+    if (password && (typeof password !== 'string' || password.length < 6 || password.length > 128)) {
+      throw new Error("Senha deve ter entre 6 e 128 caracteres");
     }
 
     console.log("Updating user:", userId, { hasBigFive, hasDesenhoHumano });

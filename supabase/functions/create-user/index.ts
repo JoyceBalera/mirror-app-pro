@@ -53,6 +53,20 @@ serve(async (req) => {
     // Create the new user
     const { email, password, fullName, role, language }: CreateUserRequest = await req.json();
 
+    // Input validation
+    if (!email || typeof email !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 255) {
+      throw new Error("Email inválido");
+    }
+    if (!password || typeof password !== 'string' || password.length < 6 || password.length > 128) {
+      throw new Error("Senha deve ter entre 6 e 128 caracteres");
+    }
+    if (!fullName || typeof fullName !== 'string' || fullName.length > 200) {
+      throw new Error("Nome completo inválido");
+    }
+    if (!role || !['user', 'admin'].includes(role)) {
+      throw new Error("Role deve ser 'user' ou 'admin'");
+    }
+
     const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password,
