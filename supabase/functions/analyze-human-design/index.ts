@@ -454,9 +454,18 @@ serve(async (req) => {
 
     console.log('Received request for result:', resultId);
 
-    // Verify ownership
+    // Verify ownership or admin role
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Check if user is admin
+    const { data: roleData } = await supabaseAdmin
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', userId)
+      .eq('role', 'admin')
+      .maybeSingle();
+    const isAdmin = !!roleData;
 
     const { data: hdResult, error: hdError } = await supabaseAdmin
       .from('human_design_results')
@@ -464,7 +473,7 @@ serve(async (req) => {
       .eq('id', resultId)
       .single();
 
-    if (hdError || !hdResult || hdResult.user_id !== userId) {
+    if (hdError || !hdResult || (!isAdmin && hdResult.user_id !== userId)) {
       return new Response(JSON.stringify({ error: 'Acesso negado a este resultado' }), {
         status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
