@@ -1,46 +1,58 @@
 
 
-## Problema Real Identificado
+# Correcao: Garantir que todas as 300 respostas sejam salvas
 
-O banco de dados tem **inconsistencia de chaves** entre registros:
-- Registros mais antigos usam `"abertura"` como chave
-- Registros mais recentes usam `"abertura à experiência"` como chave
-- Ambos trait_scores e facet_scores usam a mesma chave dentro de cada registro, entao o match funciona
+## Problema Identificado
 
-O problema principal e que o codigo de resultados (`BigFiveResults.tsx`) depende de match exato entre as chaves de `trait_scores` e `facet_scores`, mas **nao normaliza** ao acessar `facet_scores`. Alem disso, o `getFormattedTraitScores` (usado para a IA) tambem acessa `result.facet_scores[key]` sem normalizar.
+A pergunta **O4_7** (Abertura a Experiencia, faceta 4, questao 7) nao foi salva no banco de dados para a sessao da Adriana Figueiredo (`df347468-eb0e-4cab-aed3-214ae5f1af0c`). Resultado: apenas 299 de 300 respostas foram processadas.
 
-## Correcoes Necessarias
+### Causa Raiz
 
-### 1. Corrigir o salvamento no BigFiveTest.tsx (raiz do problema)
+No arquivo `src/pages/app/BigFiveTest.tsx`, a funcao `handleAnswer` salva cada resposta no banco de dados de forma assincrona, mas **falhas sao ignoradas silenciosamente**:
 
-Alterar o `BigFiveTest.tsx` para salvar usando chaves curtas padronizadas (inglês: `openness`, `neuroticism`, etc.) em vez de `result.name.toLowerCase()` que gera chaves longas em portugues. Isso garante consistencia para todos os testes futuros.
+```text
+try {
+  await supabase.from('test_answers').insert({...});
+} catch (error) {
+  console.error('Error saving answer:', error);  // <-- silencioso!
+}
+```
 
-**Antes**: `result.name.toLowerCase()` -> `"abertura à experiência"`
-**Depois**: usar a chave original do `calculateScore` (ex: `"openness"`)
+Se houver uma falha de rede momentanea, a resposta e perdida e o usuario avanca para a proxima questao sem saber que houve erro.
 
-### 2. Tornar o BigFiveResults.tsx robusto para dados existentes
+## Plano de Correcao
 
-Usar `normalizeTraitKey` ao acessar `facet_scores` para que funcione com qualquer formato de chave ja salvo no banco:
+### 1. Adicionar retry automatico no salvamento de respostas
 
-- Linha 368: `result.facet_scores[trait]` -> usar lookup normalizado
-- Linha 210: `result.facet_scores[key]` -> usar lookup normalizado
+Quando o `insert` falhar, tentar novamente ate 2 vezes antes de desistir. Isso protege contra falhas de rede momentaneas.
 
-Criar uma funcao helper que tenta encontrar as facetas por qualquer variante da chave.
+### 2. Bloquear avanco se o salvamento falhar definitivamente
 
-### 3. Corrigir facet keys no salvamento
+Se apos os retries a resposta nao for salva, exibir um toast de erro e **nao avancar** para a proxima questao, permitindo que o usuario tente novamente.
 
-Atualmente salva facetas com nomes em portugues como chave (`"Fantasia"`, `"Estética"`). Manter esse comportamento pois o FACET_NAMES fallback (`|| facetKey`) ja exibe corretamente.
+### 3. Adicionar validacao antes de completar o teste
 
----
+Antes de chamar `completeTest()`, verificar se o numero de respostas salvas no banco corresponde ao total de questoes. Se faltar alguma, tentar salvar as pendentes.
 
-### Detalhes Tecnicos
+### 4. Corrigir a resposta faltante da Adriana (acao manual)
 
-**Arquivo 1: `src/pages/app/BigFiveTest.tsx`** (linhas 166-182)
-- Mudar de `result.name.toLowerCase()` para usar as chaves originais do `calculateScore` (ingles padrao)
-- Isso padroniza todos os novos registros
+Como a Adriana ja completou o teste e nao temos como recuperar a resposta original da O4_7, sera necessario decidir como tratar. Opcoes:
+- Manter como esta (299/300 - impacto minimo no score)
+- Inserir manualmente um valor neutro (3) para completar os dados
 
-**Arquivo 2: `src/pages/app/BigFiveResults.tsx`**
-- Criar funcao `getFacetsForTrait(trait)` que tenta encontrar facetas usando multiplas variantes da chave (original, normalizada, com/sem acentos)
-- Usar essa funcao na linha 368 (renderizacao) e linha 210 (dados para IA)
-- Isso garante compatibilidade com dados antigos E novos
+## Detalhes Tecnicos
+
+### Arquivo: `src/pages/app/BigFiveTest.tsx`
+
+**Mudanca 1 - Funcao de retry:**
+Criar uma funcao auxiliar `saveAnswerWithRetry` que tenta o insert ate 3 vezes com intervalo de 1 segundo.
+
+**Mudanca 2 - handleAnswer:**
+Substituir o bloco try/catch atual por uma chamada a `saveAnswerWithRetry`. Se falhar apos todos os retries:
+- Exibir toast de erro
+- Nao incrementar `currentQuestionIndex`
+- Remover a resposta do array local `answers`
+
+**Mudanca 3 - Validacao pre-completar:**
+Antes de chamar `completeTest()`, contar as respostas salvas no banco e comparar com `questions.length`. Se houver discrepancia, tentar re-salvar as respostas faltantes.
 
