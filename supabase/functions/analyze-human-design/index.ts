@@ -705,13 +705,48 @@ function buildUserPrompt(data: any, language: string): string {
   // Gates
   const gates = data.activatedGates?.join(', ') || labels.notInformed;
 
-  // Channels
-  const channels = data.channels?.filter((ch: any) => ch.isComplete)
-    .map((ch: any) => `${ch.id}: ${ch.name}`)
-    .join('\n  - ') || labels.noCompleteChannels;
+  // Channels - handle both old format (only complete channels, no isComplete field)
+  // and new format (all 36 channels with isComplete flag)
+  let channelList = (data.channels || []).filter((ch: any) => {
+    // New format: has isComplete field → use it
+    if ('isComplete' in ch) return ch.isComplete === true;
+    // Old format: no isComplete field → channel was included because it's complete
+    return true;
+  });
 
-  // Advanced variables
-  const advVars = data.advancedVariables || {};
+  // Fallback: derive channels from activated gates if channelList is empty
+  if (channelList.length === 0 && data.activatedGates?.length > 0) {
+    const KNOWN_CHANNELS = [
+      { gates: [34,57], name: 'Poder' }, { gates: [10,57], name: 'Perfeição' },
+      { gates: [20,57], name: 'Onda Cerebral' }, { gates: [10,34], name: 'Exploração' },
+      { gates: [61,24], name: 'Consciência' }, { gates: [43,23], name: 'Estruturação' },
+      { gates: [1,8], name: 'Inspiração' }, { gates: [2,14], name: 'O Batedor' },
+      { gates: [28,38], name: 'Luta' }, { gates: [3,60], name: 'Mutação' },
+      { gates: [39,55], name: 'Emotividade' }, { gates: [64,47], name: 'Abstração' },
+      { gates: [11,56], name: 'Curiosidade' }, { gates: [35,36], name: 'Transitoriedade' },
+      { gates: [29,46], name: 'Descoberta' }, { gates: [13,33], name: 'O Filho Pródigo' },
+      { gates: [42,53], name: 'Maturação' }, { gates: [30,41], name: 'Reconhecimento' },
+      { gates: [63,4], name: 'Lógica' }, { gates: [17,62], name: 'Aceitação' },
+      { gates: [7,31], name: 'O Alfa' }, { gates: [15,5], name: 'Ritmo' },
+      { gates: [9,52], name: 'Concentração' }, { gates: [18,58], name: 'Julgamento' },
+      { gates: [48,16], name: 'Talento' }, { gates: [44,26], name: 'Rendição' },
+      { gates: [21,45], name: 'Canal do Dinheiro' }, { gates: [50,27], name: 'Preservação' },
+      { gates: [32,54], name: 'Transformação' }, { gates: [40,37], name: 'Comunidade' },
+      { gates: [6,59], name: 'Intimidade' }, { gates: [19,49], name: 'Síntese' },
+      { gates: [51,25], name: 'Iniciação' }, { gates: [12,22], name: 'Abertura' },
+    ];
+    const activeGates = data.activatedGates as number[];
+    channelList = KNOWN_CHANNELS.filter(ch =>
+      activeGates.includes(ch.gates[0]) && activeGates.includes(ch.gates[1])
+    );
+  }
+
+  const channels = channelList.length > 0
+    ? channelList.map((ch: any) => `${ch.id || ch.gates?.join('-')}: ${ch.name}`).join('\n  - ')
+    : labels.noCompleteChannels;
+
+  // Advanced variables - support both field names
+  const advVars = data.advancedVariables || data.variables || {};
 
   const formatVariable = (variable: any): string => {
     if (!variable) return labels.notAvailable;
