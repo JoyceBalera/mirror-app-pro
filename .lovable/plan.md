@@ -1,70 +1,85 @@
 
-
-# Nova Pagina Admin: Exportar Prompts em PDF
+# Tabela de Logs de Erro para Edge Functions
 
 ## Objetivo
-Criar uma pagina acessivel em `/admin/prompts` que exibe e exporta um PDF completo com todos os prompts de IA usados nas 3 edge functions (`analyze-personality`, `analyze-human-design`, `analyze-integrated`), nas 3 versoes linguisticas (PT, EN, ES).
+Criar uma tabela `edge_function_logs` no banco de dados para registrar permanentemente todos os erros que ocorrem nas edge functions. Atualizar todas as 6 edge functions para gravar erros nessa tabela. Criar uma pagina admin em `/admin/logs` para visualizar o historico de erros.
 
-## Estrutura do PDF
+## 1. Nova tabela: `edge_function_logs`
 
-O PDF tera as seguintes secoes:
+Estrutura:
 
-1. **Capa** - "Documentacao de Prompts - Edge Functions" com data de geracao
-2. **Indice** - Lista das 3 funcoes e idiomas
-3. **analyze-personality** (Mapa de Personalidade)
-   - System Prompt PT (~110 linhas)
-   - System Prompt EN (~100 linhas)
-   - System Prompt ES (~100 linhas)
-   - User Prompt template (PT/EN/ES)
-4. **analyze-human-design** (Arquitetura Pessoal)
-   - System Prompt PT (~250 linhas)
-   - System Prompt ES (~80 linhas)
-   - System Prompt EN (~70 linhas)
-   - User Prompt template (buildUserPrompt labels PT/EN/ES)
-5. **analyze-integrated** (Blueprint Pessoal)
-   - System Prompt PT (~120 linhas)
-   - System Prompt ES (~90 linhas)
-   - System Prompt EN (~90 linhas)
-   - User Prompt template (PT/EN/ES)
+| Coluna | Tipo | Descricao |
+|--------|------|-----------|
+| id | uuid (PK) | Identificador unico |
+| function_name | text | Nome da edge function (ex: analyze-personality) |
+| error_message | text | Mensagem de erro |
+| error_details | jsonb | Detalhes extras (stack trace, request body parcial, status code) |
+| user_id | uuid (nullable) | ID do usuario que disparou a chamada (se autenticado) |
+| created_at | timestamptz | Momento do erro |
 
-## Implementacao
+RLS:
+- SELECT somente para admins (`has_role(auth.uid(), 'admin')`)
+- INSERT sem restricao (para as edge functions usando service_role_key)
+- Sem UPDATE/DELETE para usuarios comuns
 
-### 1. Novo arquivo: `src/pages/admin/Prompts.tsx`
+## 2. Atualizacao das Edge Functions
 
-- Pagina com visualizacao dos prompts organizados por funcao e idioma usando Tabs (funcao) e sub-Tabs (idioma)
-- Botao "Exportar PDF" que gera o documento completo usando jsPDF (ja instalado)
-- Os prompts serao armazenados como constantes diretamente no arquivo (extraidos das edge functions), evitando chamadas de rede
-- Cada prompt sera exibido em um bloco `<pre>` com scroll e fundo cinza claro
+Todas as 6 funcoes serao atualizadas com uma funcao helper `logError()` que grava na tabela usando o `service_role_key`. O registro acontece em TODOS os blocos `catch` e retornos de erro (401, 403, 429, 402, 500).
 
-### 2. Registrar rota em `src/App.tsx`
+Funcoes afetadas:
+- `analyze-personality` - bloco catch principal + erros de API (429, 402)
+- `analyze-human-design` - bloco catch principal + erros de API
+- `analyze-integrated` - bloco catch principal + erros de API (429, 402)
+- `recalculate-results` - bloco catch principal
+- `create-user` - bloco catch principal
+- `edit-user` - bloco catch principal
 
-- Adicionar rota `/admin/prompts` protegida com `AuthGuard requiredRole="admin"` e `AdminLayout`
+Padrao do helper (adicionado em cada function):
 
-### 3. Adicionar link no menu admin em `src/components/layout/AdminLayout.tsx`
+```text
+async function logError(supabase, functionName, errorMessage, errorDetails, userId) {
+  try {
+    await supabase.from('edge_function_logs').insert({
+      function_name: functionName,
+      error_message: errorMessage,
+      error_details: errorDetails,
+      user_id: userId
+    });
+  } catch (e) {
+    console.error('Failed to log error:', e);
+  }
+}
+```
 
-- Novo item de navegacao "Prompts" com icone `FileText` do lucide-react
+O helper usa try/catch interno para nunca impedir o retorno da response original ao usuario.
 
-### 4. Geracao do PDF (`src/utils/generatePromptsReport.ts`)
+## 3. Nova pagina admin: `/admin/logs`
 
-- Utilizar jsPDF para gerar o documento
-- Paginar automaticamente o texto longo dos prompts
-- Usar fonte monospace (Courier) para o conteudo dos prompts
-- Incluir cabecalho com nome da funcao/idioma e rodape com numero de pagina
-- Seguir o padrao visual dos outros PDFs (cores carmim/gold do brand)
+Interface com:
+- Tabela listando os logs mais recentes (ultimos 100)
+- Filtros por: nome da funcao (dropdown), periodo (date range)
+- Coluna com timestamp, funcao, mensagem de erro, usuario (se disponivel)
+- Botao para expandir detalhes (jsonb) de cada erro
+- Botao para limpar logs antigos (delete por periodo)
 
-### 5. Dados dos prompts (`src/data/edgeFunctionPrompts.ts`)
-
-- Arquivo centralizado com todos os prompts extraidos das 3 edge functions
-- Estrutura tipada por funcao e idioma
-- Inclui system prompts, user prompt templates e metadados (modelo usado, etc.)
-
-## Arquivos a criar/editar
+## 4. Alteracoes em arquivos
 
 | Arquivo | Acao |
 |---------|------|
-| `src/data/edgeFunctionPrompts.ts` | Criar - dados dos prompts |
-| `src/utils/generatePromptsReport.ts` | Criar - gerador de PDF |
-| `src/pages/admin/Prompts.tsx` | Criar - pagina admin |
-| `src/App.tsx` | Editar - adicionar rota |
-| `src/components/layout/AdminLayout.tsx` | Editar - adicionar nav item |
+| Migration SQL | Criar tabela `edge_function_logs` + RLS policies |
+| `supabase/functions/analyze-personality/index.ts` | Adicionar logError helper + chamadas nos blocos de erro |
+| `supabase/functions/analyze-human-design/index.ts` | Adicionar logError helper + chamadas nos blocos de erro |
+| `supabase/functions/analyze-integrated/index.ts` | Adicionar logError helper + chamadas nos blocos de erro |
+| `supabase/functions/recalculate-results/index.ts` | Adicionar logError helper + chamadas nos blocos de erro |
+| `supabase/functions/create-user/index.ts` | Adicionar logError helper + chamadas nos blocos de erro |
+| `supabase/functions/edit-user/index.ts` | Adicionar logError helper + chamadas nos blocos de erro |
+| `src/pages/admin/Logs.tsx` | Criar pagina de visualizacao de logs |
+| `src/App.tsx` | Adicionar rota `/admin/logs` |
+| `src/components/layout/AdminLayout.tsx` | Adicionar item "Logs" no menu |
 
+## Detalhes tecnicos
+
+- A tabela usa INSERT com `service_role_key` para garantir que erros sejam registrados mesmo sem autenticacao valida do usuario
+- Os erros 401/403 tambem serao logados (userId sera null nesses casos)
+- O campo `error_details` armazena contexto como: status code da API, session_id envolvido, etc. - sem dados sensiveis como tokens
+- Dados sensiveis (tokens, senhas) NUNCA serao gravados nos logs
