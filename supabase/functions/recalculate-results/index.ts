@@ -7,6 +7,19 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+async function logError(supabase: any, functionName: string, errorMessage: string, errorDetails: any, userId: string | null) {
+  try {
+    await supabase.from('edge_function_logs').insert({
+      function_name: functionName,
+      error_message: errorMessage,
+      error_details: errorDetails || {},
+      user_id: userId,
+    });
+  } catch (e) {
+    console.error('Failed to log error to database:', e);
+  }
+}
+
 // Definição das 300 questões com keyed para inversão (10 por faceta)
 const questions = [
   // === NEUROTICISMO (N) - 60 questões ===
@@ -587,6 +600,10 @@ serve(async (req) => {
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
     console.error('[recalculate-results] Erro:', errorMessage);
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabaseForLog = createClient(supabaseUrl, supabaseServiceKey);
+    await logError(supabaseForLog, 'recalculate-results', errorMessage, { stack: error instanceof Error ? (error as Error).stack : undefined }, null);
     return new Response(JSON.stringify({
       success: false,
       error: errorMessage,

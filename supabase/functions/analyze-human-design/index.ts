@@ -6,6 +6,19 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+async function logError(supabase: any, functionName: string, errorMessage: string, errorDetails: any, userId: string | null) {
+  try {
+    await supabase.from('edge_function_logs').insert({
+      function_name: functionName,
+      error_message: errorMessage,
+      error_details: errorDetails || {},
+      user_id: userId,
+    });
+  } catch (e) {
+    console.error('Failed to log error to database:', e);
+  }
+}
+
 // ──────────────────────────────────────────────────
 // Signature & Not-Self Theme by Type
 // ──────────────────────────────────────────────────
@@ -511,12 +524,14 @@ serve(async (req) => {
       console.error('AI Gateway error:', response.status, errorText);
 
       if (response.status === 429) {
+        await logError(supabase, 'analyze-human-design', 'Rate limit exceeded (429)', { status: 429, errorText, resultId }, userId);
         return new Response(JSON.stringify({ error: 'Taxa de requisições excedida. Por favor, tente novamente em alguns minutos.' }), {
           status: 429,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
       if (response.status === 402) {
+        await logError(supabase, 'analyze-human-design', 'Credits exhausted (402)', { status: 402, errorText, resultId }, userId);
         return new Response(JSON.stringify({ error: 'Créditos insuficientes. Por favor, adicione créditos à sua conta.' }), {
           status: 402,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -537,11 +552,11 @@ serve(async (req) => {
     console.log('Analysis generated successfully, length:', analysisText.length);
 
     // Save to database
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const supabaseUrl2 = Deno.env.get('SUPABASE_URL')!;
+    const supabaseServiceKey2 = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabaseDb = createClient(supabaseUrl2, supabaseServiceKey2);
 
-    const { error: insertError } = await supabase
+    const { error: insertError } = await supabaseDb
       .from('human_design_analyses')
       .upsert({
         result_id: resultId,
@@ -563,6 +578,10 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Error in analyze-human-design:', error);
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabaseForLog = createClient(supabaseUrl, supabaseServiceKey);
+    await logError(supabaseForLog, 'analyze-human-design', error instanceof Error ? error.message : 'Erro desconhecido', { stack: error instanceof Error ? error.stack : undefined }, null);
     return new Response(JSON.stringify({
       error: error instanceof Error ? error.message : 'Erro desconhecido ao gerar análise'
     }), {

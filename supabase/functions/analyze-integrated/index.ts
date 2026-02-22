@@ -5,6 +5,19 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+async function logError(supabaseClient: any, functionName: string, errorMessage: string, errorDetails: any, userId: string | null) {
+  try {
+    await supabaseClient.from('edge_function_logs').insert({
+      function_name: functionName,
+      error_message: errorMessage,
+      error_details: errorDetails || {},
+      user_id: userId,
+    });
+  } catch (e) {
+    console.error('Failed to log error to database:', e);
+  }
+}
+
 // Normalize language code to simple format
 const normalizeLanguage = (lang: string): 'pt' | 'es' | 'en' => {
   const normalized = lang?.toLowerCase().split('-')[0] || 'pt';
@@ -454,7 +467,13 @@ serve(async (req) => {
       const errorText = await response.text();
       console.error("Erro da API:", response.status, errorText);
       
+      const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+      const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+      const { createClient: cc } = await import("https://esm.sh/@supabase/supabase-js@2");
+      const supabaseLog = cc(supabaseUrl, supabaseServiceKey);
+      
       if (response.status === 429) {
+        await logError(supabaseLog, 'analyze-integrated', 'Rate limit exceeded (429)', { status: 429, errorText }, null);
         return new Response(
           JSON.stringify({ 
             error: "Limite de requisições excedido. Por favor, aguarde alguns minutos e tente novamente." 
@@ -464,6 +483,7 @@ serve(async (req) => {
       }
       
       if (response.status === 402) {
+        await logError(supabaseLog, 'analyze-integrated', 'Credits exhausted (402)', { status: 402, errorText }, null);
         return new Response(
           JSON.stringify({ 
             error: "Créditos de IA esgotados. Por favor, adicione créditos em Settings -> Workspace -> Usage." 
@@ -487,6 +507,13 @@ serve(async (req) => {
 
   } catch (error) {
     console.error("Erro na função analyze-integrated:", error);
+    try {
+      const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+      const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+      const { createClient: cc } = await import("https://esm.sh/@supabase/supabase-js@2");
+      const supabaseLog = cc(supabaseUrl, supabaseServiceKey);
+      await logError(supabaseLog, 'analyze-integrated', error instanceof Error ? error.message : 'Erro desconhecido', { stack: error instanceof Error ? error.stack : undefined }, null);
+    } catch (_) { /* ignore */ }
     return new Response(
       JSON.stringify({ 
         error: error instanceof Error ? error.message : "Erro desconhecido ao gerar análise integrada" 

@@ -10,6 +10,19 @@ const corsHeaders = {
 const isValidUUID = (str: string): boolean =>
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
 
+async function logError(supabase: any, functionName: string, errorMessage: string, errorDetails: any, userId: string | null) {
+  try {
+    await supabase.from('edge_function_logs').insert({
+      function_name: functionName,
+      error_message: errorMessage,
+      error_details: errorDetails || {},
+      user_id: userId,
+    });
+  } catch (e) {
+    console.error('Failed to log error to database:', e);
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -559,6 +572,7 @@ ${formattedTraitsData}`
       console.error("Erro da API:", response.status, errorText);
       
       if (response.status === 429) {
+        await logError(supabase, 'analyze-personality', 'Rate limit exceeded (429)', { status: 429, errorText, sessionId }, userId);
         return new Response(
           JSON.stringify({ 
             error: "Limite de requisições excedido. Por favor, aguarde alguns minutos e tente novamente." 
@@ -568,6 +582,7 @@ ${formattedTraitsData}`
       }
       
       if (response.status === 402) {
+        await logError(supabase, 'analyze-personality', 'Credits exhausted (402)', { status: 402, errorText, sessionId }, userId);
         return new Response(
           JSON.stringify({ 
             error: "Créditos de IA esgotados. Por favor, adicione créditos em Settings -> Workspace -> Usage." 
@@ -591,6 +606,10 @@ ${formattedTraitsData}`
 
   } catch (error) {
     console.error("Erro na função analyze-personality:", error);
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabaseForLog = createClient(supabaseUrl, supabaseServiceKey);
+    await logError(supabaseForLog, 'analyze-personality', error instanceof Error ? error.message : 'Erro desconhecido', { stack: error instanceof Error ? error.stack : undefined }, null);
     return new Response(
       JSON.stringify({ 
         error: error instanceof Error ? error.message : "Erro desconhecido ao gerar análise" 
