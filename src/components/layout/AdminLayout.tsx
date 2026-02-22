@@ -11,7 +11,8 @@ import {
   ArrowLeft,
   FlaskConical,
   CheckSquare,
-  FileText
+  FileText,
+  ScrollText
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -35,6 +36,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
     { path: '/admin/ambiente-teste', label: 'Ambiente de Teste', icon: FlaskConical },
     { path: '/admin/validacao', label: 'Validação', icon: CheckSquare },
     { path: '/admin/prompts', label: 'Prompts', icon: FileText },
+    { path: '/admin/logs', label: 'Logs', icon: ScrollText },
   ];
 
   const isActive = (path: string, exact?: boolean) => {

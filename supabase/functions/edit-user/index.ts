@@ -6,6 +6,19 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+async function logError(supabase: any, functionName: string, errorMessage: string, errorDetails: any, userId: string | null) {
+  try {
+    await supabase.from('edge_function_logs').insert({
+      function_name: functionName,
+      error_message: errorMessage,
+      error_details: errorDetails || {},
+      user_id: userId,
+    });
+  } catch (e) {
+    console.error('Failed to log error to database:', e);
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -173,6 +186,10 @@ serve(async (req) => {
     );
   } catch (error: any) {
     console.error("Error in edit-user function:", error);
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabaseForLog = createClient(supabaseUrl, supabaseServiceKey);
+    await logError(supabaseForLog, 'edit-user', error.message || 'Unknown error', { stack: error.stack }, null);
     return new Response(
       JSON.stringify({ error: error.message || "Unknown error" }),
       {

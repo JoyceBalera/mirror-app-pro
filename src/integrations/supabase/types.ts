@@ -46,6 +46,33 @@ export type Database = {
           },
         ]
       }
+      edge_function_logs: {
+        Row: {
+          created_at: string
+          error_details: Json | null
+          error_message: string
+          function_name: string
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          error_details?: Json | null
+          error_message: string
+          function_name: string
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          error_details?: Json | null
+          error_message?: string
+          function_name?: string
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       human_design_analyses: {
         Row: {
           analysis_text: string
