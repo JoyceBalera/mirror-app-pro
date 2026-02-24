@@ -631,6 +631,7 @@
     "backToDashboard": "Voltar ao Dashboard",
     "questionLabel": "Pergunta {{current}} de {{total}}",
     "completed": "{{percent}}% concluído",
+    "phase": "Fase {{current}} de {{total}}",
     "testCompleted": "Teste concluído! 🎉",
     "resultsSaved": "Seus resultados foram salvos com sucesso.",
     "startError": "Erro ao iniciar teste",

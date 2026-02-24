@@ -11,6 +11,7 @@ interface QuestionCardProps {
   onAnswer: (score: number) => void;
   questionNumber: number;
   totalQuestions: number;
+  progressBarColor?: string;
 }
 
 export const QuestionCard = ({
@@ -19,6 +20,7 @@ export const QuestionCard = ({
   onAnswer,
   questionNumber,
   totalQuestions,
+  progressBarColor,
 }: QuestionCardProps) => {
   const { t, language } = useLanguage();
   const progress = (questionNumber / totalQuestions) * 100;
@@ -42,7 +44,7 @@ export const QuestionCard = ({
             {Math.round(progress)}%
           </span>
         </div>
-        <Progress value={progress} className="h-2" />
+        <Progress value={progress} className="h-2" indicatorColor={progressBarColor} />
       </div>
 
       <div className="mb-6 sm:mb-8">
