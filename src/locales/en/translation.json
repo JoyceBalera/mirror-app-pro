@@ -635,7 +635,11 @@
     "testCompleted": "Test completed! 🎉",
     "resultsSaved": "Your results have been saved successfully.",
     "startError": "Error starting test",
-    "startErrorDesc": "Could not start the test."
+    "startErrorDesc": "Could not start the test.",
+    "confirmDialogTitle": "⚠️ Attention before starting",
+    "confirmDialogDesc": "Once answered, each question advances automatically and cannot be changed. You cannot go back to previous questions. Read carefully and answer thoughtfully.",
+    "confirmDialogAccept": "I understand, start test",
+    "confirmDialogCancel": "Cancel"
   },
   "integratedResults": {
     "back": "Back",

@@ -14,6 +14,16 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, PlayCircle, Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -52,7 +62,7 @@ const BigFiveTest = () => {
   const [answers, setAnswers] = useState<Answer[]>([]);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [resuming, setResuming] = useState(false);
-
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   useEffect(() => {
     const init = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -375,7 +385,7 @@ const BigFiveTest = () => {
             </p>
 
             <Button
-              onClick={handleStartTest}
+              onClick={() => resuming ? handleStartTest() : setShowConfirmDialog(true)}
               className="w-full gap-2"
               size="lg"
             >
@@ -384,6 +394,23 @@ const BigFiveTest = () => {
             </Button>
           </CardContent>
         </Card>
+
+        <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{t("bigFiveTest.confirmDialogTitle")}</AlertDialogTitle>
+              <AlertDialogDescription className="text-base">
+                {t("bigFiveTest.confirmDialogDesc")}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>{t("bigFiveTest.confirmDialogCancel")}</AlertDialogCancel>
+              <AlertDialogAction onClick={handleStartTest}>
+                {t("bigFiveTest.confirmDialogAccept")}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     );
   }
