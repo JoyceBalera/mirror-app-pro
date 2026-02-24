@@ -17,6 +17,7 @@ import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, PlayCircle, Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { getProgressBarColor, getProgressBgColor, getPhase } from "@/utils/progressColor";
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -303,7 +304,9 @@ const BigFiveTest = () => {
   };
 
   const progressPercentage = (currentQuestionIndex / questions.length) * 100;
-
+  const barColor = getProgressBarColor(progressPercentage);
+  const bgColor = getProgressBgColor(progressPercentage);
+  const phase = getPhase(currentQuestionIndex, questions.length);
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -386,14 +389,22 @@ const BigFiveTest = () => {
   }
 
   return (
-    <div className="min-h-screen gradient-hero py-4 px-3 sm:py-8 sm:px-4 md:py-12 overflow-y-auto pb-20 sm:pb-8">
+    <div
+      className="min-h-screen py-4 px-3 sm:py-8 sm:px-4 md:py-12 overflow-y-auto pb-20 sm:pb-8 transition-colors duration-700"
+      style={{
+        background: `linear-gradient(135deg, ${bgColor} 0%, hsl(353, 10%, 88%) 100%)`,
+      }}
+    >
       {/* Progress Bar */}
       <div className="max-w-3xl w-full mx-auto mb-4">
         <div className="flex items-center justify-between mb-2 text-sm text-muted-foreground">
           <span>{t("bigFiveTest.questionLabel", { current: currentQuestionIndex + 1, total: questions.length })}</span>
           <span>{t("bigFiveTest.completed", { percent: Math.round(progressPercentage) })}</span>
         </div>
-        <Progress value={progressPercentage} className="h-2" />
+        <Progress value={progressPercentage} className="h-2" indicatorColor={barColor} />
+        <div className="mt-1 text-xs text-muted-foreground text-center">
+          {t("bigFiveTest.phase", { current: phase, total: 5 })}
+        </div>
       </div>
 
       <div className="max-w-3xl w-full mx-auto relative">
@@ -408,6 +419,7 @@ const BigFiveTest = () => {
           onAnswer={handleAnswer}
           questionNumber={currentQuestionIndex + 1}
           totalQuestions={questions.length}
+          progressBarColor={barColor}
         />
       </div>
     </div>
