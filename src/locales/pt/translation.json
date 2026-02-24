@@ -816,5 +816,24 @@
     "both": "Ambos",
     "definedCenter": "Centro Definido",
     "undefined": "Indefinido"
+  },
+  "adminLogs": {
+    "title": "Logs de Erro",
+    "refresh": "Atualizar",
+    "clear": "Limpar",
+    "allFunctions": "Todas as funções",
+    "from": "De",
+    "to": "Até",
+    "loading": "Carregando...",
+    "noLogs": "Nenhum log encontrado.",
+    "dateTime": "Data/Hora",
+    "function": "Função",
+    "message": "Mensagem",
+    "user": "Usuário",
+    "fullUserId": "User ID completo",
+    "loadError": "Erro ao carregar logs",
+    "confirmClear": "Tem certeza que deseja limpar os logs filtrados?",
+    "clearError": "Erro ao limpar logs",
+    "clearSuccess": "Logs limpos com sucesso"
   }
 }

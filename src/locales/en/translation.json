@@ -816,5 +816,24 @@
     "both": "Both",
     "definedCenter": "Defined Center",
     "undefined": "Undefined"
+  },
+  "adminLogs": {
+    "title": "Error Logs",
+    "refresh": "Refresh",
+    "clear": "Clear",
+    "allFunctions": "All functions",
+    "from": "From",
+    "to": "To",
+    "loading": "Loading...",
+    "noLogs": "No logs found.",
+    "dateTime": "Date/Time",
+    "function": "Function",
+    "message": "Message",
+    "user": "User",
+    "fullUserId": "Full User ID",
+    "loadError": "Error loading logs",
+    "confirmClear": "Are you sure you want to clear the filtered logs?",
+    "clearError": "Error clearing logs",
+    "clearSuccess": "Logs cleared successfully"
   }
 }

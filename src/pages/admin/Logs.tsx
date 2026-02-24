@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { RefreshCw, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 interface LogEntry {
   id: string;
@@ -29,6 +30,7 @@ const FUNCTION_NAMES = [
 ];
 
 const AdminLogs = () => {
+  const { t } = useTranslation();
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [functionFilter, setFunctionFilter] = useState<string>('all');
@@ -58,7 +60,7 @@ const AdminLogs = () => {
 
     const { data, error } = await query;
     if (error) {
-      toast.error('Erro ao carregar logs: ' + error.message);
+      toast.error(t('adminLogs.loadError') + ': ' + error.message);
     } else {
       setLogs((data as any[]) || []);
     }
@@ -79,7 +81,7 @@ const AdminLogs = () => {
   };
 
   const handleClearLogs = async () => {
-    if (!confirm('Tem certeza que deseja limpar os logs filtrados?')) return;
+    if (!confirm(t('adminLogs.confirmClear'))) return;
 
     let query = supabase.from('edge_function_logs').delete();
 
@@ -104,9 +106,9 @@ const AdminLogs = () => {
 
     const { error } = await query;
     if (error) {
-      toast.error('Erro ao limpar logs: ' + error.message);
+      toast.error(t('adminLogs.clearError') + ': ' + error.message);
     } else {
-      toast.success('Logs limpos com sucesso');
+      toast.success(t('adminLogs.clearSuccess'));
       fetchLogs();
     }
   };
@@ -128,15 +130,15 @@ const AdminLogs = () => {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between flex-wrap gap-4">
-            <CardTitle className="text-2xl">Logs de Erro</CardTitle>
+            <CardTitle className="text-2xl">{t('adminLogs.title')}</CardTitle>
             <div className="flex gap-2">
               <Button variant="outline" size="sm" onClick={fetchLogs} disabled={loading}>
                 <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-                Atualizar
+                {t('adminLogs.refresh')}
               </Button>
               <Button variant="destructive" size="sm" onClick={handleClearLogs}>
                 <Trash2 className="w-4 h-4 mr-2" />
-                Limpar
+                {t('adminLogs.clear')}
               </Button>
             </div>
           </div>
@@ -147,10 +149,10 @@ const AdminLogs = () => {
             <div className="w-48">
               <Select value={functionFilter} onValueChange={setFunctionFilter}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Todas as funções" />
+                  <SelectValue placeholder={t('adminLogs.allFunctions')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todas as funções</SelectItem>
+                  <SelectItem value="all">{t('adminLogs.allFunctions')}</SelectItem>
                   {FUNCTION_NAMES.map(fn => (
                     <SelectItem key={fn} value={fn}>{fn}</SelectItem>
                   ))}
@@ -161,14 +163,14 @@ const AdminLogs = () => {
               type="date"
               value={dateFrom}
               onChange={e => setDateFrom(e.target.value)}
-              placeholder="De"
+              placeholder={t('adminLogs.from')}
               className="w-40"
             />
             <Input
               type="date"
               value={dateTo}
               onChange={e => setDateTo(e.target.value)}
-              placeholder="Até"
+              placeholder={t('adminLogs.to')}
               className="w-40"
             />
           </div>
@@ -176,16 +178,16 @@ const AdminLogs = () => {
           {/* Table */}
           {logs.length === 0 ? (
             <p className="text-muted-foreground text-center py-8">
-              {loading ? 'Carregando...' : 'Nenhum log encontrado.'}
+              {loading ? t('adminLogs.loading') : t('adminLogs.noLogs')}
             </p>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[180px]">Data/Hora</TableHead>
-                  <TableHead className="w-[180px]">Função</TableHead>
-                  <TableHead>Mensagem</TableHead>
-                  <TableHead className="w-[100px]">Usuário</TableHead>
+                  <TableHead className="w-[180px]">{t('adminLogs.dateTime')}</TableHead>
+                  <TableHead className="w-[180px]">{t('adminLogs.function')}</TableHead>
+                  <TableHead>{t('adminLogs.message')}</TableHead>
+                  <TableHead className="w-[100px]">{t('adminLogs.user')}</TableHead>
                   <TableHead className="w-[50px]"></TableHead>
                 </TableRow>
               </TableHeader>
@@ -223,7 +225,7 @@ const AdminLogs = () => {
                           </pre>
                           {log.user_id && (
                             <p className="text-xs text-muted-foreground mt-2">
-                              User ID completo: {log.user_id}
+                              {t('adminLogs.fullUserId')}: {log.user_id}
                             </p>
                           )}
                         </TableCell>
