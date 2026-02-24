@@ -1,60 +1,59 @@
 
 
-# Feedback Visual Progressivo no Teste Big Five
+# Botao de Reset do Big Five para Admin
 
-## Problema
-Com 300 perguntas de estrutura similar, os usuarios acham que as perguntas se repetem porque nao ha feedback visual claro de progresso alem do numero e da barra.
+## Objetivo
+Adicionar um botao na interface do admin que permite resetar o teste Big Five de um usuario, apagando todos os dados associados e permitindo que o usuario refaca o teste do zero.
 
-## Solucao
+## O que sera feito
 
-Implementar **duas mudancas visuais progressivas** que trabalham juntas:
+### 1. Nova Edge Function: `reset-big-five`
+Uma funcao backend que executa o reset completo com privilegios de admin (service role). A funcao:
+- Verifica se o solicitante e admin
+- Recebe o `user_id` como parametro
+- Deleta registros nas tabelas (na ordem correta para respeitar dependencias):
+  1. `ai_analyses` (vinculadas via session_id)
+  2. `integrated_analyses` (vinculadas via big_five_session_id)
+  3. `test_results` (vinculadas via session_id)
+  4. `test_answers` (vinculadas via session_id)
+  5. `test_sessions` (do usuario)
+- Limpa o campo `big_five_completed_at` na tabela `user_test_access`
+- Retorna confirmacao do reset
 
-### 1. Barra de progresso com cor que muda gradualmente
+### 2. Botao de Reset no UserCard
+Adicionar um botao "Resetar Big Five" no componente `UserCard.tsx`, visivel apenas quando o usuario ja completou o teste. O botao:
+- Abre um dialogo de confirmacao (AlertDialog) para evitar cliques acidentais
+- Mostra o nome do usuario no dialogo para clareza
+- Chama a edge function `reset-big-five`
+- Exibe toast de sucesso/erro
+- Atualiza a lista de usuarios apos o reset
 
-A barra de progresso muda de cor conforme o usuario avanca:
-- 0-20% (perguntas 1-60): Carmim (cor primaria atual)
-- 20-40% (perguntas 61-120): Transicao para um tom rosado
-- 40-60% (perguntas 121-180): Transicao para dourado (accent)
-- 60-80% (perguntas 181-240): Transicao para verde
-- 80-100% (perguntas 241-300): Verde vibrante (conclusao)
+### 3. Atualizacoes no AdminDashboard
+- Passar callback `onResetBigFive` para o `UserCard`
+- Recarregar a lista de usuarios apos reset bem-sucedido
 
-A transicao e **gradual** (interpolacao de cor), nao em blocos.
+## Detalhes Tecnicos
 
-### 2. Fundo da pagina muda de tom sutilmente
-
-O fundo `gradient-hero` tera uma variacao sutil de tonalidade conforme o progresso:
-- Inicio: Tom atual (off-white/mauve claro)
-- Meio: Leve tom dourado quente
-- Final: Tom verde suave, transmitindo "quase la!"
-
-A mudanca e muito sutil para nao distrair, mas suficiente para o cerebro perceber que algo mudou.
-
-### 3. Indicador de fase/bloco
-
-Adicionar um label discreto abaixo da barra mostrando a "fase" atual:
-- Fase 1 de 5, Fase 2 de 5, etc. (cada fase = 60 perguntas)
-- Isso reforça visualmente que ha progresso real
-
-## Arquivos a alterar
-
-| Arquivo | Alteracao |
-|---------|-----------|
-| `src/pages/app/BigFiveTest.tsx` | Calcular cor do progresso e cor de fundo com base no indice atual; passar props de cor; adicionar label de fase |
-| `src/components/QuestionCard.tsx` | Receber prop de cor da barra e aplicar ao componente Progress |
-| `src/components/ui/progress.tsx` | Aceitar prop `indicatorColor` para cor dinamica inline |
-
-## Detalhes tecnicos
-
-A interpolacao de cor sera feita com uma funcao utilitaria que recebe o percentual (0-100) e retorna a cor HSL correspondente usando interpolacao linear entre os pontos definidos. A cor e aplicada via `style` inline no indicador do Progress e no background da pagina, sem necessidade de classes CSS dinamicas.
-
-Fases do progresso e cores (HSL):
+### Edge Function (`supabase/functions/reset-big-five/index.ts`)
 ```text
-0%   -> hsl(348, 66%, 29%)  -- carmim
-25%  -> hsl(20, 60%, 50%)   -- rosado/coral
-50%  -> hsl(46, 64%, 52%)   -- dourado
-75%  -> hsl(120, 40%, 45%)  -- verde medio
-100% -> hsl(142, 55%, 42%)  -- verde vibrante
+- Verifica auth token e role admin via service role client
+- Busca todas test_sessions do usuario
+- Deleta em cascata: ai_analyses -> integrated_analyses -> test_results -> test_answers -> test_sessions
+- UPDATE user_test_access SET big_five_completed_at = NULL WHERE user_id = $1
+- Retorna { success: true, deleted_sessions: number }
 ```
 
-O fundo da pagina usara as mesmas fases mas com luminosidade alta (90-95%) para manter a sutileza.
+### Componente UserCard
+- Novo prop `onResetBigFive?: (userId: string, userName: string) => void`
+- Botao com icone `RotateCcw` do lucide-react
+- AlertDialog integrado pedindo confirmacao antes de executar
+
+### Fluxo do Usuario (Admin)
+1. Admin ve a lista de usuarios
+2. Clica no botao "Resetar" no card do usuario
+3. Dialogo de confirmacao aparece: "Tem certeza que deseja resetar o teste Big Five de [nome]?"
+4. Admin confirma
+5. Edge function executa o reset
+6. Toast de sucesso aparece
+7. Card do usuario atualiza mostrando "Mapa de Personalidade Pendente"
 
