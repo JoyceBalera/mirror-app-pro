@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.analyze-integrated]
 verify_jwt = false
+
+[functions.reset-big-five]
+verify_jwt = false

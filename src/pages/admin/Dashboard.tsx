@@ -41,6 +41,7 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filter, setFilter] = useState("all");
+  const [resettingUserId, setResettingUserId] = useState<string | null>(null);
   const [editingUser, setEditingUser] = useState<{ 
     id: string; 
     full_name: string | null; 
@@ -114,6 +115,29 @@ const AdminDashboard = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResetBigFive = async (userId: string, userName: string) => {
+    setResettingUserId(userId);
+    try {
+      const { data, error } = await supabase.functions.invoke("reset-big-five", {
+        body: { user_id: userId },
+      });
+      if (error) throw error;
+      toast({
+        title: "Reset concluído",
+        description: `Mapa de Personalidade de ${userName} foi resetado com sucesso.`,
+      });
+      await fetchUsers();
+    } catch (error: any) {
+      toast({
+        title: "Erro ao resetar",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setResettingUserId(null);
     }
   };
 
@@ -257,7 +281,7 @@ const AdminDashboard = () => {
             <UserCard 
               key={user.id} 
               user={user} 
-            onEdit={() => setEditingUser({ 
+              onEdit={() => setEditingUser({ 
                 id: user.id, 
                 full_name: user.full_name, 
                 email: user.email,
@@ -265,6 +289,8 @@ const AdminDashboard = () => {
                 role: user.role || "user",
                 test_access: user.test_access
               })}
+              onResetBigFive={handleResetBigFive}
+              isResetting={resettingUserId === user.id}
             />
           ))
         )}
