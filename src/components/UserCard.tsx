@@ -1,10 +1,22 @@
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, Clock, Pencil } from "lucide-react";
+import { CheckCircle2, Clock, Pencil, RotateCcw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface UserCardProps {
   user: {
@@ -28,9 +40,11 @@ interface UserCardProps {
     };
   };
   onEdit: () => void;
+  onResetBigFive?: (userId: string, userName: string) => void;
+  isResetting?: boolean;
 }
 
-const UserCard = ({ user, onEdit }: UserCardProps) => {
+const UserCard = ({ user, onEdit, onResetBigFive, isResetting }: UserCardProps) => {
   const navigate = useNavigate();
   
   const hasTestedBigFive = user.test_sessions?.some(session => session.completed_at);
@@ -39,6 +53,8 @@ const UserCard = ({ user, onEdit }: UserCardProps) => {
   
   const lastBigFiveTest = user.test_sessions?.find(session => session.completed_at);
   const lastHDTest = user.human_design_sessions?.find(session => session.completed_at);
+
+  const userName = user.full_name || user.email || 'Usuário sem nome';
 
   return (
     <Card className="p-6 hover:shadow-lg transition-shadow">
@@ -53,9 +69,7 @@ const UserCard = ({ user, onEdit }: UserCardProps) => {
           </div>
           
           <div className="flex-1">
-            <h3 className="text-lg font-semibold mb-1">
-              {user.full_name || user.email || 'Usuário sem nome'}
-            </h3>
+            <h3 className="text-lg font-semibold mb-1">{userName}</h3>
             {user.email && <p className="text-sm text-muted-foreground mb-2">{user.email}</p>}
             
             {/* Status dos testes realizados */}
@@ -114,7 +128,41 @@ const UserCard = ({ user, onEdit }: UserCardProps) => {
           </div>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap justify-end">
+          {hasTestedBigFive && onResetBigFive && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-2 text-destructive border-destructive/30 hover:bg-destructive/10"
+                  disabled={isResetting}
+                >
+                  <RotateCcw className="w-4 h-4" />
+                  Resetar Big Five
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Resetar Mapa de Personalidade</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Tem certeza que deseja resetar o teste Big Five de <strong>{userName}</strong>? 
+                    Todos os dados (respostas, resultados e análises) serão apagados permanentemente 
+                    e o usuário poderá refazer o teste.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => onResetBigFive(user.id, userName)}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    Resetar
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
           <Button
             onClick={onEdit}
             variant="outline"
