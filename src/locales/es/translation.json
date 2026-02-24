@@ -635,7 +635,11 @@
     "testCompleted": "¡Prueba completada! 🎉",
     "resultsSaved": "Tus resultados se han guardado con éxito.",
     "startError": "Error al iniciar prueba",
-    "startErrorDesc": "No fue posible iniciar la prueba."
+    "startErrorDesc": "No fue posible iniciar la prueba.",
+    "confirmDialogTitle": "⚠️ Atención antes de comenzar",
+    "confirmDialogDesc": "Una vez respondida, cada pregunta avanza automáticamente y no se puede cambiar. No es posible volver a preguntas anteriores. Lee con atención y responde con cuidado.",
+    "confirmDialogAccept": "Entendido, iniciar prueba",
+    "confirmDialogCancel": "Cancelar"
   },
   "integratedResults": {
     "back": "Volver",
