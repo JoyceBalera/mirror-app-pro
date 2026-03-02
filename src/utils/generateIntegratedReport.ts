@@ -464,12 +464,26 @@ export async function generateIntegratedReport(data: IntegratedReportData): Prom
 
   yPosition += (cardHeight + 4) * 3 + 8;
 
-  // Centros - Layout horizontal com badges
-  doc.setFillColor(...COLORS.offWhite);
-  doc.roundedRect(margin, yPosition, contentWidth, 28, 3, 3, 'F');
-  
+  // Centros - Layout horizontal with dynamic height
   const definedCenters = data.definedCenters || [];
   const openCenters = data.openCenters || [];
+
+  // Calculate dynamic height for centers box
+  const definedText = definedCenters.length > 0 ? definedCenters.join(', ') : t.centersSection.none;
+  const openText = openCenters.length > 0 ? openCenters.join(', ') : t.centersSection.none;
+  
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  const definedLines = doc.splitTextToSize(definedText, contentWidth - 50);
+  const openLines = doc.splitTextToSize(openText, contentWidth - 50);
+  const definedHeight = definedLines.length * 5;
+  const openHeight = openLines.length * 5;
+  const centersBoxHeight = Math.max(28, definedHeight + openHeight + 16);
+  
+  checkAddPage(centersBoxHeight + 5);
+  
+  doc.setFillColor(...COLORS.offWhite);
+  doc.roundedRect(margin, yPosition, contentWidth, centersBoxHeight, 3, 3, 'F');
 
   // Centros Definidos
   doc.setFontSize(9);
@@ -480,20 +494,18 @@ export async function generateIntegratedReport(data: IntegratedReportData): Prom
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(...COLORS.darkText);
-  const definedText = definedCenters.length > 0 ? definedCenters.join(', ') : t.centersSection.none;
-  const definedLines = doc.splitTextToSize(definedText, contentWidth - 50);
   doc.text(definedLines, margin + 42, yPosition + 8);
+  
+  const openStartY = yPosition + 8 + definedHeight + 4;
   
   // Centros Abertos
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...COLORS.dustyMauve);
-  doc.text(`○ ${t.centersSection.open} (${openCenters.length}):`, margin + 4, yPosition + 20);
+  doc.text(`○ ${t.centersSection.open} (${openCenters.length}):`, margin + 4, openStartY);
   
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(...COLORS.darkText);
-  const openText = openCenters.length > 0 ? openCenters.join(', ') : t.centersSection.none;
-  const openLines = doc.splitTextToSize(openText, contentWidth - 50);
-  doc.text(openLines, margin + 42, yPosition + 20);
+  doc.text(openLines, margin + 42, openStartY);
 
   // =================== PÁGINA 2 - BODYGRAPH VISUAL ===================
   if (data.bodygraph_image) {
