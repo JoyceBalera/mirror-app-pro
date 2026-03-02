@@ -1,6 +1,6 @@
 // Lookup tables para Variáveis Avançadas de Desenho Humano
 
-// DIGESTION - Cor do Sol Personality
+// DIGESTION - Cor do Sol DESIGN (corpo/inconsciente)
 export const DIGESTION_MAP: Record<number, { primary: string; description: string; tips: string }> = {
   1: { primary: 'Apetite', description: 'Come quando tem fome natural', tips: 'Não siga horários fixos. Coma apenas quando sentir fome genuína. Evite comer por obrigação social ou rotina.' },
   2: { primary: 'Paladar', description: 'Come o que tem sabor agradável', tips: 'Escolha alimentos pelo sabor. Se não está gostoso, não force. Seu corpo sabe o que precisa pelo paladar.' },
@@ -10,7 +10,7 @@ export const DIGESTION_MAP: Record<number, { primary: string; description: strin
   6: { primary: 'Luz', description: 'Iluminação do ambiente importa', tips: 'Luz natural é ideal para suas refeições. Evite comer no escuro ou sob luz artificial intensa.' },
 };
 
-// Subcategoria Digestion - Tom do Sol Personality
+// Subcategoria Digestion - Tom do Sol DESIGN
 export const DIGESTION_TONE_MAP: Record<string, string> = {
   'low': 'Focado',      // Tons 1-3
   'high': 'Aberto',     // Tons 4-6
@@ -32,7 +32,7 @@ export const ENVIRONMENT_TONE_MAP: Record<string, string> = {
   'high': 'Passivo',     // Tons 4-6: o ambiente vem até você
 };
 
-// MOTIVATION - Cor do Sol Design
+// MOTIVATION - Cor do Sol PERSONALITY (mente/consciente)
 export const MOTIVATION_MAP: Record<number, { primary: string; description: string; tips: string }> = {
   1: { primary: 'Medo', description: 'Motivada por segurança e proteção', tips: 'Crie estruturas de segurança antes de arriscar. Planeje contingências. Sua cautela é sabedoria, não fraqueza.' },
   2: { primary: 'Esperança', description: 'Motivada por esperança e otimismo', tips: 'Visualize o melhor resultado possível. Sua esperança inspira outros. Evite pessoas muito pessimistas.' },
@@ -42,7 +42,7 @@ export const MOTIVATION_MAP: Record<number, { primary: string; description: stri
   6: { primary: 'Inocência', description: 'Motivada por pureza e autenticidade', tips: 'Mantenha sua visão pura sobre as coisas. Não se corrompa por cinismo. Sua ingenuidade é uma força, não fraqueza.' },
 };
 
-// Subcategoria Motivation - Tom do Sol Design
+// Subcategoria Motivation - Tom do Sol PERSONALITY
 export const MOTIVATION_TONE_MAP: Record<string, string> = {
   'low': 'Pessoal',          // Tons 1-3: motivação interna
   'high': 'Transpessoal',    // Tons 4-6: motivação externa/coletiva
@@ -114,6 +114,11 @@ interface Activation {
 }
 
 // Função para extrair variáveis avançadas dos dados do HD
+// Mapeamento correto das 4 Variáveis (Setas):
+// - Digestão (seta superior esquerda) = Sol do DESIGN (corpo/inconsciente)
+// - Ambiente (seta inferior esquerda) = Nodo Norte do DESIGN (corpo/inconsciente)
+// - Motivação (seta superior direita) = Sol da PERSONALITY (mente/consciente)
+// - Perspectiva (seta inferior direita) = Nodo Norte da PERSONALITY (mente/consciente)
 export function extractAdvancedVariables(data: {
   personality_activations: Activation[];
   design_activations: Activation[];
@@ -133,14 +138,16 @@ export function extractAdvancedVariables(data: {
     .sort((a, b) => b.gate - a.gate)[0];
 
   return {
-    digestion: sunPersonality?.color ? {
-      primary: DIGESTION_MAP[sunPersonality.color]?.primary || 'Unknown',
-      level: getDigestionLevel(sunPersonality.color),
-      description: DIGESTION_MAP[sunPersonality.color]?.description || '',
-      tips: DIGESTION_MAP[sunPersonality.color]?.tips || '',
-      subcategory: sunPersonality.tone ? DIGESTION_TONE_MAP[getToneCategory(sunPersonality.tone)] : undefined,
+    // Digestão = Sol do DESIGN (corpo/inconsciente)
+    digestion: sunDesign?.color ? {
+      primary: DIGESTION_MAP[sunDesign.color]?.primary || 'Unknown',
+      level: getDigestionLevel(sunDesign.color),
+      description: DIGESTION_MAP[sunDesign.color]?.description || '',
+      tips: DIGESTION_MAP[sunDesign.color]?.tips || '',
+      subcategory: sunDesign.tone ? DIGESTION_TONE_MAP[getToneCategory(sunDesign.tone)] : undefined,
     } : null,
 
+    // Ambiente = Nodo Norte do DESIGN (corpo/inconsciente)
     environment: northNodeDesign?.color ? {
       primary: ENVIRONMENT_MAP[northNodeDesign.color]?.primary || 'Unknown',
       description: ENVIRONMENT_MAP[northNodeDesign.color]?.description || '',
@@ -148,13 +155,15 @@ export function extractAdvancedVariables(data: {
       subcategory: northNodeDesign.tone ? ENVIRONMENT_TONE_MAP[getToneCategory(northNodeDesign.tone)] : undefined,
     } : null,
 
-    motivation: sunDesign?.color ? {
-      primary: MOTIVATION_MAP[sunDesign.color]?.primary || 'Unknown',
-      description: MOTIVATION_MAP[sunDesign.color]?.description || '',
-      tips: MOTIVATION_MAP[sunDesign.color]?.tips || '',
-      subcategory: sunDesign.tone ? MOTIVATION_TONE_MAP[getToneCategory(sunDesign.tone)] : undefined,
+    // Motivação = Sol da PERSONALITY (mente/consciente)
+    motivation: sunPersonality?.color ? {
+      primary: MOTIVATION_MAP[sunPersonality.color]?.primary || 'Unknown',
+      description: MOTIVATION_MAP[sunPersonality.color]?.description || '',
+      tips: MOTIVATION_MAP[sunPersonality.color]?.tips || '',
+      subcategory: sunPersonality.tone ? MOTIVATION_TONE_MAP[getToneCategory(sunPersonality.tone)] : undefined,
     } : null,
 
+    // Perspectiva = Nodo Norte da PERSONALITY (mente/consciente)
     perspective: northNodePersonality?.color ? {
       primary: PERSPECTIVE_MAP[northNodePersonality.color]?.primary || 'Unknown',
       description: PERSPECTIVE_MAP[northNodePersonality.color]?.description || '',
