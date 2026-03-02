@@ -114,6 +114,11 @@ interface Activation {
 }
 
 // Função para extrair variáveis avançadas dos dados do HD
+// Mapeamento correto das 4 Variáveis (Setas):
+// - Digestão (seta superior esquerda) = Sol do DESIGN (corpo/inconsciente)
+// - Ambiente (seta inferior esquerda) = Nodo Norte do DESIGN (corpo/inconsciente)
+// - Motivação (seta superior direita) = Sol da PERSONALITY (mente/consciente)
+// - Perspectiva (seta inferior direita) = Nodo Norte da PERSONALITY (mente/consciente)
 export function extractAdvancedVariables(data: {
   personality_activations: Activation[];
   design_activations: Activation[];
@@ -133,14 +138,16 @@ export function extractAdvancedVariables(data: {
     .sort((a, b) => b.gate - a.gate)[0];
 
   return {
-    digestion: sunPersonality?.color ? {
-      primary: DIGESTION_MAP[sunPersonality.color]?.primary || 'Unknown',
-      level: getDigestionLevel(sunPersonality.color),
-      description: DIGESTION_MAP[sunPersonality.color]?.description || '',
-      tips: DIGESTION_MAP[sunPersonality.color]?.tips || '',
-      subcategory: sunPersonality.tone ? DIGESTION_TONE_MAP[getToneCategory(sunPersonality.tone)] : undefined,
+    // Digestão = Sol do DESIGN (corpo/inconsciente)
+    digestion: sunDesign?.color ? {
+      primary: DIGESTION_MAP[sunDesign.color]?.primary || 'Unknown',
+      level: getDigestionLevel(sunDesign.color),
+      description: DIGESTION_MAP[sunDesign.color]?.description || '',
+      tips: DIGESTION_MAP[sunDesign.color]?.tips || '',
+      subcategory: sunDesign.tone ? DIGESTION_TONE_MAP[getToneCategory(sunDesign.tone)] : undefined,
     } : null,
 
+    // Ambiente = Nodo Norte do DESIGN (corpo/inconsciente)
     environment: northNodeDesign?.color ? {
       primary: ENVIRONMENT_MAP[northNodeDesign.color]?.primary || 'Unknown',
       description: ENVIRONMENT_MAP[northNodeDesign.color]?.description || '',
@@ -148,13 +155,15 @@ export function extractAdvancedVariables(data: {
       subcategory: northNodeDesign.tone ? ENVIRONMENT_TONE_MAP[getToneCategory(northNodeDesign.tone)] : undefined,
     } : null,
 
-    motivation: sunDesign?.color ? {
-      primary: MOTIVATION_MAP[sunDesign.color]?.primary || 'Unknown',
-      description: MOTIVATION_MAP[sunDesign.color]?.description || '',
-      tips: MOTIVATION_MAP[sunDesign.color]?.tips || '',
-      subcategory: sunDesign.tone ? MOTIVATION_TONE_MAP[getToneCategory(sunDesign.tone)] : undefined,
+    // Motivação = Sol da PERSONALITY (mente/consciente)
+    motivation: sunPersonality?.color ? {
+      primary: MOTIVATION_MAP[sunPersonality.color]?.primary || 'Unknown',
+      description: MOTIVATION_MAP[sunPersonality.color]?.description || '',
+      tips: MOTIVATION_MAP[sunPersonality.color]?.tips || '',
+      subcategory: sunPersonality.tone ? MOTIVATION_TONE_MAP[getToneCategory(sunPersonality.tone)] : undefined,
     } : null,
 
+    // Perspectiva = Nodo Norte da PERSONALITY (mente/consciente)
     perspective: northNodePersonality?.color ? {
       primary: PERSPECTIVE_MAP[northNodePersonality.color]?.primary || 'Unknown',
       description: PERSPECTIVE_MAP[northNodePersonality.color]?.description || '',
