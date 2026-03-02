@@ -362,8 +362,8 @@ serve(async (req) => {
     });
 
     const token = authHeader.replace('Bearer ', '');
-    const { data: claimsData, error: claimsError } = await supabaseAuth.auth.getClaims(token);
-    if (claimsError || !claimsData?.claims) {
+    const { data: userData, error: userError } = await supabaseAuth.auth.getUser(token);
+    if (userError || !userData?.user) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
@@ -477,10 +477,24 @@ serve(async (req) => {
 
     // Format Human Design data
     const hdData = humanDesignData;
-    const definedCenters = Object.entries(hdData.centers || {}).filter(([_, v]) => v === 'defined').map(([k]) => k).join(', ');
-    const openCenters = Object.entries(hdData.centers || {}).filter(([_, v]) => v === 'undefined').map(([k]) => k).join(', ');
+    // Handle both boolean format { head: true } and string format { head: 'defined' }
+    const definedCenters = Object.entries(hdData.centers || {})
+      .filter(([_, v]) => v === true || v === 'defined')
+      .map(([k]) => k).join(', ');
+    const openCenters = Object.entries(hdData.centers || {})
+      .filter(([_, v]) => v === false || v === 'undefined')
+      .map(([k]) => k).join(', ');
     
-    const formattedHD = `Tipo de Energia: ${hdData.energy_type}. Estratégia: ${hdData.strategy}. Autoridade: ${hdData.authority}. Perfil: ${hdData.profile}. Definição: ${hdData.definition}. Cruz de Encarnação: ${hdData.incarnation_cross}. Centros Definidos: ${definedCenters || 'Nenhum'}. Centros Abertos: ${openCenters || 'Nenhum'}.`;
+    // Include channels info in the HD summary
+    const channelList = (hdData.channels || []).filter((ch: any) => {
+      if ('isComplete' in ch) return ch.isComplete === true;
+      return true;
+    });
+    const channelsText = channelList.length > 0 
+      ? channelList.map((ch: any) => `${ch.gates?.join('-') || ch.id}: ${ch.name || ''}`).join(', ')
+      : 'Nenhum canal completo';
+
+    const formattedHD = `Tipo de Energia: ${hdData.energy_type}. Estratégia: ${hdData.strategy}. Autoridade: ${hdData.authority}. Perfil: ${hdData.profile}. Definição: ${hdData.definition}. Cruz de Encarnação: ${hdData.incarnation_cross}. Centros Definidos: ${definedCenters || 'Nenhum'}. Centros Abertos: ${openCenters || 'Nenhum'}. Canais: ${channelsText}.`;
 
     console.log(`Chamando Lovable AI para análise integrada (idioma: ${language})...`);
 
