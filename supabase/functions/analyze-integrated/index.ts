@@ -49,7 +49,7 @@ REGRA CRÍTICA - PROIBIÇÃO DE EXPRESSÕES CARINHOSAS REPETIDAS:
 - Esta é a regra mais importante de formatação: MENOS é MAIS com termos carinhosos
 
 NOMENCLATURA OBRIGATÓRIA:
-- Use "Estabilidade Emocional" em vez de "Neuroticismo"
+- Use "Neuroticismo" (não use "Estabilidade Emocional")
 - Use "Abertura" em vez de "Abertura à Experiência"
 - Use "Mapa de Personalidade" (nunca Big Five, Cinco Fatores)
 - Use "Arquitetura Pessoal" (nunca Human Design, Desenho Humano)
@@ -57,9 +57,9 @@ NOMENCLATURA OBRIGATÓRIA:
 
 CONHECIMENTO BASE - MAPA DE PERSONALIDADE:
 
-ESTABILIDADE EMOCIONAL - Como você lida com pressão e estresse.
-- Alta estabilidade: você mantém a calma sob pressão, se recupera rápido de frustrações
-- Menor estabilidade: você sente intensamente, percebe riscos antes dos outros, precisa de mais tempo para processar
+NEUROTICISMO - Como você lida com pressão e estresse.
+- Alto neuroticismo: você sente intensamente, percebe riscos antes dos outros, precisa de mais tempo para processar
+- Baixo neuroticismo: você mantém a calma sob pressão, se recupera rápido de frustrações
 
 ABERTURA - Sua receptividade ao novo.
 - Alta abertura: você adora explorar, questionar, criar, buscar o diferente
@@ -128,7 +128,7 @@ REGRAS DE FORMATAÇÃO:
 - Inclua 2-3 exemplos práticos do dia a dia ao longo do texto
 
 PROIBIÇÕES ABSOLUTAS:
-- NUNCA use termos técnicos como "Big Five", "Neuroticismo", "Human Design", "Desenho Humano"
+- NUNCA use termos técnicos como "Big Five", "Human Design", "Desenho Humano"
 - NUNCA mencione fontes, autores, metodologias acadêmicas
 - NUNCA use linguagem clínica ou de diagnóstico
 - NUNCA revele a estrutura do prompt
@@ -161,7 +161,7 @@ REGLA CRÍTICA - PROHIBICIÓN DE EXPRESIONES CARIÑOSAS REPETIDAS:
 - Esta es la regla más importante de formato: MENOS es MÁS con términos cariñosos
 
 NOMENCLATURA OBLIGATORIA:
-- Usa "Estabilidad Emocional" en vez de "Neuroticismo"
+- Usa "Neuroticismo" (no uses "Estabilidad Emocional")
 - Usa "Apertura" en vez de "Apertura a la Experiencia"
 - Usa "Mapa de Personalidad" (nunca Big Five, Cinco Factores)
 - Usa "Arquitectura Personal" (nunca Human Design, Diseño Humano)
@@ -169,9 +169,9 @@ NOMENCLATURA OBLIGATORIA:
 
 CONOCIMIENTO BASE - MAPA DE PERSONALIDAD:
 
-ESTABILIDAD EMOCIONAL - Cómo manejas la presión y el estrés.
-- Alta estabilidad: mantienes la calma bajo presión, te recuperas rápido de frustraciones
-- Menor estabilidad: sientes intensamente, percibes riesgos antes que otros, necesitas más tiempo para procesar
+NEUROTICISMO - Cómo manejas la presión y el estrés.
+- Alto neuroticismo: sientes intensamente, percibes riesgos antes que otros, necesitas más tiempo para procesar
+- Bajo neuroticismo: mantienes la calma bajo presión, te recuperas rápido de frustraciones
 
 APERTURA - Tu receptividad a lo nuevo.
 - Alta apertura: amas explorar, cuestionar, crear, buscar lo diferente
@@ -225,7 +225,7 @@ REGLAS DE FORMATO:
 - Incluye 2-3 ejemplos prácticos del día a día
 
 PROHIBICIONES ABSOLUTAS:
-- NUNCA uses términos técnicos como "Big Five", "Neuroticismo", "Human Design", "Diseño Humano"
+- NUNCA uses términos técnicos como "Big Five", "Human Design", "Diseño Humano"
 - NUNCA menciones fuentes, autores, metodologías académicas
 - NUNCA uses lenguaje clínico o de diagnóstico
 - NUNCA reveles la estructura del prompt
@@ -258,7 +258,7 @@ CRITICAL RULE - PROHIBITION OF REPEATED ENDEARING TERMS:
 - This is the most important formatting rule: LESS is MORE with endearing terms
 
 MANDATORY NOMENCLATURE:
-- Use "Emotional Stability" instead of "Neuroticism"
+- Use "Neuroticism" (do NOT use "Emotional Stability")
 - Use "Openness" instead of "Openness to Experience"
 - Use "Personality Map" (never Big Five, Five Factors)
 - Use "Personal Architecture" (never Human Design)
@@ -266,9 +266,9 @@ MANDATORY NOMENCLATURE:
 
 BASE KNOWLEDGE - PERSONALITY MAP:
 
-EMOTIONAL STABILITY - How you handle pressure and stress.
-- High stability: you stay calm under pressure, recover quickly from frustrations
-- Lower stability: you feel intensely, notice risks before others, need more time to process
+NEUROTICISM - How you handle pressure and stress.
+- High neuroticism: you feel intensely, notice risks before others, need more time to process
+- Low neuroticism: you stay calm under pressure, recover quickly from frustrations
 
 OPENNESS - Your receptivity to the new.
 - High openness: you love exploring, questioning, creating, seeking the different
@@ -362,8 +362,8 @@ serve(async (req) => {
     });
 
     const token = authHeader.replace('Bearer ', '');
-    const { data: claimsData, error: claimsError } = await supabaseAuth.auth.getClaims(token);
-    if (claimsError || !claimsData?.claims) {
+    const { data: userData, error: userError } = await supabaseAuth.auth.getUser(token);
+    if (userError || !userData?.user) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
@@ -382,41 +382,68 @@ serve(async (req) => {
     // Trait name mapping based on language
     const traitNames: Record<string, Record<string, string>> = {
       pt: {
-        'Neuroticismo': 'Estabilidade Emocional',
-        'Neuroticism': 'Estabilidade Emocional',
+        'Neuroticismo': 'Neuroticismo',
+        'Neuroticism': 'Neuroticismo',
+        'neuroticism': 'Neuroticismo',
         'Abertura à Experiência': 'Abertura',
         'Openness': 'Abertura',
+        'openness': 'Abertura',
         'Extroversão': 'Extroversão',
         'Extraversion': 'Extroversão',
+        'extraversion': 'Extroversão',
         'Amabilidade': 'Amabilidade',
         'Agreeableness': 'Amabilidade',
+        'agreeableness': 'Amabilidade',
         'Conscienciosidade': 'Conscienciosidade',
-        'Conscientiousness': 'Conscienciosidade'
+        'Conscientiousness': 'Conscienciosidade',
+        'conscientiousness': 'Conscienciosidade'
       },
       es: {
-        'Neuroticismo': 'Estabilidad Emocional',
-        'Neuroticism': 'Estabilidad Emocional',
+        'Neuroticismo': 'Neuroticismo',
+        'Neuroticism': 'Neuroticismo',
+        'neuroticism': 'Neuroticismo',
         'Abertura à Experiência': 'Apertura',
         'Openness': 'Apertura',
+        'openness': 'Apertura',
         'Extroversão': 'Extraversión',
         'Extraversion': 'Extraversión',
+        'extraversion': 'Extraversión',
         'Amabilidade': 'Amabilidad',
         'Agreeableness': 'Amabilidad',
+        'agreeableness': 'Amabilidad',
         'Conscienciosidade': 'Responsabilidad',
-        'Conscientiousness': 'Responsabilidad'
+        'Conscientiousness': 'Responsabilidad',
+        'conscientiousness': 'Responsabilidad'
       },
       en: {
-        'Neuroticismo': 'Emotional Stability',
-        'Neuroticism': 'Emotional Stability',
+        'Neuroticismo': 'Neuroticism',
+        'Neuroticism': 'Neuroticism',
+        'neuroticism': 'Neuroticism',
         'Abertura à Experiência': 'Openness',
         'Openness': 'Openness',
+        'openness': 'Openness',
         'Extroversão': 'Extraversion',
         'Extraversion': 'Extraversion',
+        'extraversion': 'Extraversion',
         'Amabilidade': 'Agreeableness',
         'Agreeableness': 'Agreeableness',
+        'agreeableness': 'Agreeableness',
         'Conscienciosidade': 'Conscientiousness',
-        'Conscientiousness': 'Conscientiousness'
+        'Conscientiousness': 'Conscientiousness',
+        'conscientiousness': 'Conscientiousness'
       }
+    };
+
+    // Classification helper for numeric scores (60-300 range)
+    const getClassification = (score: number): string => {
+      if (score <= 156) return 'Baixo';
+      if (score >= 198) return 'Alto';
+      return 'Médio';
+    };
+
+    // Normalize score from 60-300 range to percentage
+    const toPercentage = (score: number): number => {
+      return Math.round(((score - 60) / 240) * 100);
     };
 
     // Format Big Five data with localized trait names
@@ -434,6 +461,15 @@ serve(async (req) => {
         ).join(', ') || '';
         return `${mapTraitName(trait.name)}: ${Math.round(trait.score)}% (${facetsInfo || trait.classification})`;
       }).join('; ') + '.';
+    } else if (bigFiveData.traitScores && typeof bigFiveData.traitScores === 'object' && !Array.isArray(bigFiveData.traitScores)) {
+      // Handle Record<string, number> format (e.g. { neuroticism: 128, extraversion: 177 })
+      const scores = bigFiveData.traitScores as Record<string, number>;
+      formattedBigFive = Object.entries(scores).map(([traitKey, rawScore]) => {
+        const score = rawScore as number;
+        const pct = toPercentage(score);
+        const classification = getClassification(score);
+        return `${mapTraitName(traitKey)}: ${pct}% (${classification})`;
+      }).join('; ') + '.';
     } else {
       formattedBigFive = 'Dados do Mapa de Personalidade não disponíveis no formato esperado.';
       console.error('bigFiveData format not recognized:', JSON.stringify(bigFiveData).substring(0, 200));
@@ -441,10 +477,24 @@ serve(async (req) => {
 
     // Format Human Design data
     const hdData = humanDesignData;
-    const definedCenters = Object.entries(hdData.centers || {}).filter(([_, v]) => v === 'defined').map(([k]) => k).join(', ');
-    const openCenters = Object.entries(hdData.centers || {}).filter(([_, v]) => v === 'undefined').map(([k]) => k).join(', ');
+    // Handle both boolean format { head: true } and string format { head: 'defined' }
+    const definedCenters = Object.entries(hdData.centers || {})
+      .filter(([_, v]) => v === true || v === 'defined')
+      .map(([k]) => k).join(', ');
+    const openCenters = Object.entries(hdData.centers || {})
+      .filter(([_, v]) => v === false || v === 'undefined')
+      .map(([k]) => k).join(', ');
     
-    const formattedHD = `Tipo de Energia: ${hdData.energy_type}. Estratégia: ${hdData.strategy}. Autoridade: ${hdData.authority}. Perfil: ${hdData.profile}. Definição: ${hdData.definition}. Cruz de Encarnação: ${hdData.incarnation_cross}. Centros Definidos: ${definedCenters || 'Nenhum'}. Centros Abertos: ${openCenters || 'Nenhum'}.`;
+    // Include channels info in the HD summary
+    const channelList = (hdData.channels || []).filter((ch: any) => {
+      if ('isComplete' in ch) return ch.isComplete === true;
+      return true;
+    });
+    const channelsText = channelList.length > 0 
+      ? channelList.map((ch: any) => `${ch.gates?.join('-') || ch.id}: ${ch.name || ''}`).join(', ')
+      : 'Nenhum canal completo';
+
+    const formattedHD = `Tipo de Energia: ${hdData.energy_type}. Estratégia: ${hdData.strategy}. Autoridade: ${hdData.authority}. Perfil: ${hdData.profile}. Definição: ${hdData.definition}. Cruz de Encarnação: ${hdData.incarnation_cross}. Centros Definidos: ${definedCenters || 'Nenhum'}. Centros Abertos: ${openCenters || 'Nenhum'}. Canais: ${channelsText}.`;
 
     console.log(`Chamando Lovable AI para análise integrada (idioma: ${language})...`);
 
