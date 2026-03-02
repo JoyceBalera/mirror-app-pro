@@ -653,7 +653,17 @@ const UserDetails = () => {
         });
       }
 
+      // Capture BodyGraph image
+      setHdForPDF(latestHD);
+      await new Promise(resolve => setTimeout(resolve, 300));
+      const bodygraphImage = await captureBodyGraphAsImage();
+
+      const currentLanguage = (i18n.language?.split('-')[0] || 'pt') as 'pt' | 'es' | 'en';
+
       const reportData: IntegratedReportData = {
+        language: currentLanguage,
+        userName: user?.full_name || undefined,
+        testDate: latestBigFive.test_sessions?.completed_at ? new Date(latestBigFive.test_sessions.completed_at) : new Date(),
         traitScores,
         traitClassifications,
         energyType: latestHD.energy_type,
@@ -664,10 +674,13 @@ const UserDetails = () => {
         incarnationCross: latestHD.incarnation_cross || '',
         definedCenters,
         openCenters,
+        activeChannels: latestHD.channels || [],
         ai_analysis: integratedAnalysis,
+        bodygraph_image: bodygraphImage || undefined,
       };
 
       await generateIntegratedReport(reportData);
+      setHdForPDF(null);
 
       toast({
         title: "PDF gerado!",
@@ -675,6 +688,7 @@ const UserDetails = () => {
       });
     } catch (error: any) {
       console.error("Erro ao gerar PDF integrado:", error);
+      setHdForPDF(null);
       toast({
         title: "Erro ao gerar PDF",
         description: error.message || "Não foi possível gerar o PDF.",
