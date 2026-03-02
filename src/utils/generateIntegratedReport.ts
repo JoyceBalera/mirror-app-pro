@@ -92,7 +92,7 @@ const getTranslations = (lang: PDFLanguage) => {
         high: 'Alto'
       },
       traits: {
-        'Neuroticismo': 'Estabilidade Emocional',
+        'Neuroticismo': 'Neuroticismo',
         'Extroversão': 'Extroversão',
         'Abertura à Experiência': 'Abertura',
         'Amabilidade': 'Amabilidade',
@@ -135,7 +135,7 @@ const getTranslations = (lang: PDFLanguage) => {
         high: 'Alto'
       },
       traits: {
-        'Neuroticismo': 'Estabilidad Emocional',
+        'Neuroticismo': 'Neuroticismo',
         'Extroversão': 'Extraversión',
         'Abertura à Experiência': 'Apertura',
         'Amabilidade': 'Amabilidad',
@@ -178,7 +178,7 @@ const getTranslations = (lang: PDFLanguage) => {
         high: 'High'
       },
       traits: {
-        'Neuroticismo': 'Emotional Stability',
+        'Neuroticismo': 'Neuroticism',
         'Extroversão': 'Extraversion',
         'Abertura à Experiência': 'Openness',
         'Amabilidade': 'Agreeableness',
