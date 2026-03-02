@@ -680,6 +680,7 @@ const UserDetails = () => {
       };
 
       await generateIntegratedReport(reportData);
+      setHdForPDF(null);
 
       toast({
         title: "PDF gerado!",
@@ -687,6 +688,7 @@ const UserDetails = () => {
       });
     } catch (error: any) {
       console.error("Erro ao gerar PDF integrado:", error);
+      setHdForPDF(null);
       toast({
         title: "Erro ao gerar PDF",
         description: error.message || "Não foi possível gerar o PDF.",
