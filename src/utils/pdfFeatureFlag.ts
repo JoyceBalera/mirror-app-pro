@@ -18,6 +18,12 @@ const parseFlag = (value: string | null): boolean => {
   return ['true', '1', 'yes'].includes(value.toLowerCase());
 };
 
+const DEFAULT_ENABLED: Record<PDFReportType, boolean> = {
+  'big-five': true,
+  'human-design': true,
+  integrated: true,
+};
+
 export const isReactPDFEnabled = (reportType?: PDFReportType): boolean => {
   // Build-time env var
   if (import.meta.env.VITE_USE_REACT_PDF !== undefined) {
