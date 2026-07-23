@@ -8,7 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, Sparkles, FileText, RefreshCw, Download, Loader2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
-import { generateIntegratedReport, IntegratedReportData } from "@/utils/generateIntegratedReport";
+import { generateIntegratedPDF } from "@/utils/pdfEngine";
+import { captureBodyGraphAsImage } from "@/utils/captureBodyGraphAsImage";
 import HDBodyGraph from "@/components/humandesign/HDBodyGraph";
 import { getTraitClassification, getFacetClassification } from "@/utils/scoreCalculator";
 
@@ -211,50 +212,6 @@ const IntegratedResults = () => {
     }
   };
 
-  // Function to capture Bodygraph SVG as PNG
-  const captureBodyGraphAsImage = async (): Promise<string | null> => {
-    try {
-      const svgElement = document.querySelector('.bodygraph-svg') as SVGElement;
-      if (!svgElement) {
-        console.warn('Bodygraph SVG não encontrado');
-        return null;
-      }
-
-      const serializer = new XMLSerializer();
-      const svgString = serializer.serializeToString(svgElement);
-      const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
-      const url = URL.createObjectURL(svgBlob);
-
-      return new Promise((resolve) => {
-        const img = new Image();
-        img.onload = () => {
-          const canvas = document.createElement('canvas');
-          const scale = 2;
-          canvas.width = 330 * scale;
-          canvas.height = 620 * scale;
-          const ctx = canvas.getContext('2d');
-          if (ctx) {
-            ctx.fillStyle = '#FFFFFF';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.scale(scale, scale);
-            ctx.drawImage(img, 0, 0, 330, 620);
-          }
-          const dataUrl = canvas.toDataURL('image/png');
-          URL.revokeObjectURL(url);
-          resolve(dataUrl);
-        };
-        img.onerror = () => {
-          console.error('Erro ao carregar SVG como imagem');
-          URL.revokeObjectURL(url);
-          resolve(null);
-        };
-        img.src = url;
-      });
-    } catch (error) {
-      console.error('Erro ao capturar Bodygraph:', error);
-      return null;
-    }
-  };
 
   const handleDownloadPdf = async () => {
     if (!analysisText || !data.bigFiveSession || !fullHDData) {
@@ -301,7 +258,7 @@ const IntegratedResults = () => {
       // Get active channels for PDF
       const activeChannels = fullHDData.channels || [];
 
-      const reportData: IntegratedReportData = {
+      const reportData = {
         language: (i18n.language?.split('-')[0] as 'pt' | 'es' | 'en') || 'pt',
         userName: userName || undefined,
         testDate: new Date(),
@@ -320,7 +277,7 @@ const IntegratedResults = () => {
         bodygraph_image: bodygraphImage || undefined,
       };
 
-      await generateIntegratedReport(reportData);
+      await generateIntegratedPDF(reportData);
 
       toast({
         title: t('integratedResults.pdfGenerated'),

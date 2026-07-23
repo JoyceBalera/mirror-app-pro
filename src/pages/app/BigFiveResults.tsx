@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { ptBR, enUS, es } from "date-fns/locale";
 import { SCORING, TRAIT_LABELS, getTraitPercentage } from "@/constants/scoring";
-import { generateTestResultPDF } from "@/utils/pdfGenerator";
+import { generateBigFivePDF } from "@/utils/pdfEngine";
 import { getTraitClassification, getFacetClassification as getScoreFacetClassification } from "@/utils/scoreCalculator";
 import { facetNamesLuciana } from "@/data/bigFiveQuestionsLuciana";
 import ReactMarkdown from "react-markdown";
@@ -294,23 +294,21 @@ const BigFiveResults = () => {
     }
   };
 
-  const handleDownloadPDF = () => {
+  const handleDownloadPDF = async () => {
     if (!result) return;
-    
+
     const aiText = result.ai_analyses?.[0]?.analysis_text;
-    generateTestResultPDF(
-      result.trait_scores,
-      result.facet_scores,
-      result.classifications,
-      {
-        language: language as 'pt' | 'es' | 'en',
-        userName: userName,
-        testDate: result.test_sessions.completed_at 
-          ? new Date(result.test_sessions.completed_at) 
-          : new Date(),
-        aiAnalysis: aiText,
-      }
-    );
+    await generateBigFivePDF({
+      language: language as 'pt' | 'es' | 'en',
+      userName: userName,
+      testDate: result.test_sessions.completed_at
+        ? new Date(result.test_sessions.completed_at)
+        : new Date(),
+      aiAnalysis: aiText,
+      traitScores: result.trait_scores,
+      facetScores: result.facet_scores,
+      classifications: result.classifications,
+    });
     toast({
       title: t.results.pdfGenerated,
       description: t.results.pdfSuccess,
