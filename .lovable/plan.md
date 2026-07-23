@@ -1,51 +1,49 @@
-## Correção de permissões SECURITY DEFINER que bloquearam acesso administrativo
+## Objetivo
 
-### Problema
-A revogação anterior de `EXECUTE` em funções `SECURITY DEFINER` foi aplicada de forma abrangente demais: removeu a permissão também do papel `authenticated` nas funções `has_role(uuid, app_role)` e `get_user_role(uuid)`. O frontend consulta essas funções para determinar se a usuária é administradora. Sem `EXECUTE`, o painel `/admin` falha silenciosamente e redireciona para `/app`, e a lista de usuárias não carrega.
+Eliminar as páginas intermediárias do PDF do Blueprint Pessoal (Mapa de Personalidade, Arquitetura Pessoal e Bodygraph), mantendo apenas a capa e a seção "Análise Integrada — Interpretação Detalhada do Seu Perfil".
 
-### Solução
-Aplicar uma migration que:
-1. Revoga `EXECUTE` de `PUBLIC`, `anon` e `authenticated` em todas as funções afetadas (estado limpo).
-2. Concede `EXECUTE` para `authenticated` apenas em:
-   - `public.has_role(uuid, public.app_role)`
-   - `public.get_user_role(uuid)`
-3. Concede `EXECUTE` para `service_role` em todas as funções, conforme já existia.
-4. Não concede `EXECUTE` para `authenticated` em funções de trigger internas (`handle_new_user`, `handle_updated_at`), mantendo o acesso restrito a `service_role`.
+## Diagnóstico atual
 
-Nenhum dado de usuária será modificado. Apenas permissões de função serão ajustadas.
+O componente `src/utils/pdfIntegratedDocument.tsx` renderiza, nesta ordem:
 
-### Testes pós-aplicação
-1. Fazer login com a sessão injetada e acessar `/admin`.
-2. Verificar que o painel carrega sem redirecionamento para `/app`.
-3. Verificar que o botão "Painel Admin" aparece no header.
-4. Verificar que a lista de usuárias é carregada normalmente.
-5. Confirmar, via consulta ao catálogo Postgres, que `anon` e `PUBLIC` continuam sem `EXECUTE` em `has_role` e `get_user_role`.
+1. `CoverPage` — capa com título e dados do participante
+2. `BigFivePage` — traços do Big Five (página 2)
+3. `HumanDesignPage` — dados de Arquitetura Pessoal (página 3)
+4. `BodygraphPage` — bodygraph + lista de canais ativos (página 4)
+5. `AnalysisPage` — texto da análise integrada (páginas seguintes)
 
-### Migration SQL
-```sql
-REVOKE EXECUTE ON FUNCTION public.has_role(uuid, public.app_role) FROM PUBLIC;
-REVOKE EXECUTE ON FUNCTION public.get_user_role(uuid) FROM PUBLIC;
-REVOKE EXECUTE ON FUNCTION public.handle_new_user() FROM PUBLIC;
-REVOKE EXECUTE ON FUNCTION public.handle_updated_at() FROM PUBLIC;
+A lista de canais ativos aparece tanto em `HumanDesignPage` quanto em `BodygraphPage`, e os traços do Big Five aparecem em `BigFivePage`. O usuário solicitou a remoção dessas páginas, mantendo apenas a capa e a análise integrada.
 
-REVOKE EXECUTE ON FUNCTION public.has_role(uuid, public.app_role) FROM anon;
-REVOKE EXECUTE ON FUNCTION public.get_user_role(uuid) FROM anon;
-REVOKE EXECUTE ON FUNCTION public.handle_new_user() FROM anon;
-REVOKE EXECUTE ON FUNCTION public.handle_updated_at() FROM anon;
+## Plano de implementação
 
-GRANT EXECUTE ON FUNCTION public.has_role(uuid, public.app_role) TO authenticated;
-GRANT EXECUTE ON FUNCTION public.get_user_role(uuid) TO authenticated;
+### 1. Remover páginas desnecessárias do documento
 
-REVOKE EXECUTE ON FUNCTION public.handle_new_user() FROM authenticated;
-REVOKE EXECUTE ON FUNCTION public.handle_updated_at() FROM authenticated;
+Editar `src/utils/pdfIntegratedDocument.tsx`:
+- Remover `<BigFivePage />`, `<HumanDesignPage />` e `<BodygraphPage />` do `Document`.
+- Manter apenas `<CoverPage />` e `<AnalysisPage />`.
 
-REVOKE EXECUTE ON FUNCTION public.has_role(uuid, public.app_role) FROM service_role;
-REVOKE EXECUTE ON FUNCTION public.get_user_role(uuid) FROM service_role;
-REVOKE EXECUTE ON FUNCTION public.handle_new_user() FROM service_role;
-REVOKE EXECUTE ON FUNCTION public.handle_updated_at() FROM service_role;
+### 2. Limpar código morto
 
-GRANT EXECUTE ON FUNCTION public.has_role(uuid, public.app_role) TO service_role;
-GRANT EXECUTE ON FUNCTION public.get_user_role(uuid) TO service_role;
-GRANT EXECUTE ON FUNCTION public.handle_new_user() TO service_role;
-GRANT EXECUTE ON FUNCTION public.handle_updated_at() TO service_role;
-```
+- Remover os componentes `BigFivePage`, `HumanDesignPage` e `BodygraphPage` do arquivo.
+- Remover imports de componentes auxiliares que deixarem de ser usados (ex: `TraitBar`, `InfoCard`, `SectionTitle`, `BodygraphImage`).
+- Remover do objeto de traduções as chaves que só existem para as páginas removidas (ex: `personalityMapTitle`, `personalArchitectureTitle`, `bodygraphTitle`, `activeChannels`, `noChannels`, `hdLabels`, `centersSection`, `classifications`, `traits`, `traitKeyVariants`, `getClassificationLabel`).
+
+### 3. Garantir integração
+
+- Não alterar `src/utils/pdfEngine.tsx` nem `src/pages/app/IntegratedResults.tsx`, pois o fluxo de geração e os dados enviados permanecem os mesmos; apenas a composição do documento PDF muda.
+
+### 4. Validar build
+
+- Rodar `bun run build` (ou o comando equivalente do projeto) para confirmar que não há erros de TypeScript ou de importação após a limpeza.
+
+### 5. Testar geração
+
+- Gerar localmente o PDF do Blueprint Pessoal usando o script de teste existente (`scripts/test-pdf.tsx`) ou via interface, confirmando que o arquivo resultante contém apenas: capa + páginas da análise integrada.
+
+## Resultado esperado
+
+O PDF do Blueprint Pessoal terá apenas duas seções:
+- Página inicial (capa)
+- Páginas da análise integrada
+
+Não haverá mais duplicação de canais ativos, nem páginas de Big Five ou Arquitetura Pessoal.
