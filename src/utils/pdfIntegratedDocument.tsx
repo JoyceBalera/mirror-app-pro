@@ -1,7 +1,7 @@
 import React from 'react';
 import { Document, Text, View } from '@react-pdf/renderer';
-import { sharedStyles, CONTENT_WIDTH, COLORS } from './pdfSharedStyles';
-import { PageWrapper, SectionTitle, InfoCard, TraitBar, BodygraphImage, MarkdownText } from './pdfSharedComponents';
+import { sharedStyles, COLORS } from './pdfSharedStyles';
+import { PageWrapper, MarkdownText } from './pdfSharedComponents';
 
 export type PDFLanguage = 'pt' | 'es' | 'en';
 
