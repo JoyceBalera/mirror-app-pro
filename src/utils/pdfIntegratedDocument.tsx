@@ -228,120 +228,6 @@ const CoverPage: React.FC<{ data: IntegratedPDFData; t: Translations }> = ({ dat
   );
 };
 
-const BigFivePage: React.FC<{ data: IntegratedPDFData; t: Translations }> = ({ data, t }) => {
-  return (
-    <PageWrapper headerTitle={t.personalityMapTitle} footerPageText={t.pageOf} footerCredit={t.createdBy}>
-      <View style={{ marginTop: 4 }}>
-        {traitKeyVariants.map(({ displayKey, lookupKeys }) => {
-          const matchedKey = lookupKeys.find((k) => data.traitScores[k] !== undefined);
-          const score = matchedKey ? data.traitScores[matchedKey] : 0;
-          const classification = matchedKey ? data.traitClassifications[matchedKey] || 'medium' : 'medium';
-          const classLabel = getClassificationLabel(classification, t);
-          const translatedTrait = t.traits[displayKey] || displayKey;
-
-          return (
-            <TraitBar key={displayKey} label={translatedTrait} score={score} classification={classLabel} />
-          );
-        })}
-      </View>
-    </PageWrapper>
-  );
-};
-
-const HumanDesignPage: React.FC<{ data: IntegratedPDFData; t: Translations }> = ({ data, t }) => {
-  const hdItems = [
-    { label: t.hdLabels.energyType, value: data.energyType || 'N/A', highlight: true },
-    { label: t.hdLabels.strategy, value: data.strategy || 'N/A', highlight: false },
-    { label: t.hdLabels.authority, value: data.authority || 'N/A', highlight: false },
-    { label: t.hdLabels.profile, value: data.profile || 'N/A', highlight: false },
-    { label: t.hdLabels.definition, value: data.definition || 'N/A', highlight: false },
-    { label: t.hdLabels.incarnationCross, value: data.incarnationCross || 'N/A', highlight: false },
-  ];
-
-  const definedCenters = data.definedCenters || [];
-  const openCenters = data.openCenters || [];
-  const definedText = definedCenters.length > 0 ? definedCenters.join(', ') : t.centersSection.none;
-  const openText = openCenters.length > 0 ? openCenters.join(', ') : t.centersSection.none;
-
-  const channels = data.activeChannels || [];
-
-  return (
-    <PageWrapper
-      headerTitle={t.personalArchitectureTitle}
-      footerPageText={t.pageOf}
-      footerCredit={t.createdBy}
-    >
-      <View style={sharedStyles.infoGrid}>
-        {hdItems.map((item, idx) => (
-          <View key={idx} wrap={false} style={{ width: CONTENT_WIDTH / 2 - 4 }}>
-            <InfoCard label={item.label} value={item.value} highlight={item.highlight} />
-          </View>
-        ))}
-      </View>
-
-      <View style={{ marginTop: 12 }} wrap={false}>
-        <SectionTitle title={t.centersSection.defined} />
-        <View style={sharedStyles.card}>
-          <Text style={sharedStyles.normalText}>{definedText}</Text>
-        </View>
-      </View>
-
-      <View wrap={false}>
-        <SectionTitle title={t.centersSection.open} />
-        <View style={sharedStyles.card}>
-          <Text style={sharedStyles.normalText}>{openText}</Text>
-        </View>
-      </View>
-
-      <View wrap={false}>
-        <SectionTitle title={t.activeChannels} />
-        <View style={sharedStyles.card}>
-          {channels.length > 0 ? (
-            channels.map((channel, idx) => (
-              <Text key={idx} style={sharedStyles.normalText}>
-                {'\u2022 '}
-                {typeof channel === 'string'
-                  ? channel
-                  : channel?.name || channel?.label || JSON.stringify(channel)}
-              </Text>
-            ))
-          ) : (
-            <Text style={sharedStyles.normalText}>{t.noChannels}</Text>
-          )}
-        </View>
-      </View>
-    </PageWrapper>
-  );
-};
-
-const BodygraphPage: React.FC<{ data: IntegratedPDFData; t: Translations }> = ({ data, t }) => {
-  const channels = data.activeChannels || [];
-
-  return (
-    <PageWrapper headerTitle={t.bodygraphTitle} footerPageText={t.pageOf} footerCredit={t.createdBy}>
-      <BodygraphImage image={data.bodygraph_image} fallbackText={t.bodygraphFallback} />
-
-      <View wrap={false} style={{ marginTop: 8 }}>
-        <SectionTitle title={t.activeChannels} />
-        <View style={sharedStyles.card}>
-          {channels.length > 0 ? (
-            channels.map((channel, idx) => (
-              <Text key={idx} style={sharedStyles.normalText}>
-                {'\u2022 '}
-                {typeof channel === 'string'
-                  ? channel
-                  : channel?.name || channel?.label || JSON.stringify(channel)}
-              </Text>
-            ))
-          ) : (
-            <Text style={sharedStyles.normalText}>{t.noChannels}</Text>
-          )}
-        </View>
-      </View>
-    </PageWrapper>
-  );
-};
-
 const AnalysisPage: React.FC<{ data: IntegratedPDFData; t: Translations }> = ({ data, t }) => {
   if (!data.ai_analysis) return null;
   return (
@@ -362,9 +248,6 @@ export const IntegratedPDFDocument: React.FC<IntegratedPDFDocumentProps> = ({ da
   return (
     <Document>
       <CoverPage data={data} t={t} />
-      <BigFivePage data={data} t={t} />
-      <HumanDesignPage data={data} t={t} />
-      <BodygraphPage data={data} t={t} />
       <AnalysisPage data={data} t={t} />
     </Document>
   );
