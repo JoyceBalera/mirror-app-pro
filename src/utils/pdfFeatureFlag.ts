@@ -18,6 +18,12 @@ const parseFlag = (value: string | null): boolean => {
   return ['true', '1', 'yes'].includes(value.toLowerCase());
 };
 
+const DEFAULT_ENABLED: Record<PDFReportType, boolean> = {
+  'big-five': true,
+  'human-design': true,
+  integrated: true,
+};
+
 export const isReactPDFEnabled = (reportType?: PDFReportType): boolean => {
   // Build-time env var
   if (import.meta.env.VITE_USE_REACT_PDF !== undefined) {
@@ -26,12 +32,20 @@ export const isReactPDFEnabled = (reportType?: PDFReportType): boolean => {
 
   // Per-report localStorage override
   if (reportType) {
-    const perReport = localStorage.getItem(`${GLOBAL_KEY}-${reportType}`);
-    if (perReport !== null) return parseFlag(perReport);
+    try {
+      const perReport = localStorage.getItem(`${GLOBAL_KEY}-${reportType}`);
+      if (perReport !== null) return parseFlag(perReport);
+    } catch {}
   }
 
   // Global localStorage override
-  return parseFlag(localStorage.getItem(GLOBAL_KEY));
+  try {
+    const global = localStorage.getItem(GLOBAL_KEY);
+    if (global !== null) return parseFlag(global);
+  } catch {}
+
+  // Default: new @react-pdf/renderer generator ON for all report types
+  return reportType ? DEFAULT_ENABLED[reportType] : true;
 };
 
 export const setReactPDFEnabled = (enabled: boolean, reportType?: PDFReportType): void => {

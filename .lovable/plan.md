@@ -1,67 +1,31 @@
-# Correção dos Geradores de PDF (Big Five, Arquitetura Pessoal e Blueprint Pessoal)
+## Plano aprovado (versão final)
 
-## Objetivo
-Eliminar os três erros visuais nos relatórios PDF (texto sobreposto, cards quebrados/cortados e rodapé sobreposto ao conteúdo) migrando todos os geradores de PDF do jsPDF para `@react-pdf/renderer`, com uma chave de alternância para poder voltar ao gerador antigo rapidamente se necessário.
+### 1. Mudança técnica obrigatória
+- Alterar `src/utils/pdfFeatureFlag.ts` para que `isReactPDFEnabled('integrated')` retorne `true` por padrão, garantindo que o gerador `@react-pdf/renderer` seja o executado em produção.
+- Verificar se `IntegratedResults.tsx` (ou o ponto de entrada do botão) aguarda o carregamento completo dos dados e da imagem do BodyGraph antes de chamar `generateIntegratedPDF`. Se necessário, ajustar a ordem de loading.
 
-## Escopo
-A correção cobre os três relatórios:
-1. Mapa de Personalidade (Big Five isolado)
-2. Arquitetura Pessoal (Desenho Humano isolado) — relatório do print original
-3. Blueprint Pessoal (relatório integrado Big Five + Desenho Humano)
+### 2. Teste de estresse local
+- Usar o script `scripts/test-pdf.tsx` com os dados reais da análise longa (~11.800 caracteres) recuperados do banco.
+- Incluir a captura real do BodyGraph pelo fluxo do navegador: renderizar o SVG (classe `.bodygraph-svg`) e chamar `captureBodyGraphAsImage()` de `src/utils/captureBodyGraphAsImage.ts` antes de passar o `bodygraph_image` para o `IntegratedPDFDocument`.
+- Se `captureBodyGraphAsImage` não puder rodar puramente em Node/Vitest, usar Playwright para renderizar o componente `HDBodyGraph`, executar a captura no navegador e injetar o data URL no teste de geração do PDF.
+- Gerar o PDF localmente e revisar página por página: nenhum texto sobreposto, nenhum card cortado, rodapé sempre no fim da página.
 
-## Problemas a resolver
-- Texto sobreposto (duas camadas de texto na mesma posição).
-- Cards quebrados ou cortados entre páginas.
-- Rodapé de uma página sobrepondo conteúdo da página seguinte.
-- Captura do bodygraph aconcepts only after the image is fully loaded, not after a single animation frame.
+### 3. Publicação
+- Publicar o projeto para `https://mirror-app-pro.lovable.app`.
+- Aguardar a conclusão do deploy.
 
-## Solução proposta
+### 4. Teste final em produção real
+- Acessar `https://mirror-app-pro.lovable.app` via Playwright.
+- Fazer login com um usuário de teste que possua os dados reais da análise longa (~11.800 caracteres) e os dados de HD correspondentes.
+- Navegar até a página de Blueprint Pessoal (`/app/integrated-results` ou equivalente).
+- Aguardar o carregamento completo dos dados e do BodyGraph.
+- Clicar no botão de download do PDF e aguardar o download.
+- Converter o PDF baixado em imagens página por página (`pdftoppm`).
+- Revisar visualmente cada página: nenhum texto sobreposto, nenhum card cortado, rodapé nunca invadindo o conteúdo, BodyGraph presente e legível.
 
-### 1. Instalação e configuração
-- Instalar `@react-pdf/renderer`.
-- Criar componentes React para cada relatório usando a API do `@react-pdf/renderer` (`Document`, `Page`, `View`, `Text`, `Image`, `StyleSheet`).
-- Garantir que estilos usem o design system do projeto (tokens semânticos, sem cores hardcoded).
+### 5. Critérios de entrega
+- Enviar o PDF baixado de `https://mirror-app-pro.lovable.app` e as imagens de todas as páginas para conferência do usuário.
+- Só considerar resolvido após aprovação visual do usuário.
 
-### 2. Captura do Bodygraph
-- O bodygraph continua sendo renderizado em um elemento HTML oculto e capturado via `html2canvas`.
-- Substituir o `requestAnimationFrame` único por uma espera real: o PDF só é gerado depois que o bodygraph dispara o evento de carregado (imagem pronta, fontes aplicadas, layout estável).
-- Se o evento nativo não for confiável, usar `Promise.all` combinando:
-  - `img.decode()` para imagens internas,
-  - `document.fonts.ready`,
-  - e um timeout de segurança curto.
-
-### 3. Layout paginado correto
-- Usar `fixed`/`absolute` apenas para cabeçalho e rodapé, nunca para blocos de conteúdo.
-- Quebras de página controladas com `<Page break>` e `wrap={false}` em cards/seções.
-- Alturas dinâmicas: calcular a altura de cada seção antes de decidir onde quebrar.
-- Margens e espaçamento entre páginas ajustados para que o rodapé de uma página nunca sobreponha o conteúdo da seguinte.
-
-### 4. Texto longo e variável
-- Usar componentes flexíveis do `@react-pdf/renderer` que quebram linhas e páginas automaticamente.
-- Testar com textos longos em todas as seções do Desenho Humano (cenário onde o erro aparece).
-- Testar com texto acentuado antes de considerar pronto; se o Helvetica falhar, registrar uma fonte customizada (ex: DejaVu Sans ou Inter) no `Font.register`.
-
-### 5. Chave de alternância (feature flag)
-- Adicionar uma chave de configuração (ex: `VITE_USE_REACT_PDF=true` ou uma entrada em `localStorage`/feature flag) que permite ligar/desligar o novo gerador.
-- Quando desligada, o sistema volta a usar o gerador jsPDF antigo sem alterações.
-- A chave será aplicada nos três relatórios, permitindo rollback rápido por relatório ou globalmente.
-
-### 6. Testes e QA
-- Gerar PDFs de cada um dos três relatórios com perfis reais e textos longos.
-- Converter páginas para imagens (`pdftoppm`) e inspecionar visualmente:
-  - Sem texto sobreposto.
-  - Sem cards cortados.
-  - Sem rodapé sobreposto.
-  - Margens respeitadas.
-- Testar com a chave desligada para garantir que o gerador antigo continua funcionando.
-
-## Entregáveis
-- Novos componentes de PDF em `@react-pdf/renderer` para Big Five, HD e relatório integrado.
-- Hook/utilitário de captura do bodygraph com espera real de carregamento.
-- Chave de alternância documentada no código.
-- Testes visuais dos PDFs gerados em cenários de texto longo.
-
-## Não inclui
-- Alterações no conteúdo dos relatórios (textos, scores, interpretações).
-- Alterações no fluxo de compra ou acesso aos relatórios.
-- Backend: continua sendo client-side, sem novo código de servidor.
+### 6. Critério de parada em caso de falha
+Se o teste de produção não passar limpo na primeira tentativa, **parar imediatamente** e não repetir o ciclo de publicação/teste automaticamente. Explicar ao usuário, com evidências técnicas (prints, trechos de dados, mensagens de erro), exatamente o que impediu o acerto na primeira tentativa, e aguardar instrução antes de prosseguir.
