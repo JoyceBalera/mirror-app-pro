@@ -1,31 +1,51 @@
-## Plano aprovado (versão final)
+## Correção de permissões SECURITY DEFINER que bloquearam acesso administrativo
 
-### 1. Mudança técnica obrigatória
-- Alterar `src/utils/pdfFeatureFlag.ts` para que `isReactPDFEnabled('integrated')` retorne `true` por padrão, garantindo que o gerador `@react-pdf/renderer` seja o executado em produção.
-- Verificar se `IntegratedResults.tsx` (ou o ponto de entrada do botão) aguarda o carregamento completo dos dados e da imagem do BodyGraph antes de chamar `generateIntegratedPDF`. Se necessário, ajustar a ordem de loading.
+### Problema
+A revogação anterior de `EXECUTE` em funções `SECURITY DEFINER` foi aplicada de forma abrangente demais: removeu a permissão também do papel `authenticated` nas funções `has_role(uuid, app_role)` e `get_user_role(uuid)`. O frontend consulta essas funções para determinar se a usuária é administradora. Sem `EXECUTE`, o painel `/admin` falha silenciosamente e redireciona para `/app`, e a lista de usuárias não carrega.
 
-### 2. Teste de estresse local
-- Usar o script `scripts/test-pdf.tsx` com os dados reais da análise longa (~11.800 caracteres) recuperados do banco.
-- Incluir a captura real do BodyGraph pelo fluxo do navegador: renderizar o SVG (classe `.bodygraph-svg`) e chamar `captureBodyGraphAsImage()` de `src/utils/captureBodyGraphAsImage.ts` antes de passar o `bodygraph_image` para o `IntegratedPDFDocument`.
-- Se `captureBodyGraphAsImage` não puder rodar puramente em Node/Vitest, usar Playwright para renderizar o componente `HDBodyGraph`, executar a captura no navegador e injetar o data URL no teste de geração do PDF.
-- Gerar o PDF localmente e revisar página por página: nenhum texto sobreposto, nenhum card cortado, rodapé sempre no fim da página.
+### Solução
+Aplicar uma migration que:
+1. Revoga `EXECUTE` de `PUBLIC`, `anon` e `authenticated` em todas as funções afetadas (estado limpo).
+2. Concede `EXECUTE` para `authenticated` apenas em:
+   - `public.has_role(uuid, public.app_role)`
+   - `public.get_user_role(uuid)`
+3. Concede `EXECUTE` para `service_role` em todas as funções, conforme já existia.
+4. Não concede `EXECUTE` para `authenticated` em funções de trigger internas (`handle_new_user`, `handle_updated_at`), mantendo o acesso restrito a `service_role`.
 
-### 3. Publicação
-- Publicar o projeto para `https://mirror-app-pro.lovable.app`.
-- Aguardar a conclusão do deploy.
+Nenhum dado de usuária será modificado. Apenas permissões de função serão ajustadas.
 
-### 4. Teste final em produção real
-- Acessar `https://mirror-app-pro.lovable.app` via Playwright.
-- Fazer login com um usuário de teste que possua os dados reais da análise longa (~11.800 caracteres) e os dados de HD correspondentes.
-- Navegar até a página de Blueprint Pessoal (`/app/integrated-results` ou equivalente).
-- Aguardar o carregamento completo dos dados e do BodyGraph.
-- Clicar no botão de download do PDF e aguardar o download.
-- Converter o PDF baixado em imagens página por página (`pdftoppm`).
-- Revisar visualmente cada página: nenhum texto sobreposto, nenhum card cortado, rodapé nunca invadindo o conteúdo, BodyGraph presente e legível.
+### Testes pós-aplicação
+1. Fazer login com a sessão injetada e acessar `/admin`.
+2. Verificar que o painel carrega sem redirecionamento para `/app`.
+3. Verificar que o botão "Painel Admin" aparece no header.
+4. Verificar que a lista de usuárias é carregada normalmente.
+5. Confirmar, via consulta ao catálogo Postgres, que `anon` e `PUBLIC` continuam sem `EXECUTE` em `has_role` e `get_user_role`.
 
-### 5. Critérios de entrega
-- Enviar o PDF baixado de `https://mirror-app-pro.lovable.app` e as imagens de todas as páginas para conferência do usuário.
-- Só considerar resolvido após aprovação visual do usuário.
+### Migration SQL
+```sql
+REVOKE EXECUTE ON FUNCTION public.has_role(uuid, public.app_role) FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.get_user_role(uuid) FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.handle_new_user() FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.handle_updated_at() FROM PUBLIC;
 
-### 6. Critério de parada em caso de falha
-Se o teste de produção não passar limpo na primeira tentativa, **parar imediatamente** e não repetir o ciclo de publicação/teste automaticamente. Explicar ao usuário, com evidências técnicas (prints, trechos de dados, mensagens de erro), exatamente o que impediu o acerto na primeira tentativa, e aguardar instrução antes de prosseguir.
+REVOKE EXECUTE ON FUNCTION public.has_role(uuid, public.app_role) FROM anon;
+REVOKE EXECUTE ON FUNCTION public.get_user_role(uuid) FROM anon;
+REVOKE EXECUTE ON FUNCTION public.handle_new_user() FROM anon;
+REVOKE EXECUTE ON FUNCTION public.handle_updated_at() FROM anon;
+
+GRANT EXECUTE ON FUNCTION public.has_role(uuid, public.app_role) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.get_user_role(uuid) TO authenticated;
+
+REVOKE EXECUTE ON FUNCTION public.handle_new_user() FROM authenticated;
+REVOKE EXECUTE ON FUNCTION public.handle_updated_at() FROM authenticated;
+
+REVOKE EXECUTE ON FUNCTION public.has_role(uuid, public.app_role) FROM service_role;
+REVOKE EXECUTE ON FUNCTION public.get_user_role(uuid) FROM service_role;
+REVOKE EXECUTE ON FUNCTION public.handle_new_user() FROM service_role;
+REVOKE EXECUTE ON FUNCTION public.handle_updated_at() FROM service_role;
+
+GRANT EXECUTE ON FUNCTION public.has_role(uuid, public.app_role) TO service_role;
+GRANT EXECUTE ON FUNCTION public.get_user_role(uuid) TO service_role;
+GRANT EXECUTE ON FUNCTION public.handle_new_user() TO service_role;
+GRANT EXECUTE ON FUNCTION public.handle_updated_at() TO service_role;
+```
