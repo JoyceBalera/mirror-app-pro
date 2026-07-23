@@ -11,10 +11,9 @@ import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { SCORING, TRAIT_LABELS, getTraitPercentage } from "@/constants/scoring";
-import { generateTestResultPDF } from "@/utils/pdfGenerator";
+import { generateBigFivePDF, generateHumanDesignPDF, generateIntegratedPDF } from "@/utils/pdfEngine";
+import { captureBodyGraphAsImage } from "@/utils/captureBodyGraphAsImage";
 import { getTraitClassification } from "@/utils/scoreCalculator";
-import { generateHDReport, type HDReportData } from "@/utils/generateHDReport";
-import { generateIntegratedReport, type IntegratedReportData } from "@/utils/generateIntegratedReport";
 import AIDataDebugPanel from "@/components/AIDataDebugPanel";
 // facetNamesLuciana removed - unused
 import ReactMarkdown from "react-markdown";
@@ -372,7 +371,7 @@ const UserDetails = () => {
         design_activations: hdResult.design_activations || [],
       });
       
-      const reportData: HDReportData = {
+      const reportData = {
         language: currentLanguage,
         user_name: user?.full_name || '',
         birth_date: hdResult.birth_date,
@@ -393,7 +392,7 @@ const UserDetails = () => {
         bodygraph_image: bodygraphImage || undefined,
       };
 
-      await generateHDReport(reportData);
+      await generateHumanDesignPDF(reportData);
 
       // Clean up
       setHdForPDF(null);
@@ -660,7 +659,7 @@ const UserDetails = () => {
 
       const currentLanguage = (i18n.language?.split('-')[0] || 'pt') as 'pt' | 'es' | 'en';
 
-      const reportData: IntegratedReportData = {
+      const reportData = {
         language: currentLanguage,
         userName: user?.full_name || undefined,
         testDate: latestBigFive.test_sessions?.completed_at ? new Date(latestBigFive.test_sessions.completed_at) : new Date(),
@@ -679,7 +678,7 @@ const UserDetails = () => {
         bodygraph_image: bodygraphImage || undefined,
       };
 
-      await generateIntegratedReport(reportData);
+      await generateIntegratedPDF(reportData);
       setHdForPDF(null);
 
       toast({
@@ -780,18 +779,18 @@ const UserDetails = () => {
                   </h3>
                   <div className="flex items-center gap-2">
                     <Button
-                      onClick={() => {
+                      onClick={async () => {
                         const aiText = result.ai_analyses?.[0]?.analysis_text;
-                        generateTestResultPDF(
-                          result.trait_scores,
-                          result.facet_scores,
-                          result.classifications,
-                          {
-                            userName: user?.full_name,
-                            testDate: new Date(result.test_sessions.completed_at!),
-                            aiAnalysis: aiText,
-                          }
-                        );
+                        const currentLanguage = (i18n.language?.split('-')[0] || 'pt') as 'pt' | 'es' | 'en';
+                        await generateBigFivePDF({
+                          language: currentLanguage,
+                          userName: user?.full_name,
+                          testDate: new Date(result.test_sessions.completed_at!),
+                          aiAnalysis: aiText,
+                          traitScores: result.trait_scores,
+                          facetScores: result.facet_scores,
+                          classifications: result.classifications,
+                        });
                         toast({
                           title: "PDF gerado!",
                           description: "O relatório foi baixado com sucesso.",

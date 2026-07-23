@@ -33,7 +33,7 @@ export function LocationAutocomplete({
   const [inputValue, setInputValue] = useState(value);
   const [suggestions, setSuggestions] = useState<LocationResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Sync inputValue with external value
   useEffect(() => {

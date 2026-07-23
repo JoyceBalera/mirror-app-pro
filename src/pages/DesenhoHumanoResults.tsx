@@ -15,7 +15,8 @@ import { calculateHumanDesignChart } from "@/utils/humanDesignCalculator";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { extractAdvancedVariables, type AdvancedVariables, type AdvancedVariable } from "@/utils/humanDesignVariables";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { generateHDReport } from "@/utils/generateHDReport";
+import { generateHumanDesignPDF } from "@/utils/pdfEngine";
+import { captureBodyGraphAsImage } from "@/utils/captureBodyGraphAsImage";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { translateCross } from "@/data/humanDesignCrosses";
 
@@ -249,51 +250,6 @@ const DesenhoHumanoResults = () => {
     }
   };
 
-  // Function to capture Bodygraph SVG as PNG
-  const captureBodyGraphAsImage = async (): Promise<string | null> => {
-    try {
-      const svgElement = document.querySelector('.bodygraph-svg') as SVGElement;
-      if (!svgElement) {
-        console.warn('Bodygraph SVG not found');
-        return null;
-      }
-
-      const serializer = new XMLSerializer();
-      const svgString = serializer.serializeToString(svgElement);
-
-      const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
-      const url = URL.createObjectURL(svgBlob);
-
-      return new Promise((resolve) => {
-        const img = new Image();
-        img.onload = () => {
-          const canvas = document.createElement('canvas');
-          const scale = 2;
-          canvas.width = 330 * scale;
-          canvas.height = 620 * scale;
-          const ctx = canvas.getContext('2d');
-          if (ctx) {
-            ctx.fillStyle = '#FFFFFF';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.scale(scale, scale);
-            ctx.drawImage(img, 0, 0, 330, 620);
-          }
-          const dataUrl = canvas.toDataURL('image/png');
-          URL.revokeObjectURL(url);
-          resolve(dataUrl);
-        };
-        img.onerror = () => {
-          console.error('Error loading SVG as image');
-          URL.revokeObjectURL(url);
-          resolve(null);
-        };
-        img.src = url;
-      });
-    } catch (error) {
-      console.error('Error capturing Bodygraph:', error);
-      return null;
-    }
-  };
 
   // Function to download PDF report
   const handleDownloadPDF = async () => {
@@ -306,7 +262,7 @@ const DesenhoHumanoResults = () => {
       // Get current language
       const currentLanguage = (i18n.language?.split('-')[0] || 'pt') as 'pt' | 'es' | 'en';
       
-      await generateHDReport({
+      await generateHumanDesignPDF({
         language: currentLanguage,
         user_name: userName,
         birth_date: result.birth_date,

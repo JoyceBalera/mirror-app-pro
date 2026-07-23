@@ -32,7 +32,7 @@ export const Results = ({ traitScores, onRestart, sessionId, userName }: Results
   const [showWaitDialog, setShowWaitDialog] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hasGeneratedRef = useRef(false);
 
   const getScoreColor = (score: number) => {
