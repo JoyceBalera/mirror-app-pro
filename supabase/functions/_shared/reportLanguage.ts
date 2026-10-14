@@ -9,10 +9,12 @@ export function normalizeReportTerms(text: string, language: ReportLanguage = 'p
   }[language];
   return text
     .replace(/\b(?:desenho humano|diseño humano|human design)\b/gi, terms.architecture)
-    .replace(/\b(?:cruzes? (?:de|da) encarnação|cruces? de encarnación|incarnation crosses)\b/gi, terms.axes)
+    .replace(/\b(?:cruzes (?:de|da) encarnação|cruces de encarnación|incarnation crosses)\b/gi, terms.axes)
     .replace(/\b(?:cruz (?:de|da) encarnação|cruz de encarnación|incarnation cross)\b/gi, terms.axis)
-    .replace(/\b(?:centros|centers)\b(?!\s+(?:decisórios|decisorios))/gi, terms.centers)
-    .replace(/\b(?:centro|center)\b(?!\s+(?:decisório|decisorio))/gi, terms.center)
+    .replace(/\b(?:centros|centers)\b(?:\s+energéticos|\s+de energia)?(?!\s+(?:decisórios|decisorios))/gi, (match, offset: number) =>
+      /decision\s+$/i.test(text.slice(0, offset)) ? match : terms.centers)
+    .replace(/\b(?:centro|center)\b(?:\s+energético|\s+de energia)?(?!\s+(?:decisório|decisorio))/gi, (match, offset: number) =>
+      /decision\s+$/i.test(text.slice(0, offset)) ? match : terms.center)
     .replace(/\b(?:dados de nascimento|datos de nacimiento|birth data)\b/gi, terms.birth);
 }
 
