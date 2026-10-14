@@ -1,0 +1,3 @@
+# Architecture rules
+- Report-only vocabulary normalization and AI language rules live in `supabase/functions/_shared/reportLanguage.ts`, re-exported for PDF use; this keeps generated and previously saved report terminology consistent without changing database fields or calculations.
+- Arquitetura Pessoal explanatory copy lives in each locale's `hdPdf` section; both PDF engines consume it so language changes preserve page composition.
