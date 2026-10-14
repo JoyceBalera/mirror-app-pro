@@ -1,7 +1,19 @@
 import { describe, expect, it } from 'vitest';
-import { normalizeReportData } from '../reportLanguage';
+import { normalizeReportData, normalizeReportTerms } from '../reportLanguage';
 
 describe('report display transformation preserves user records', () => {
+  it.each(['pt', 'es', 'en'] as const)('normalizes report vocabulary idempotently in %s', language => {
+    const result = normalizeReportTerms('Human Design; Desenho Humano; Cruz da Encarnação; centros energéticos; centro energético; birth data', language);
+    expect(result).not.toMatch(/Human Design|Desenho Humano|Encarnação|energético|birth data/i);
+    expect(normalizeReportTerms(result, language)).toBe(result);
+  });
+
+  it('preserves established decision-center names', () => {
+    expect(normalizeReportTerms('centro decisório e centros decisórios', 'pt')).toBe('centro decisório e centros decisórios');
+    expect(normalizeReportTerms('decision center and decision centers', 'en')).toBe('decision center and decision centers');
+    expect(normalizeReportTerms('Cruz da Justaposição dos Vasos', 'pt')).toBe('Eixo de Propósito da Justaposição dos Vasos');
+  });
+
   it('does not mutate stored access, scores, identifiers or personal data', () => {
     const source = {
       user_name: 'Human Design', birth_location: 'Centro', birth_time: '14:35',
