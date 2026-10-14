@@ -438,38 +438,38 @@
     "pageOf": "Page {{current}} of {{total}}",
     "createdBy": "Created by Luciana Belenton",
     "headerTitle": "PERSONAL ARCHITECTURE",
-    "headerSubtitle": "Personalized Human Design",
-    "introText": "This report presents your complete Personal Architecture, a unique map of your vital energy based on the Human Design System. Discover how you were designed to make decisions, interact with the world, and live authentically.",
-    "birthDataTitle": "BIRTH DATA",
+    "headerSubtitle": "Self-reflection and personal and professional development",
+    "introText": "Your Personal Architecture offers questions about choices, relationships and work. Use this interpretive reading for reflection, not as a diagnosis, prediction or definition of who you are.",
+    "birthDataTitle": "CHRONOBIOLOGICAL DATA",
     "birthDate": "Date",
-    "birthTime": "Time",
-    "birthLocation": "Location",
-    "profileTitle": "YOUR ENERGY PROFILE",
-    "energyType": "Energy Type",
+    "birthTime": "Birth time",
+    "birthLocation": "Birth location",
+    "profileTitle": "YOUR ACTION PROFILE",
+    "energyType": "Action type",
     "strategy": "Strategy",
     "authority": "Authority",
     "profile": "Profile",
     "definition": "Definition",
-    "incarnationCross": "Incarnation Cross",
+    "incarnationCross": "Purpose Axis",
     "bodygraphTitle": "YOUR VISUAL BODYGRAPH",
     "bodygraphFallback": "Your Bodygraph is available on the online platform.",
-    "summaryTemplate": "{{defined}} defined center(s)  |  {{open}} open center(s)  |  {{channels}} active channel(s)",
-    "centersIntroTitle": "INTRODUCTION TO HUMAN DESIGN",
-    "centersTitle": "THE 9 ENERGY CENTERS",
-    "centersIntro": "Within Human Design, the centers represent different areas of energy and influence various facets of our life and personality. Below, you will find the meaning of each of the centers with a special focus on women.",
+    "summaryTemplate": "{{defined}} defined decision center(s) | {{open}} open decision center(s) | {{channels}} active channel(s)",
+    "centersIntroTitle": "INTRODUCTION TO PERSONAL ARCHITECTURE",
+    "centersTitle": "THE 9 DECISION CENTERS",
+    "centersIntro": "Decision centers are reflection categories, not organs or brain regions. Defined and open describe the chart configuration, not measured abilities or behavior.",
     "functionLabel": "Function",
     "importanceLabel": "Importance for women",
-    "centersNote": "(*) Indicates centers that are defined in your personal map.",
-    "structureTitle": "HUMAN DESIGN STRUCTURE",
+    "centersNote": "(*) Marks defined decision centers, not a measured ability.",
+    "structureTitle": "PERSONAL ARCHITECTURE STRUCTURE",
     "advancedVariablesTheory": "Advanced Variables",
-    "yourCentersTitle": "YOUR ENERGY CENTERS",
-    "definedCenters": "Defined Centers",
-    "definedCentersDesc": "(Sources of Consistent Energy)",
-    "openCenters": "Open Centers",
-    "openCentersDesc": "(Areas of Wisdom and Learning)",
-    "noCentersDefined": "No defined centers (Reflector)",
-    "allCentersDefined": "All centers defined",
-    "powerChannels": "Your Power Channels",
+    "yourCentersTitle": "YOUR DECISION CENTERS",
+    "definedCenters": "Defined decision centers",
+    "definedCentersDesc": "Categories marked in the chart",
+    "openCenters": "Open decision centers",
+    "openCentersDesc": "Categories not marked in the chart",
+    "noCentersDefined": "No defined decision centers",
+    "allCentersDefined": "All decision centers defined",
+    "powerChannels": "Your connection channels",
     "noChannels": "No complete channels defined",
     "yourVariablesTitle": "YOUR ADVANCED VARIABLES",
     "digestion": "Digestion",
@@ -478,7 +478,7 @@
     "perspective": "Perspective",
     "sense": "Sense",
     "analysisTitle": "YOUR MAP IN PRACTICE",
-    "analysisSubtitle": "Personalized reading of your design",
+    "analysisSubtitle": "Reflections for personal and professional life",
     "fileName": "Personal_Architecture",
     "centers": {
       "head": "Head",
@@ -493,124 +493,124 @@
     },
     "theory": {
       "intro": {
-        "title": "What is Human Design?",
-        "content": "Human Design is a self-knowledge system that combines elements from various ancient traditions (astrology, I Ching, Kabbalah, chakra system) and modern ones (quantum physics and genetics) to help people better understand who they are and how they function in the world. It's like a personal map that shows us our unique characteristics and how we can live more aligned with our true nature.\n\nThe Centers in Human Design are similar to chakras and represent different aspects of human experience. They can be defined (colored) or undefined (white). Within Human Design, the centers represent different areas of energy and influence various facets of our life and personality."
+        "title": "What is Personal Architecture?",
+        "content": "Personal Architecture is an interpretive reflection resource for questions about decisions, communication, boundaries and development. It is not a scientifically validated psychological test and does not establish destiny, immutable personality or professional aptitude. Compare its hypotheses with lived experience and discard what does not fit.\n\nBirth date, time and location are called chronobiological data, the label adopted for chart inputs. This name does not establish a scientific relationship between birth and behavior or constitute a chronobiological assessment. The chart and decision centers are model categories, not biological structures."
       },
       "centersTheory": [
         {
           "id": "head",
-          "name": "Head Center",
-          "function": "A center of inspiration and mental pressure.",
-          "importance": "This center can influence how women process ideas and connect with inspiration. It's a starting point for questioning and doubts, frequently impacting how they perceive reality and seek meaning in their daily experiences."
+          "name": "Head decision center",
+          "function": "Ideas and questions.",
+          "importance": "Distinguish questions worth attention from those that can wait. Record ideas before accepting new demands and separate curiosity from recurring worry."
         },
         {
           "id": "ajna",
-          "name": "Ajna Center",
-          "function": "Mental processing and consciousness.",
-          "importance": "Women with a defined Ajna may present a consistent way of thinking and forming opinions, while those with an undefined Ajna may be more open to new ideas and external influences. Consciousness here manifests in how they make decisions and interpret information."
+          "name": "Ajna decision center",
+          "function": "Analysis and interpretation.",
+          "importance": "Compare interpretations with facts and other perspectives. Explain proposal criteria and revise them when new information appears."
         },
         {
           "id": "throat",
-          "name": "Throat Center",
-          "function": "Manifestation and communication.",
-          "importance": "This center influences how women express their thoughts and feelings. The presence of a defined throat center may indicate a more consistent ability to communicate, while an undefined center may lead to adapting to others' communicative expectations."
+          "name": "Throat decision center",
+          "function": "Communication and expression.",
+          "importance": "Express needs clearly. In difficult conversations, describe facts, impacts and specific requests; when leading, check shared understanding."
         },
         {
           "id": "g",
-          "name": "G Center",
-          "function": "Identity, love, and direction.",
-          "importance": "This center is deeply connected to the sense of identity and purpose. For many women, it reflects how they see themselves in relation to love and the direction they wish to follow in life. A defined G center can provide a strong sense of personal identity, while an undefined one may result in seeking direction through others' experiences."
+          "name": "G decision center",
+          "function": "Values and direction.",
+          "importance": "Identify values and priorities. Explore projects and relationships that fit current goals, without assuming the chart defines a fixed identity."
         },
         {
           "id": "heart",
-          "name": "Heart Center (Ego)",
-          "function": "Will, ego, and materiality.",
-          "importance": "This center impacts women's relationship with self-esteem and personal value. When defined, it may indicate strong willpower and commitment to goals, while an undefined center may make women feel challenged to prove their worth."
+          "name": "Heart decision center",
+          "function": "Commitments and boundaries.",
+          "importance": "Notice commitments you can sustain without proving your worth. Negotiate deadlines and resources; personal value does not depend on constant productivity."
         },
         {
           "id": "sacral",
-          "name": "Sacral Center",
-          "function": "Source of vital energy and work force.",
-          "importance": "This is the center of vital energy, influencing work capacity and general vitality. Women with a defined Sacral may have sustained energy for work and projects, while those with an undefined Sacral may need more time for rest and recovery."
+          "name": "Sacral decision center",
+          "function": "Availability and work rhythm.",
+          "importance": "Compare demands with actual availability. Plan breaks and delegation based on observed routines, not a promise of unlimited energy."
         },
         {
           "id": "spleen",
-          "name": "Spleen Center",
-          "function": "Intuition, well-being, and immunity.",
-          "importance": "This center is linked to intuition and sense of well-being. A defined spleen center can provide a strong connection with intuition and health, while an undefined one may result in greater sensitivity to external health and well-being conditions."
+          "name": "Spleen decision center",
+          "function": "Noticing signals and exercising caution.",
+          "importance": "Notice discomfort and examine context. Intuition can start a question, but important decisions need information and risk assessment. This category does not assess immunity or health."
         },
         {
           "id": "solar",
-          "name": "Solar Plexus Center",
-          "function": "Emotions and emotional consciousness.",
-          "importance": "This center is crucial in managing emotions. Women with a defined Solar Plexus may experience a consistent range of emotions, while those with an undefined center may be more susceptible to others' emotions and emotional fluctuations."
+          "name": "Solar Plexus decision center",
+          "function": "Recognizing emotions.",
+          "importance": "Recognize emotions and distinguish feelings from interpretations of others. Choose moments that support listening and respectful conflict resolution."
         },
         {
           "id": "root",
-          "name": "Root Center",
-          "function": "Pressure and adrenaline.",
-          "importance": "How women deal with stress and pressure can be influenced by this center. A defined root center can provide a more constant approach to pressure management, while an undefined one may result in variations in stress response."
+          "name": "Root decision center",
+          "function": "Priorities and pressure.",
+          "importance": "Separate genuine urgency from external pressure. Prioritize, negotiate deadlines and protect rest. The chart does not measure stress or adrenaline."
         }
       ],
       "elements": [
         {
           "title": "Type",
-          "content": "Types are the first and most fundamental classification in Human Design. They determine how you interact with the world and how your energy flows. There are five main types: Manifestor (natural initiators, here to start things and act independently), Generator (builders, with sustained energy to work on projects they love), Manifesting Generator (a combination of both, with the ability to initiate and work sustainably), Projector (natural guides, here to guide others and need to be recognized and invited), and Reflector (mirrors of the environment, extremely sensitive and benefit from complete lunar cycles for decision-making)."
+          "content": "The model organizes five types: Manifestor, Generator, Manifesting Generator, Projector and Reflector. Use them to explore initiative, continuity, versatility, guidance and observation. They do not measure ability, determine a profession or require a single way of acting."
         },
         {
           "title": "Strategy",
-          "content": "Strategy is related to type and is the most aligned way to interact with the world. Each type has its own strategy that, when followed, leads to its signature (satisfaction, peace, success, or surprise)."
+          "content": "An interaction proposal to compare with experience. Notice when communicating intentions, reviewing opportunities or seeking agreement helps projects. Adjust choices to responsibilities and context, without guaranteed outcomes."
         },
         {
           "title": "Inner Authority",
-          "content": "It's the internal guide for making decisions more aligned with your true nature. Each person has a specific authority that serves as a compass for correct decisions."
+          "content": "A model reference for reflecting on decisions. Consider feelings, sensations, values and trusted conversations alongside facts, deadlines and consequences. No category guarantees correct decisions or replaces critical thinking."
         },
         {
           "title": "Definition",
-          "content": "Refers to how your centers in the chart are connected. This influences how a person processes information and energies, as well as interacts with others."
+          "content": "Describes connections between decision centers in the chart. Use them for questions about organizing ideas and collaboration, not as a measure of mental or biological functioning."
         },
         {
           "title": "Profile",
-          "content": "There are 12 different profiles. The profile is the combination of two numbers that reflect your role in life and how you see yourself and are seen by others."
+          "content": "Combines two numbers to offer themes about learning, relationships and contribution. Compare with real situations; it does not define compulsory roles or life stages."
         },
         {
-          "title": "Incarnation Cross",
-          "content": "In the Human Design system, there are 192 different Incarnation Crosses. It reflects your life purpose, a combination of four gates that highlight main themes you will live."
+          "title": "Purpose Axis",
+          "content": "Combines four gates into an interpretive theme. Explore chosen values, priorities and contributions. Purpose is built through decisions and experience, not revealed as a predetermined destiny."
         },
         {
           "title": "Signature",
-          "content": "There is a specific Signature for each of the five main Types. The Signature is the state of being that a person experiences when living according to their design, in alignment with their true nature, and provides a sense of fulfillment and well-being."
+          "content": "Names a fulfillment experience associated with type, such as satisfaction, peace, success or surprise. Use it as a question about what feels worthwhile, not proof of an immutable nature."
         },
         {
           "title": "Not-Self Theme",
-          "content": "Each of the five main types has a Not-Self Theme, which is the negative emotion or state a person experiences when not living according to their design. This theme indicates a misalignment with your true nature and serves as a warning sign."
+          "content": "A model category for reflecting on tension. Frustration, anger, bitterness or disappointment require context, not automatic attribution to the chart. Notice boundaries, expectations and support needs."
         }
       ],
       "variables": [
         {
           "title": "Digestion",
-          "content": "Refers to the best way to process food, affects, and information, optimizing physical and mental well-being."
+          "content": "Observe routine and information processing. The chart does not measure digestion or identify a suitable diet; consult qualified professionals for nutrition and health."
         },
         {
-          "title": "Design Sense",
-          "content": "Refers to the predominant senses through which a person perceives and interacts with the world."
+          "title": "Sense",
+          "content": "Explore how you organize information in real situations. Notice whether images, conversation or writing help, without treating the chart as a measure of senses or cognitive ability."
         },
         {
           "title": "Motivation",
-          "content": "Refers to the internal impulses that guide a person in how they perceive and interact with the world. It provides a lens through which a person can better understand their actions and decisions."
+          "content": "Reflect on security, possibilities, goals, needs and commitment. Compare these themes with current choices rather than assuming a fixed internal drive."
         },
         {
           "title": "Environment",
-          "content": "Refers to the ideal type of environment where a person can thrive and function more aligned with their design. Understanding your Environment type can help you choose environments that support your physical and mental well-being."
+          "content": "Observe how noise, privacy and interaction affect comfort and concentration. Caves or Mountains are model conventions, not location prescriptions or performance guarantees."
         }
       ],
       "gatesChannels": {
         "title": "Gates and Channels",
-        "content": "Gates represent a specific energetic characteristic or potential. Each gate represents a characteristic that may be activated in your Human Design chart. The 64 gates are distributed among the nine body centers in the chart. When two activated gates connect, they form a Channel, which links two centers.\n\nChannels are 36 in total. These channels are formed by the connection of two Gates between two of the nine centers. Each channel represents a flow of energy and information between centers, influencing how a person processes experiences and interacts with the world.\n\nWhen a channel is defined in your chart, it indicates a consistent way of operating that energy. Channels play a significant role in determining your Type, as they influence which centers are defined."
+        "content": "The 64 gates identify chart themes. Two corresponding marked gates form a channel between decision centers. There are 36 possible channels.\n\nThese connections organize interpretation, not physical flows, special powers or proven abilities. Use their themes as questions about communication, collaboration and choices."
       },
       "closing": {
-        "title": "How to Use Your Human Design",
-        "content": "All these elements of Human Design help compose a detailed map of your individuality, offering insights on how to live more authentically and satisfyingly.\n\nHuman Design suggests that by understanding your type, strategy, authority, and other aspects of your personal chart, you can make more authentic choices and live more fluidly. It's a system that invites us to experiment with its guidance in daily life, observing how we feel more aligned and fulfilled.\n\nUnderstanding Human Design can help you live according to your true nature, respecting your unique energy and potential. It's a powerful tool for self-knowledge and personal development."
+        "title": "How to use your Personal Architecture",
+        "content": "Turn a relevant question into a small action: negotiate a deadline, prepare a conversation or review priorities. Observe the result and adjust the next step.\n\nYou may accept, adapt or discard these hypotheses. For career, leadership, health and financial decisions, consider your history, actual circumstances, evidence and qualified support. This report does not replace your judgment."
       }
     }
   },
