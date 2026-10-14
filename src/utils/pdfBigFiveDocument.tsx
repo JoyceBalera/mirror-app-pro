@@ -1,3 +1,4 @@
+import { normalizeReportData } from './reportLanguage';
 import React from 'react';
 import { Document, Page, Text, View } from '@react-pdf/renderer';
 import { sharedStyles, PAGE, CONTENT_WIDTH, COLORS } from './pdfSharedStyles';
@@ -533,6 +534,7 @@ const AboutPage: React.FC<{ data: BigFivePDFData; t: ReturnType<typeof getTransl
 );
 
 export const BigFivePDFDocument: React.FC<BigFivePDFDocumentProps> = ({ data }) => {
+  data = normalizeReportData(data, data.language || 'pt');
   const t = getTranslations(data.language || 'pt');
 
   return (

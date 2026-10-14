@@ -1,3 +1,4 @@
+import { normalizeReportTerms } from './reportLanguage';
 import jsPDF from "jspdf";
 import { TRAIT_LABELS } from "@/constants/scoring";
 import { facetNames } from "@/utils/scoreCalculator";
@@ -633,7 +634,7 @@ export const generateTestResultPDF = (
     yPos = drawGradientHeader(t.analysisHeader, t.analysisSubtitle);
     yPos += 10;
 
-    const cleanedAnalysis = cleanMarkdown(aiAnalysis);
+    const cleanedAnalysis = cleanMarkdown(normalizeReportTerms(aiAnalysis, language));
     const paragraphs = cleanedAnalysis.split('\n\n').filter(p => p.trim());
 
     paragraphs.forEach((paragraph) => {

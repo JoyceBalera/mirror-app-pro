@@ -1,3 +1,4 @@
+import { normalizeReportData } from './reportLanguage';
 import React from 'react';
 import { Document, View, Text } from '@react-pdf/renderer';
 import { sharedStyles, COLORS, CONTENT_WIDTH } from './pdfSharedStyles';
@@ -125,7 +126,7 @@ const CoverPage: React.FC<{ data: HDPDFData; t: HDPdfTranslations }> = ({ data, 
           <InfoCard label={t.authority} value={data.authority || 'N/A'} />
           <InfoCard label={t.profile} value={data.profile || 'N/A'} />
           <InfoCard label={t.definition} value={data.definition || 'N/A'} />
-          <InfoCard label={t.incarnationCross} value={crossDisplay} />
+          <InfoCard label={t.incarnationCross} value={normalizeReportData(crossDisplay, language)} />
         </View>
       </View>
     </PageWrapper>
@@ -379,6 +380,7 @@ const AnalysisPage: React.FC<{ data: HDPDFData; t: HDPdfTranslations }> = ({ dat
 // ============= Document =============
 
 export const HDPDFDocument: React.FC<HDPDFDocumentProps> = ({ data }) => {
+  data = normalizeReportData(data, data.language || 'pt');
   const language = data.language || 'pt';
   const t = getTranslations(language);
 

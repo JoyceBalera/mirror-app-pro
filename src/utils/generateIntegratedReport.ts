@@ -1,3 +1,4 @@
+import { normalizeReportData } from './reportLanguage';
 import jsPDF from 'jspdf';
 
 type PDFLanguage = 'pt' | 'es' | 'en';
@@ -79,7 +80,7 @@ const getTranslations = (lang: PDFLanguage) => {
         authority: 'Autoridade',
         profile: 'Perfil',
         definition: 'Definição',
-        incarnationCross: 'Cruz de Encarnação'
+        incarnationCross: 'Eixo de Propósito'
       },
       centersSection: {
         defined: 'Definidos',
@@ -122,7 +123,7 @@ const getTranslations = (lang: PDFLanguage) => {
         authority: 'Autoridad',
         profile: 'Perfil',
         definition: 'Definición',
-        incarnationCross: 'Cruz de Encarnación'
+        incarnationCross: 'Eje de Propósito'
       },
       centersSection: {
         defined: 'Definidos',
@@ -165,7 +166,7 @@ const getTranslations = (lang: PDFLanguage) => {
         authority: 'Authority',
         profile: 'Profile',
         definition: 'Definition',
-        incarnationCross: 'Incarnation Cross'
+        incarnationCross: 'Purpose Axis'
       },
       centersSection: {
         defined: 'Defined',
@@ -213,6 +214,7 @@ const cleanMarkdown = (text: string): string => {
 };
 
 export async function generateIntegratedReport(data: IntegratedReportData): Promise<void> {
+  data = normalizeReportData(data, data.language || 'pt');
   const language = data.language || 'pt';
   const t = getTranslations(language);
   const dateLocale = DATE_LOCALES[language];
