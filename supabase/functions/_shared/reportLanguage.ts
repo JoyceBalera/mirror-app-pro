@@ -7,15 +7,19 @@ export function normalizeReportTerms(text: string, language: ReportLanguage = 'p
     es: { architecture: 'Arquitectura Personal', axis: 'Eje de Propósito', axes: 'Ejes de Propósito', center: 'centro decisorio', centers: 'centros decisorios', birth: 'datos cronobiológicos' },
     en: { architecture: 'Personal Architecture', axis: 'Purpose Axis', axes: 'Purpose Axes', center: 'decision center', centers: 'decision centers', birth: 'chronobiological data' },
   }[language];
-  return text
+  const normalized = text
     .replace(/\b(?:desenho humano|diseño humano|human design)\b/gi, terms.architecture)
     .replace(/\b(?:cruzes (?:de|da) encarnação|cruces de encarnación|incarnation crosses)\b/gi, terms.axes)
     .replace(/\b(?:cruz (?:de|da) encarnação|cruz de encarnación|incarnation cross)\b/gi, terms.axis)
-    .replace(/\b(?:centros|centers)\b(?:\s+energéticos|\s+de energia)?(?!\s+(?:decisórios|decisorios))/gi, (match, offset: number) =>
-      /decision\s+$/i.test(text.slice(0, offset)) ? match : terms.centers)
-    .replace(/\b(?:centro|center)\b(?:\s+energético|\s+de energia)?(?!\s+(?:decisório|decisorio))/gi, (match, offset: number) =>
-      /decision\s+$/i.test(text.slice(0, offset)) ? match : terms.center)
+    .replace(/\bcruz(?=\s+(?:da Justaposição|do Ângulo|de la Yuxtaposición|del Ángulo))/gi, terms.axis)
+    .replace(/\b((?:Right Angle|Left Angle|Juxtaposition)\s+)Cross\b/gi, `$1${terms.axis}`)
     .replace(/\b(?:dados de nascimento|datos de nacimiento|birth data)\b/gi, terms.birth);
+  return normalized.replace(/\b(centros|centers|centro|center)\b(\s+(?:energéticos?|de energia))?/gi, (match, noun: string, _suffix: string, offset: number) => {
+    const after = normalized.slice(offset + match.length);
+    const before = normalized.slice(0, offset);
+    if (/^\s+(?:decisórios|decisorios|decisório|decisorio)\b/i.test(after) || /decision\s+$/i.test(before)) return match;
+    return /^(centros|centers)$/i.test(noun) ? terms.centers : terms.center;
+  });
 }
 
 export function getReportLanguageRules(language: ReportLanguage): string {
