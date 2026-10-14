@@ -1,3 +1,4 @@
+import { getReportLanguageRules, normalizeReportTerms } from "../_shared/reportLanguage.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
@@ -79,20 +80,20 @@ CONSCIENCIOSIDADE - Sua relação com metas e organização.
 
 CONHECIMENTO BASE - ARQUITETURA PESSOAL:
 
-TIPOS DE ENERGIA:
-- Manifestadora: você veio para iniciar, criar impacto, abrir caminhos
-- Geradora: você tem energia sustentável quando faz o que ama, sua satisfação é o termômetro
-- Geradora Manifestante: você responde ao que te atrai e então acelera, é versátil
-- Projetora: você veio para guiar e orientar, sua sabedoria precisa ser reconhecida e convidada
-- Refletora: você espelha o ambiente, seu ciclo lunar traz clareza
+TIPOS DE ATUAÇÃO (CATEGORIAS INTERPRETATIVAS):
+- Manifestadora: explorar iniciativa e comunicação de intenções.
+- Geradora: observar interesse e continuidade em projetos.
+- Geradora Manifestante: explorar versatilidade e priorização.
+- Projetora: refletir sobre orientação, colaboração e reconhecimento.
+- Refletora: observar contexto e dar tempo à reflexão, sem ciclos lunares.
 
-AUTORIDADES (como você toma melhores decisões):
-- Emocional: espere a onda emocional passar, a clareza vem com o tempo
-- Sacral: confie na resposta do seu corpo, aquele "uhum" ou "não" visceral
-- Esplênica: sua intuição é instantânea, confie no primeiro impulso
-- Cardíaca/Ego: pergunte "eu realmente quero/posso isso?"
-- Auto-projetada: ouça sua própria voz falando, a verdade emerge
-- Mental/Ambiental: converse com pessoas de confiança, use o ambiente como espelho
+REFERÊNCIAS DECISÓRIAS (HIPÓTESES PARA REFLEXÃO):
+- Emocional: observar emoções junto com fatos e consequências.
+- Sacral: perceber disposição sem substituir análise por sensações.
+- Esplênica: examinar impressões iniciais com evidências e riscos.
+- Cardíaca/Ego: avaliar vontade, recursos e compromissos.
+- Auto-projetada: organizar ideias falando e conferir os critérios.
+- Mental/Ambiental: conversar com pessoas de confiança e considerar o contexto.
 
 ESTRUTURA DO BLUEPRINT (seções):
 
@@ -191,20 +192,14 @@ RESPONSABILIDAD - Tu relación con metas y organización.
 
 CONOCIMIENTO BASE - ARQUITECTURA PERSONAL:
 
-TIPOS DE ENERGÍA:
-- Manifestadora: viniste para iniciar, crear impacto, abrir caminos
-- Generadora: tienes energía sustentable cuando haces lo que amas, tu satisfacción es el termómetro
-- Generadora Manifestante: respondes a lo que te atrae y entonces aceleras, eres versátil
-- Proyectora: viniste para guiar y orientar, tu sabiduría necesita ser reconocida e invitada
-- Reflectora: reflejas el ambiente, tu ciclo lunar trae claridad
+TIPOS DE ACTUACIÓN (CATEGORÍAS INTERPRETATIVAS):
+- Manifestadora: explorar iniciativa y comunicación.
+- Generadora: observar interés y continuidad.
+- Generadora Manifestante: explorar versatilidad y prioridades.
+- Proyectora: reflexionar sobre orientación y colaboración.
+- Reflectora: observar contexto y dar tiempo a la reflexión, sin ciclos lunares.
 
-AUTORIDADES (cómo tomas mejores decisiones):
-- Emocional: espera que la ola emocional pase, la claridad viene con el tiempo
-- Sacral: confía en la respuesta de tu cuerpo, ese "ajá" o "no" visceral
-- Esplénica: tu intuición es instantánea, confía en el primer impulso
-- Cardíaca/Ego: pregunta "¿realmente quiero/puedo esto?"
-- Auto-proyectada: escucha tu propia voz hablando, la verdad emerge
-- Mental/Ambiental: conversa con personas de confianza, usa el ambiente como espejo
+REFERENCIAS DECISORIAS: observar emociones, disposición, primeras impresiones, compromisos y conversaciones junto con hechos y riesgos; no garantizan decisiones correctas.
 
 ESTRUCTURA DEL BLUEPRINT (secciones):
 
@@ -288,20 +283,14 @@ CONSCIENTIOUSNESS - Your relationship with goals and organization.
 
 BASE KNOWLEDGE - PERSONAL ARCHITECTURE:
 
-ENERGY TYPES:
-- Manifestor: you came to initiate, create impact, open paths
-- Generator: you have sustainable energy when doing what you love, your satisfaction is the thermometer
-- Manifesting Generator: you respond to what attracts you and then accelerate, you're versatile
-- Projector: you came to guide and orient, your wisdom needs to be recognized and invited
-- Reflector: you mirror the environment, your lunar cycle brings clarity
+ACTION TYPES (INTERPRETIVE CATEGORIES):
+- Manifestor: explore initiative and communication.
+- Generator: observe interest and continuity.
+- Manifesting Generator: explore versatility and priorities.
+- Projector: reflect on guidance and collaboration.
+- Reflector: observe context and allow reflection time, without lunar cycles.
 
-AUTHORITIES (how you make better decisions):
-- Emotional: wait for the emotional wave to pass, clarity comes with time
-- Sacral: trust your body's response, that visceral "uh-huh" or "no"
-- Splenic: your intuition is instantaneous, trust the first impulse
-- Heart/Ego: ask "do I really want/can I do this?"
-- Self-Projected: listen to your own voice speaking, truth emerges
-- Mental/Environmental: talk to trusted people, use environment as mirror
+DECISION REFERENCES: consider feelings, willingness, initial impressions, commitments and conversations alongside facts and risks; none guarantees correct decisions.
 
 BLUEPRINT STRUCTURE (sections):
 
@@ -494,7 +483,7 @@ serve(async (req) => {
       ? channelList.map((ch: any) => `${ch.gates?.join('-') || ch.id}: ${ch.name || ''}`).join(', ')
       : 'Nenhum canal completo';
 
-    const formattedHD = `Tipo de Energia: ${hdData.energy_type}. Estratégia: ${hdData.strategy}. Autoridade: ${hdData.authority}. Perfil: ${hdData.profile}. Definição: ${hdData.definition}. Cruz de Encarnação: ${hdData.incarnation_cross}. Centros Definidos: ${definedCenters || 'Nenhum'}. Centros Abertos: ${openCenters || 'Nenhum'}. Canais: ${channelsText}.`;
+    const formattedHD = normalizeReportTerms(`Tipo de Energia: ${hdData.energy_type}. Estratégia: ${hdData.strategy}. Autoridade: ${hdData.authority}. Perfil: ${hdData.profile}. Definição: ${hdData.definition}. Cruz de Encarnação: ${hdData.incarnation_cross}. Centros Definidos: ${definedCenters || 'Nenhum'}. Centros Abertos: ${openCenters || 'Nenhum'}. Canais: ${channelsText}.`, language);
 
     console.log(`Chamando Lovable AI para análise integrada (idioma: ${language})...`);
 
@@ -507,7 +496,7 @@ serve(async (req) => {
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
         messages: [
-          { role: "system", content: localizedPrompts.systemPrompt },
+          { role: "system", content: `${localizedPrompts.systemPrompt}\n\n${getReportLanguageRules(language)}` },
           { role: "user", content: localizedPrompts.userPrompt(formattedBigFive, formattedHD) }
         ],
       }),
@@ -546,7 +535,7 @@ serve(async (req) => {
     }
 
     const data = await response.json();
-    const analysis = data.choices[0].message.content;
+    const analysis = normalizeReportTerms(data.choices[0].message.content, language);
 
     console.log("Análise integrada gerada com sucesso");
 

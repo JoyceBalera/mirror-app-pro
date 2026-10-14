@@ -1,3 +1,4 @@
+import { normalizeReportData } from './reportLanguage';
 import React from 'react';
 import { Document, Text, View } from '@react-pdf/renderer';
 import { sharedStyles, COLORS } from './pdfSharedStyles';
@@ -62,7 +63,7 @@ const getTranslations = (lang: PDFLanguage) => {
         authority: 'Autoridade',
         profile: 'Perfil',
         definition: 'Definição',
-        incarnationCross: 'Cruz de Encarnação',
+        incarnationCross: 'Eixo de Propósito',
       },
       centersSection: {
         defined: 'Definidos',
@@ -106,7 +107,7 @@ const getTranslations = (lang: PDFLanguage) => {
         authority: 'Autoridad',
         profile: 'Perfil',
         definition: 'Definición',
-        incarnationCross: 'Cruz de Encarnación',
+        incarnationCross: 'Eje de Propósito',
       },
       centersSection: {
         defined: 'Definidos',
@@ -150,7 +151,7 @@ const getTranslations = (lang: PDFLanguage) => {
         authority: 'Authority',
         profile: 'Profile',
         definition: 'Definition',
-        incarnationCross: 'Incarnation Cross',
+        incarnationCross: 'Purpose Axis',
       },
       centersSection: {
         defined: 'Defined',
@@ -243,6 +244,7 @@ const AnalysisPage: React.FC<{ data: IntegratedPDFData; t: Translations }> = ({ 
 };
 
 export const IntegratedPDFDocument: React.FC<IntegratedPDFDocumentProps> = ({ data }) => {
+  data = normalizeReportData(data, data.language || 'pt');
   const t = getTranslations(data.language || 'pt');
 
   return (

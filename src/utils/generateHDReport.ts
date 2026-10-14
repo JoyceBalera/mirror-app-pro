@@ -1,3 +1,4 @@
+import { normalizeReportData } from './reportLanguage';
 import jsPDF from 'jspdf';
 import { translateCross } from '../data/humanDesignCrosses';
 import type { AdvancedVariables } from './humanDesignVariables';
@@ -92,6 +93,7 @@ const getParticipantLabel = (language: PDFLanguage): string => {
 };
 
 export async function generateHDReport(data: HDReportData): Promise<void> {
+  data = normalizeReportData(data, data.language || 'pt');
   const language = data.language || 'pt';
   const t = getTranslations(language);
   const centerNames = getCenterNames(t);
@@ -308,7 +310,7 @@ export async function generateHDReport(data: HDReportData): Promise<void> {
     { label: t.authority, value: data.authority || 'N/A' },
     { label: t.profile, value: data.profile || 'N/A' },
     { label: t.definition, value: data.definition || 'N/A' },
-    { label: t.incarnationCross, value: translateCross(data.incarnation_cross, language, data.profile) },
+    { label: t.incarnationCross, value: normalizeReportData(translateCross(data.incarnation_cross, language, data.profile), language) },
   ];
   
   const colWidth = contentWidth / 2;
